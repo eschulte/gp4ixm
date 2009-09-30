@@ -16,22 +16,25 @@ struct Collector {
   void report(int value) {
     facePrintf(out_face, "R%#p %d", path, count);
   }
-  // void update(int new_count, u32 new_face, char * new_path) {
-  //   count = new_count; out_face = new_face; path = new_path;
-  // }
 };
 Collector collector;          // my data collection information
 
 void noticeCollector(u8 * packet) {
   int count;
-  char path[MAX_DIST];
   char dir;
   if (packetScanf(packet, "c%d %#p\n", &count, &path) != 3) {
     pprintf("L bad '%#p'\n",packet);
     return;
   }
   if (count > collector.count) {
-    // collector.update(count, packetSource(packet), path);
+    int path_ind = 0;
+    char ch;
+    // extract the return path 
+    while(packetScanf(packet, "%c", &ch)) {
+      collector.path[path_ind] = ch;
+      ++path_ind;
+    }
+    colelctor.path[path_ind] = '\0';
     collector.count = count;
     collector.out_face = packetSource(packet);
     // collector.path = path;
@@ -48,7 +51,7 @@ void noticeCollector(u8 * packet) {
         facePrintf(f, "c%d %#p%c\n", count, path, dir);
       }
     }
-    facePrintf(collector.out_face, "L noticed you at %#p\n", path);
+    facePrintf(collector.out_face, "L noticed you at %s\n", path);
   }
 }
 
