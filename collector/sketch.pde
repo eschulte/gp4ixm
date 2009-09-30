@@ -14,34 +14,46 @@ struct Collector {
   int  count;                 // keep track of the last update
   u32  out_face;              // the immediate face through which to send data back
   char path[MAX_DIST];        // the path back to the central scrutinizer
-  // reporting string "Rd1Rd2Rd3Rd4cvalue d4d3d2d1\n"
-  void report(int val) {
-    if (initialized) {
-      int ind = 0;
-      while(path[ind] != '\0') {
-        facePrintf(out_face, "R%c", path[ind]);
-        ++ind;
-      }
-      facePrintf(out_face, "c%d ", val);
-      while(ind > 0) {
-        --ind;
-        facePrintf(out_face, "%c", path[ind]);
-      }
-      facePrintf(out_face, "\n");
-    }
+  void report(int val);       // reporting string "Rd1Rd2Rd3Rd4cvalue d4d3d2d1\n"
+  void reset() {
+    initialized = false;
+    count = 0;
+    out_face = -1;
+    path[0] = '\0';
   }
 };
 Collector collector;                  // my data collection information
+void Collector::report (int val) {
+  if (initialized) {
+    int ind = 0;
+    while(path[ind] != '\0') {
+      facePrintf(out_face, "R%c", path[ind]);
+      ++ind;
+    }
+    facePrintf(out_face, "c%d ", val);
+    while(ind > 0) {
+      --ind;
+      facePrintf(out_face, "%c", path[ind]);
+    }
+    facePrintf(out_face, "\n");
+  }
+}
 
 void noticeCollector(u8 * packet) {
   int count;
   char dir;
   if (packetScanf(packet, "c%d ", &count) != 3) {
-    pprintf("L bad '%#p'\n",packet);
-    return;
+    if (packetScanf(packet, "cr ") != 3) {
+      pprintf("L bad '%#p'\n",packet);
+      return;
+    } else {
+      collector.reset();
+      return;
+    }
   }
   if (count > collector.count) {
     collector.initialized = true;
+    pprintf("L initialized!\n");
     collector.count = count;
     collector.out_face = packetSource(packet);
     int path_ind = 0;
@@ -74,6 +86,7 @@ void setup() {
 void loop() {
   delay(1000);
   ledToggle(BODY_RGB_GREEN_PIN);
+  pprintf("L path is %s\n", collector.path);
   collector.report(random(100));
 }
 
