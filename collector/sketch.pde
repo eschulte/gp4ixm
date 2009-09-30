@@ -23,11 +23,21 @@ struct Collector {
   }
 };
 Collector collector;                  // my data collection information
+
+char reverseStep(char step) {
+  switch(step) {
+    case 'f': return 'f';
+    case 'l': return 'r';
+    case 'r': return 'l';
+    default:  pprintf("L hork on %c\n", step); return 'z';
+    }
+}
+
 void Collector::report (int val) {
   if (initialized) {
     int ind = 0;
     while(path[ind] != '\0') {
-      facePrintf(out_face, "R%c", path[ind]);
+      facePrintf(out_face, "R%c", reverseStep(path[ind]));
       ++ind;
     }
     facePrintf(out_face, "c%d ", val);
@@ -85,7 +95,7 @@ void setup() {
 
 void loop() {
   delay(1000);
-  ledToggle(BODY_RGB_GREEN_PIN);
+  ledToggle(BODY_RGB_BLUE_PIN);
   pprintf("L path is %s\n", collector.path);
   collector.report(random(100));
 }
