@@ -33,19 +33,19 @@ char reverseStep(char step) {
     }
 }
 
+// reporting string "Rd1Rd2Rd3Rd4cvalue d4d3d2d1\n"
 void Collector::report (int val) {
   if (initialized) {
     int ind = 0;
-    while(path[ind] != '\0') {
-      facePrintf(out_face, "R%c", reverseStep(path[ind]));
-      ++ind;
+    while(path[ind] != '\0') ++ind;       // rewind to the end of the string
+    while(ind > 0) {                      // then step back to front building an R packet
+      --ind; facePrintf(out_face, "R%c", reverseStep(path[ind]));
     }
-    facePrintf(out_face, "c%d ", val);
-    while(ind > 0) {
-      --ind;
-      facePrintf(out_face, "%c", path[ind]);
+    facePrintf(out_face, "c%d ", val);    // print out our value
+    while(path[ind] != '\0') {            // then step back to the end recording position
+      facePrintf(out_face, "%c", path[ind]); ++ind;
     }
-    facePrintf(out_face, "\n");
+    facePrintf(out_face, "\n");           // end the packet
   }
 }
 
@@ -74,14 +74,16 @@ void noticeCollector(u8 * packet) {
       ++path_ind;
     }
     collector.path[path_ind] = '\0';
+    // send on to neighbors
     for (u32 f = NORTH; f <= WEST; ++f) {
       if (collector.out_face != f) {
-        switch ((f+4 - collector.out_face) % 4) {                 // find the dir l, r, or f
+        switch ((f - collector.out_face) % 4) {                 // find the dir l, r, or f
         case 1: dir = 'l'; break;
         case 2: dir = 'f'; break;
         case 3: dir = 'r'; break;
         default: pprintf(" L hork %d to %d\n", collector.out_face, f); return;
         }
+        pprintf("L c%d %s%c\n", count, collector.path, dir);      // debugging
         facePrintf(f, "c%d %s%c\n", count, collector.path, dir);  // append dir and send onward
       }
     }
