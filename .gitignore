@@ -1,4 +1,6 @@
+## cruft from the sketch directories
 *.hex
 *.o
 sketch
-
+Makefile
+sketch-wrapper.cpp
