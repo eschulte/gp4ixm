@@ -19,6 +19,6 @@ void loop() {
 }
 
 
-#define SFB_SKETCH_CREATOR_ID 0      // [Optional: Code number representing you]
-#define SFB_SKETCH_PROGRAM_ID 0     // [Optional: Code number representing this sketch]
-#define SFB_SKETCH_COPYRIGHT_NOTICE 0 // [Optional: Copyright information string]
+#define SFB_SKETCH_CREATOR_ID B36_3(e,m,s)   // [Optional: Code number representing you]
+#define SFB_SKETCH_PROGRAM_ID B36_4(e,v,a,l) // [Optional: Code number representing this sketch]
+#define SFB_SKETCH_COPYRIGHT_NOTICE "GPL V3" // [Optional: Copyright information string]
