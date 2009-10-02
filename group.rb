@@ -36,8 +36,10 @@ class Group
 
   # update this group with a packet
   def update(packet)
-    # find the board by the location string
-    # change the boards value
+    if packet.match(/^c(\d+) (.+)/)
+      new_b = Board.new($2, Integer($1))
+      self.boards = (self.boards.reject{ |b| b.x_y == new_b.x_y } + new_b)
+    end
   end
 
   # output data in a manner ingestible by gnuplot
@@ -56,17 +58,21 @@ class Group
 
   # generate a gnuplot script using techniques from
   # http://t16web.lanl.gov/Kawano/gnuplot/plot3d2-e.html
-  def plot_script
+  def plot_script(counter = false)
     ["set term png",
-     "set output \"/home/eschulte/result.png\"",
+     (if counter
+        "set output \"/tmp/scrutinizer.#{counter}.png\""
+      else
+        "set output \"/tmp/scrutinizer.png\""
+      end),
      "set dgrid3d 30, 30",
      "set hidden3d",
      "splot \"#{self.data_file}\" with lines title 'fitness' "].join("\n")
   end
   
-  def plot
+  def plot(counter = false)
     g = Tempfile.new("scrutinizer-gnuplot-plot")
-    g << self.plot_script
+    g << self.plot_script(counter)
     g.flush
     %x{gnuplot #{g.path}}
   end

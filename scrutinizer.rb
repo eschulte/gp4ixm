@@ -25,6 +25,9 @@ ixm = LibIXM.new(:sfbprog_path =>   '/home/eschulte/bin/sfbprog', # path for sfb
 g = Group.new
 
 # respond to collector packets
-ixm.attach_reflex( /^c([\d+]+) (.+)/ ) do |packet|
-
+update_counter = 0
+ixm.attach_reflex(/^c/) do |packet|
+  update_counter += 1
+  g.update(packet)
+  g.plot(update_counter)
 end
