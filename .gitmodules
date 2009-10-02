@@ -1,0 +1,3 @@
+[submodule "libixm"]
+	path = libixm
+	url = git://github.com/mixonic/libixm.git
