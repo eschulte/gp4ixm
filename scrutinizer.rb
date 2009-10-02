@@ -82,7 +82,9 @@ class Group
   # generate a gnuplot script using techniques from
   # http://t16web.lanl.gov/Kawano/gnuplot/plot3d2-e.html
   def plot_script
-    ["set dgrid3d 30, 30",
+    ["set term png",
+     "set output \"/home/eschulte/result.png\"",
+     "set dgrid3d 30, 30",
      "set hidden3d",
      "splot \"#{self.data_file}\" with lines title 'fitness' "].join("\n")
   end
