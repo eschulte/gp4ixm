@@ -15,12 +15,6 @@ struct Collector {
   u32  out_face;              // the immediate face through which to send data back
   char path[MAX_DIST];        // the path back to the central scrutinizer
   void report(int val);       // reporting string "Rd1Rd2Rd3Rd4cvalue d4d3d2d1\n"
-  void reset() {
-    initialized = false;
-    count = 0;
-    out_face = 0;
-    path[0] = '\0';
-  }
 };
 Collector collector;
 
@@ -33,7 +27,6 @@ char reverseStep(char step) {
     }
 }
 
-// reporting string "Rd1Rd2Rd3Rd4cvalue d4d3d2d1\n"
 void Collector::report (int val) {
   if (initialized) {
     int ind = 0;
@@ -49,10 +42,6 @@ void Collector::report (int val) {
   }
 }
 
-// called when recieving a collector notification packet 'c'
-//
-// if a new update (count > collector.count) this will update
-// collector information and inform neighbors
 void noticeCollector(u8 * packet) {
   int count;
   char dir;
@@ -69,49 +58,45 @@ void noticeCollector(u8 * packet) {
     collector.out_face = packetSource(packet);
     int path_ind = 0;
     char ch;
-    // extract the return path
-    while(packetScanf(packet, "%c", &ch)) {
+    while(packetScanf(packet, "%c", &ch)) {       // extract the return path
       collector.path[path_ind] = ch;
       ++path_ind;
     }
     collector.path[path_ind] = '\0';
-    // pprintf("L initialized to out %d path %s\n", collector.out_face, collector.path);
-    // send on to neighbors
-    for (u32 f = NORTH; f <= WEST; ++f) {
+    for (u32 f = NORTH; f <= WEST; ++f) {         // send on to neighbors
       if (collector.out_face != f) {
-        // swap around south and east so that our modulo directions work
-        if (collector.out_face == 1)      in = 2;
+        if (collector.out_face == 1)      in = 2; // swap around south and east
         else if (collector.out_face == 2) in = 1;
         else                              in = collector.out_face;
         if (f == 1)                       out = 2;
         else if (f == 2)                  out = 1;
         else                              out = f;
-        switch ((4 + out - in) % 4) {                                     // find the dir l, r, or f
+        switch ((4 + out - in) % 4) {              // find the dir l, r, or f
         case 1: dir = 'l'; break;
         case 2: dir = 'f'; break;
         case 3: dir = 'r'; break;
         default: pprintf(" L hork %d to %d is %d\n", in, out, ((4 + out - in) % 4)); return;
         }
-        // pprintf("L c%d %s%c to %d\n", count, collector.path, dir, f); // debugging
-        facePrintf(f, "c%d %s%c\n", count, collector.path, dir);      // append dir and send onward
+        facePrintf(f, "c%d %s%c\n",
+                   count, collector.path, dir);    // append dir and send onward
       }
     }
   }
 }
 
 void setup() {
-  ident = random(100);                  // my unique identity
-  collector.initialized = false;        // is not yet initialized
-  Body.reflex('c', noticeCollector);    // collector notification packets 'c'
+  ident = random(100);                             // my unique identity
+  collector.initialized = false;                   // is not yet initialized
+  Body.reflex('c', noticeCollector);               // collector notification packets 'c'
 }
 
 void loop() {
   delay(1000);
-  ledToggle(BODY_RGB_BLUE_PIN);
-  collector.report(ident);
+  ledToggle(BODY_RGB_BLUE_PIN);                    // heartbeat
+  collector.report(ident + random(20));            // repot quasi-random number
 }
 
 
-#define SFB_SKETCH_CREATOR_ID B36_3(e,m,s)   // [Optional: Code number representing you]
-#define SFB_SKETCH_PROGRAM_ID B36_3(c,o,l)   // [Optional: Code number representing this sketch]
-#define SFB_SKETCH_COPYRIGHT_NOTICE "GPL V3" // [Optional: Copyright information string]
+#define SFB_SKETCH_CREATOR_ID B36_3(e,m,s)
+#define SFB_SKETCH_PROGRAM_ID B36_3(c,o,l)
+#define SFB_SKETCH_COPYRIGHT_NOTICE "GPL V3"
