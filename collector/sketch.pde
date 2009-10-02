@@ -22,7 +22,7 @@ struct Collector {
     path[0] = '\0';
   }
 };
-Collector collector;                  // my data collection information
+Collector collector;
 
 char reverseStep(char step) {
   switch(step) {
@@ -49,17 +49,16 @@ void Collector::report (int val) {
   }
 }
 
+// called when recieving a collector notification packet 'c'
+//
+// if a new update (count > collector.count) this will update
+// collector information and inform neighbors
 void noticeCollector(u8 * packet) {
   int count;
   char dir;
   if (packetScanf(packet, "c%d ", &count) != 3) {
-    if (packetScanf(packet, "cr ") != 3) {
-      pprintf("L bad '%#p'\n",packet);
-      return;
-    } else {
-      collector.reset();
-      return;
-    }
+    pprintf("L bad '%#p'\n",packet);
+    return;
   }
   if (count > collector.count) {
     collector.initialized = true;
@@ -92,7 +91,7 @@ void noticeCollector(u8 * packet) {
 
 void setup() {
   collector.initialized = false;        // is not yet initialized
-  Body.reflex('c', noticeCollector);
+  Body.reflex('c', noticeCollector);    // collector notification packets 'c'
 }
 
 void loop() {
