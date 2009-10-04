@@ -25,7 +25,7 @@ ixm = LibIXM.new(:sfbprog_path =>   '/home/eschulte/bin/sfbprog', # path for sfb
 g = Group.new
 
 # tell the boards that I am here
-
+ixm << "c4 "
 
 # respond to collector packets
 update_counter = 0

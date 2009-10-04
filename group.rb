@@ -3,6 +3,7 @@ require 'board.rb'
 
 class Group
   attr_accessor :count, :boards
+  base = "/tmp/scrutinizer/group" # base directory/path where images are stored
 
   # create a new empty group
   def initialize() self.count = 0; self.boards = [] end
@@ -61,19 +62,23 @@ class Group
   def plot_script(counter = false)
     ["set term png",
      (if counter
-        "set output \"/tmp/scrutinizer.#{counter}.png\""
+        "set output \"#{base}.#{counter}.png\""
       else
-        "set output \"/tmp/scrutinizer.png\""
+        "set output \"#{base}.png\""
       end),
      "set dgrid3d 30, 30",
      "set hidden3d",
      "splot \"#{self.data_file}\" with lines title 'fitness' "].join("\n")
   end
-  
+
   def plot(counter = false)
     g = Tempfile.new("scrutinizer-gnuplot-plot")
     g << self.plot_script(counter)
     g.flush
     %x{gnuplot #{g.path}}
   end
+
+  # create an animated gif of the visualizations (require imagemagick)
+  def animate() %x{convert -delay 20 -loop 1 #{base}*.png #{base}.gif} end
+  
 end
