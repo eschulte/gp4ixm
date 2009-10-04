@@ -29,13 +29,13 @@ void RpnStack::apply(char op) {
   int right = pop_value();
   int left = pop_value();
   int result;
-  switch op {
-    case "+": result = left + right;
-    case "-": result = left - right;
-    case "*": result = left * right;
-    case "/": result = left / right;
-    default: pprintf("L hork on operator %c\n", op);
-    }
+  switch(op) {
+  case '+': result = left + right;
+  case '-': result = left - right;
+  case '*': result = left * right;
+  case '/': result = left / right;
+  default: pprintf("L hork on operator %c\n", op); return;
+  }
   push_value(result);
 }
 
@@ -44,22 +44,22 @@ void evaluate(u8 * packet) {
   char ch;
   int new_val = -1;
   RpnStack rpn_stack;
-  stack.default_value = default_value;
-  if (packetScanf(packet, "e ", &count) != 2) {
+  rpn_stack.default_value = default_value;
+  if (packetScanf(packet, "e ") != 2) {
     pprintf("L bad '%#p'\n",packet);
     return;
   }
   while((packetScanf(packet, "%d", &new_val)) ||   // step through the calculation string
         (packetScanf(packet, "%c", &ch))) {
     if(new_val >= 0)                               // add integer to rpn_stack
-      rpn_stack.push_int(new_val);
+      rpn_stack.push_value(new_val);
     else                                           // apply operator to rpn_stack
       rpn_stack.apply(ch);
     new_val = -1;
     ++ind;
   }
-  facePrintface(packetSource(packet),
-                "a %d\n", rpn_stack.value);        // return the resulting value
+  facePrintf(packetSource(packet),
+             "a %d\n", rpn_stack.value());         // return the resulting value
 }
 
 void setup() {
