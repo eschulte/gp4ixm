@@ -14,16 +14,16 @@ struct RpnStack {
   int stack[MAX_VALS];
   int default_value;
   void reset() { ind = 0; default_value = def_val; }
-  void push_value(int val) { pprintf("L push %d\n", val); stack[ind] = val; ++ind; return; }
+  void push_value(int val) { pprintf("L push[%d] %d\n", ind, val); stack[ind] = val; ++ind; return; }
   int pop_value() {
-    pprintf("L pop %d\n", stack[ind]);
+    pprintf("L pop[%d] %d\n", ind, stack[(ind - 1)]);
     if(ind > 0) {
       --ind; return stack[(ind + 1)];
     } else {
       return default_value;
     }
   }
-  int value() { pprintf("L value %d\n", stack[(ind - 1)]); return stack[(ind - 1)]; }
+  int value() { pprintf("L value[ind] %d\n", stack[(ind - 1)]); return stack[(ind - 1)]; }
   void apply(char op);
 };
 
@@ -46,22 +46,20 @@ RpnStack rpn_stack;
 void evaluate(u8 * packet) {
   int ind = 0;
   char ch;
-  int new_val = -1;
   rpn_stack.reset();
   if (packetScanf(packet, "e ") != 2) {
     pprintf("L bad '%#p'\n",packet);
     return;
   }
   pprintf("L evaluating packet '%#p'\n", packet);
-  while((packetScanf(packet, "%d", &new_val)) ||   // step through the calculation string
-        (packetScanf(packet, "%c", &ch))) {
-    if(new_val >= 0)                               // add integer to rpn_stack
-      rpn_stack.push_value(new_val);
-    else {                                           // apply operator to rpn_stack
+  while(packetScanf(packet, "%c", &ch)) {          // step through the calculation string
+    if(ch >= '0' && ch <= '9') {                    // check if we have a number
+      pprintf("L got a number... %d\n", (ch - 48));
+      rpn_stack.push_value((ch - 48));
+    } else {                                         // apply operator to rpn_stack
       pprintf("L not a number... %c\n", ch);
       rpn_stack.apply(ch);
     }
-    new_val = -1;
     ++ind;
   }
   facePrintf(packetSource(packet),
