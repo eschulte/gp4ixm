@@ -17,20 +17,24 @@ require 'board.rb'
 require 'group.rb'
 
 # create the ixm object
+puts "initializing ixm connection"
 ixm = LibIXM.new(:sfbprog_path =>   '/home/eschulte/bin/sfbprog', # path for sfbprog or sfbprog.exe
                  :sfbprog_args =>   '',                           # additional arguments
                  :sfbprog_device => '/dev/ttyUSB0',               # device for serial-over-usb
-                 :sfbprog_sketch => 'mysketch.hex')               # sketch
+                 :sfbprog_sketch => 'collector/sketch.hex')       # sketch
 
+puts "creating board group"
 g = Group.new
 
-# tell the boards that I am here
-ixm << "c4 "
+puts "telling boards I am here"
+ixm << "c44 "
 
-# respond to collector packets
 update_counter = 0
 ixm.attach_reflex(/^c/) do |packet|
   update_counter += 1
   g.update(packet)
   g.plot(update_counter)
 end
+
+puts "waiting for incoming packets..."
+sleep 300
