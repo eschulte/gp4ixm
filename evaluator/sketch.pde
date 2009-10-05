@@ -23,7 +23,7 @@ struct RpnStack {
       return default_value;
     }
   }
-  int value() { pprintf("L value[ind] %d\n", stack[(ind - 1)]); return stack[(ind - 1)]; }
+  int value() { pprintf("L value[%d] %d\n", (ind - 1), stack[(ind - 1)]); return stack[(ind - 1)]; }
   void apply(char op);
 };
 
@@ -39,6 +39,7 @@ void RpnStack::apply(char op) {
   else             {   pprintf("L hork on operator %c\n", op); return; }
   push_value(result);
 }
+
 RpnStack rpn_stack;
 
 void evaluate(u8 * packet) {
