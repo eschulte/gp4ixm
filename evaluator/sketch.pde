@@ -16,9 +16,9 @@ struct RpnStack {
   void reset() { ind = 0; default_value = def_val; }
   void push_value(int val) { pprintf("L push[%d] %d\n", ind, val); stack[ind] = val; ++ind; return; }
   int pop_value() {
-    pprintf("L pop[%d] %d\n", ind, stack[(ind - 1)]);
+    pprintf("L pop[%d] %d\n", (ind - 1), stack[(ind - 1)]);
     if(ind > 0) {
-      --ind; return stack[(ind + 1)];
+      --ind; return stack[ind];
     } else {
       return default_value;
     }
@@ -32,13 +32,11 @@ void RpnStack::apply(char op) {
   int right = pop_value();
   int left = pop_value();
   int result;
-  switch(op) {
-  case '+': result = left + right;
-  case '-': result = left - right;
-  case '*': result = left * right;
-  case '/': result = left / right;
-  default: pprintf("L hork on operator %c\n", op); return;
-  }
+  if     (op == '+')   result = (left + right);
+  else if(op == '-')   result = left - right;
+  else if(op == '*')   result = left * right;
+  else if(op == '/')   result = left / right;
+  else             {   pprintf("L hork on operator %c\n", op); return; }
   push_value(result);
 }
 RpnStack rpn_stack;
@@ -53,13 +51,10 @@ void evaluate(u8 * packet) {
   }
   pprintf("L evaluating packet '%#p'\n", packet);
   while(packetScanf(packet, "%c", &ch)) {          // step through the calculation string
-    if(ch >= '0' && ch <= '9') {                    // check if we have a number
-      pprintf("L got a number... %d\n", (ch - 48));
+    if(ch >= '0' && ch <= '9')                     // check if we have a number
       rpn_stack.push_value((ch - 48));
-    } else {                                         // apply operator to rpn_stack
-      pprintf("L not a number... %c\n", ch);
+    else                                           // apply operator to rpn_stack
       rpn_stack.apply(ch);
-    }
     ++ind;
   }
   facePrintf(packetSource(packet),
