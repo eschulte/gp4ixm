@@ -10,6 +10,15 @@ group of IXM boards.
 
 This repository contains the following...
 
+* Instillation
+use the following to grab a full copy of this repository
+#+begin_src sh
+  git clone http://cs.unm.edu/~eschulte/repos/gp4ixm/
+  cd gp4ixm
+  git submodule init
+  git submodule update
+#+end_src
+
 * Components
 ** collector
   :PROPERTIES:
