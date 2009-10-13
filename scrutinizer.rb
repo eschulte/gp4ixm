@@ -26,15 +26,19 @@ ixm = LibIXM.new(:sfbprog_path =>   '/home/eschulte/bin/sfbprog', # path for sfb
 puts "creating board group"
 g = Group.new
 
-puts "telling boards I am here"
-ixm << "c44 "
-
 update_counter = 0
 ixm.attach_reflex(/^c/) do |packet|
+  puts "got packet \"#{packet}\""
   update_counter += 1
   g.update(packet)
+  puts "#{g.boards.size}"
   g.plot(update_counter)
 end
 
-puts "waiting for incoming packets..."
-sleep 300
+count = 24
+while true
+  puts "telling boards I am here [#{count}]"
+  ixm << "c#{count} f"
+  count += 1
+  sleep 60
+end

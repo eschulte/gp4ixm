@@ -2,11 +2,15 @@
 require 'board.rb'
 
 class Group
-  attr_accessor :count, :boards
-  base = "/tmp/scrutinizer/group" # base directory/path where images are stored
+  attr_accessor :count, :boards, :base
 
   # create a new empty group
-  def initialize() self.count = 0; self.boards = [] end
+  def initialize()
+    self.count = 0
+    self.boards = []
+    # base directory/path where images are stored
+    self.base = "/tmp/scrutinizer/group"
+  end
 
   # fill in empty spots between boards w/0s
   def fill_boards
@@ -39,7 +43,9 @@ class Group
   def update(packet)
     if packet.match(/^c(\d+) (.+)/)
       new_b = Board.new($2, Integer($1))
-      self.boards = (self.boards.reject{ |b| b.x_y == new_b.x_y } + new_b)
+      remaining = self.boards.reject{ |b| b.x_y == new_b.x_y }
+      self.boards = remaining << new_b
+      self.fill_boards
     end
   end
 
@@ -76,6 +82,7 @@ class Group
     g << self.plot_script(counter)
     g.flush
     %x{gnuplot #{g.path}}
+    g.path
   end
 
   # create an animated gif of the visualizations (require imagemagick)
