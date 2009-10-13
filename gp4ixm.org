@@ -1,0 +1,52 @@
+# -*- mode: org -*-
+#+TITLE: Distributed GP for IXM
+#+OPTIONS: num:nil ^:nil
+#+LaTeX_CLASS: normal
+
+* Introduction
+
+Implementing Genetic Programming (GP) in a distributed manner for a
+group of IXM boards.
+
+This repository contains the following...
+
+* Components
+** collector
+  :PROPERTIES:
+  :CUSTOM_ID: collector
+  :END:
+This is a sketch which allows boards to regularly report data tagged
+with their location information.  The sketch assumes that the boards
+satisfy a nominal 2D layout (no upside down boards).  The data and
+location information is sent back to a central collector (most likely
+a computer connected to the group of boards via USB).
+
+Usage is as follows...
+
+** scrutinizer
+  :PROPERTIES:
+  :CUSTOM_ID: scrutinizer
+  :END:
+The scrutinizer is a ruby script which uses [[http://github.com/mixonic/libixm][libixm]] to monitor the
+output of the [[collector]] sketch.  It uses the output of the collector
+to maintain a collection of data structures representing the reporting
+boards in the group.  Each board holds the following information
+#+begin_src ruby
+  # An ixm board with location and value
+  class Board
+    attr_accessor :location, :value, :cords
+#+end_src
+where =location= is the location of the board in terms of turns, as
+reported form the ixms (e.g. "flrfflf"), =value= is a scalar value
+reported by the board, and =cords= is the 2D coordinates of the board
+with the laptop/usb-cord positioned at the origin.
+
+The scrutinizer can generate 3D graphs of the data collected form the
+boards using [[http://www.gnuplot.info/][gnuplot]].
+
+** evaluator
+  :PROPERTIES:
+  :CUSTOM_ID: evaluator
+  :END:
+This sketch allows boards to evaluate strings of integers and
+operators (=+=, =-=, =*=, =/=) on board using reverse polish notation.
