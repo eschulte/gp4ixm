@@ -31,7 +31,6 @@ ixm.attach_reflex(/^c/) do |packet|
   puts "got packet \"#{packet}\""
   update_counter += 1
   g.update(packet)
-  puts "#{g.boards.size}"
   g.plot(update_counter)
 end
 
