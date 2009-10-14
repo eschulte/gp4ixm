@@ -7,3 +7,6 @@ sketch-wrapper.cpp
 
 ## exported documentation
 doc
+
+## Mac cruft
+.DS_Store
