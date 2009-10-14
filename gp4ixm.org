@@ -1,0 +1,104 @@
+# -*- mode: org -*-
+#+TITLE: Distributed GP for IXM
+#+OPTIONS: num:nil ^:nil toc:2
+#+LaTeX_CLASS: normal
+
+* Introduction
+
+Implementing Genetic Programming (GP) in a distributed manner for a
+group of IXM boards.
+
+This repository contains the following...
+
+* Instillation
+use the following to grab a full copy of this repository
+#+begin_src sh
+  git clone http://cs.unm.edu/~eschulte/repos/gp4ixm/
+  cd gp4ixm
+  git submodule init
+  git submodule update
+#+end_src
+
+* Components
+** collector
+  :PROPERTIES:
+  :CUSTOM_ID: collector
+  :END:
+This is a sketch which allows boards to regularly report data tagged
+with their location information.  The sketch assumes that the boards
+satisfy a nominal 2D layout (no upside down boards).  The data and
+location information is sent back to a central collector (most likely
+a computer connected to the group of boards via USB).
+
+Usage is as follows...
+
+** scrutinizer
+  :PROPERTIES:
+  :CUSTOM_ID: scrutinizer
+  :END:
+The scrutinizer is a ruby script which uses [[http://github.com/mixonic/libixm][libixm]] to monitor the
+output of the [[collector]] sketch.  It uses the output of the collector
+to maintain a collection of data structures representing the reporting
+boards in the group.  Each board holds the following information
+#+begin_src ruby
+  # An ixm board with location and value
+  class Board
+    attr_accessor :location, :value, :cords
+#+end_src
+where =location= is the location of the board in terms of turns, as
+reported form the ixms (e.g. "flrfflf"), =value= is a scalar value
+reported by the board, and =cords= is the 2D coordinates of the board
+with the laptop/usb-cord positioned at the origin.
+
+The scrutinizer can generate 3D graphs of the data collected form the
+boards using [[http://www.gnuplot.info/][gnuplot]].
+
+*** usage
+to run the scrutinizer
+1) be sure that you have built the collector sketch
+   #+begin_src sh
+     cd collector
+     make
+   #+end_src
+2) then run the scrutinizer
+   #+begin_src sh
+     ruby scrutinizer.rb
+   #+end_src
+   which should result in the following output to your terminal
+   #+begin_example 
+     initializing ixm connection
+     creating board group
+     telling boards I am here [24]
+     got packet "c6 f"
+     2
+     Warning: empty x range [0:0], adjusting to [-1:1]
+     got packet "c111 fl"
+     4
+     got packet "c81 fr"
+     6
+     got packet "c20 fll"
+     6
+     got packet "c16 f"
+     6
+     got packet "c94 fl"
+     6
+     ...
+   #+end_example
+   and which will also begin creating images in =/tmp/scrutinizer/=
+3) to generate an animation of the images output by the scrutinizer
+   try to following command (which uses [[http://www.imagemagick.org/script/index.php][imagemagick]])
+   #+begin_src sh
+     cd /tmp/scrutinizer
+     convert -delay 20 -loop 1 group.*.png group.gif
+   #+end_src
+   the resulting =group.gif=, should look something like the following
+   [[file:data/group.gif]]
+
+** evaluator
+  :PROPERTIES:
+  :CUSTOM_ID: evaluator
+  :END:
+This sketch allows boards to evaluate strings of integers and
+operators (=+=, =-=, =*=, =/=) on board using reverse polish notation.
+
+

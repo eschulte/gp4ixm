@@ -1,0 +1,174 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<!-- Created by htmlize-1.36 in css mode. -->
+<html>
+  <head>
+    <title>gp4ixm.org</title>
+    <style type="text/css">
+    <!--
+      body {
+        color: #E6E1DC;
+        background-color: #232323;
+      }
+      .comment {
+        /* font-lock-comment-face */
+        color: #BC9458;
+        font-style: italic;
+      }
+      .org-block {
+        /* org-block */
+        color: #b3b3b3;
+      }
+      .org-code {
+        /* org-code */
+        color: #b3b3b3;
+      }
+      .org-level-1 {
+        /* org-level-1 */
+        color: #FFC66D;
+      }
+      .org-level-2 {
+        /* org-level-2 */
+        color: #b0c4de;
+      }
+      .org-level-3 {
+        /* org-level-3 */
+        color: #CC7833;
+      }
+      .org-link {
+        /* org-link */
+        color: #00ffff;
+        text-decoration: underline;
+      }
+      .org-meta-line {
+        /* org-meta-line */
+        color: #BC9458;
+        font-style: italic;
+      }
+      .org-property-value {
+      }
+      .org-special-keyword {
+        /* org-special-keyword */
+        color: #ffa07a;
+      }
+
+      a {
+        color: inherit;
+        background-color: inherit;
+        font: inherit;
+        text-decoration: inherit;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+    -->
+    </style>
+  </head>
+  <body>
+    <pre>
+<span class="comment"># -*- mode: org -*-</span>
+<span class="org-meta-line">#+TITLE: Distributed GP for IXM</span>
+<span class="org-meta-line">#+OPTIONS: num:nil ^:nil toc:2</span>
+<span class="org-meta-line">#+LaTeX_CLASS: normal</span>
+
+<span class="org-level-1">* Introduction</span>
+
+Implementing Genetic Programming (GP) in a distributed manner for a
+group of IXM boards.
+
+This repository contains the following...
+
+<span class="org-level-1">* Instillation</span>
+use the following to grab a full copy of this repository
+<span class="org-meta-line">#+begin_src sh
+</span><span class="org-block">  git clone http://cs.unm.edu/~eschulte/repos/gp4ixm/
+  cd gp4ixm
+  git submodule init
+  git submodule update</span><span class="org-meta-line">
+#+end_src</span>
+
+<span class="org-level-1">* Components</span>
+<span class="org-level-2">** collector</span>
+<span class="org-special-keyword">  :PROPERTIES:</span>
+  <span class="org-special-keyword">:CUSTOM_ID:</span> <span class="org-property-value">collector</span>
+<span class="org-special-keyword">  :END:</span>
+This is a sketch which allows boards to regularly report data tagged
+with their location information.  The sketch assumes that the boards
+satisfy a nominal 2D layout (no upside down boards).  The data and
+location information is sent back to a central collector (most likely
+a computer connected to the group of boards via USB).
+
+Usage is as follows...
+
+<span class="org-level-2">** scrutinizer</span>
+<span class="org-special-keyword">  :PROPERTIES:</span>
+  <span class="org-special-keyword">:CUSTOM_ID:</span> <span class="org-property-value">scrutinizer</span>
+<span class="org-special-keyword">  :END:</span>
+The scrutinizer is a ruby script which uses <span class="org-link">libixm</span> to monitor the
+output of the <span class="org-link">collector</span> sketch.  It uses the output of the collector
+to maintain a collection of data structures representing the reporting
+boards in the group.  Each board holds the following information
+<span class="org-meta-line">#+begin_src ruby
+</span><span class="org-block">  # An ixm board with location and value
+  class Board
+    attr_accessor :location, :value, :cords</span><span class="org-meta-line">
+#+end_src</span>
+where <span class="org-code">=location=</span> is the location of the board in terms of turns, as
+reported form the ixms (e.g. "flrfflf"), <span class="org-code">=value=</span> is a scalar value
+reported by the board, and <span class="org-code">=cords=</span> is the 2D coordinates of the board
+with the laptop/usb-cord positioned at the origin.
+
+The scrutinizer can generate 3D graphs of the data collected form the
+boards using <span class="org-link">gnuplot</span>.
+
+<span class="org-level-3">*** usage</span>
+to run the scrutinizer
+1) be sure that you have built the collector sketch
+<span class="org-meta-line">   #+begin_src sh
+</span><span class="org-block">     cd collector
+     make</span><span class="org-meta-line">
+   #+end_src</span>
+2) then run the scrutinizer
+<span class="org-meta-line">   #+begin_src sh
+</span><span class="org-block">     ruby scrutinizer.rb</span><span class="org-meta-line">
+   #+end_src</span>
+   which should result in the following output to your terminal
+<span class="org-meta-line">   #+begin_example 
+</span><span class="org-block">     initializing ixm connection
+     creating board group
+     telling boards I am here [24]
+     got packet "c6 f"
+     2
+     Warning: empty x range [0:0], adjusting to [-1:1]
+     got packet "c111 fl"
+     4
+     got packet "c81 fr"
+     6
+     got packet "c20 fll"
+     6
+     got packet "c16 f"
+     6
+     got packet "c94 fl"
+     6
+     ...</span><span class="org-meta-line">
+   #+end_example</span>
+   and which will also begin creating images in <span class="org-code">=/tmp/scrutinizer/=</span>
+3) to generate an animation of the images output by the scrutinizer
+   try to following command (which uses <span class="org-link">imagemagick</span>)
+<span class="org-meta-line">   #+begin_src sh
+</span><span class="org-block">     cd /tmp/scrutinizer
+     convert -delay 20 -loop 1 group.*.png group.gif</span><span class="org-meta-line">
+   #+end_src</span>
+   the resulting <span class="org-code">=group.gif=</span>, should look something like the following
+   <span class="org-link">file:data/group.gif</span>
+
+<span class="org-level-2">** evaluator</span>
+<span class="org-special-keyword">  :PROPERTIES:</span>
+  <span class="org-special-keyword">:CUSTOM_ID:</span> <span class="org-property-value">evaluator</span>
+<span class="org-special-keyword">  :END:</span>
+This sketch allows boards to evaluate strings of integers and
+operators (<span class="org-code">=+=</span>, <span class="org-code">=-=</span>, <span class="org-code">=*=</span>, <span class="org-code">=/=</span>) on board using reverse polish notation.
+
+
+</pre>
+  </body>
+</html>

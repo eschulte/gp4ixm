@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+               "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+lang="en" xml:lang="en">
+<head>
+
+<title>Distributed GP for IXM</title>
+<meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
+<meta name="generator" content="Org-mode"/>
+<meta name="generated" content="2009-10-14 13:27:01 MDT"/>
+<meta name="author" content="Eric Schulte"/>
+<meta name="description" content=""/>
+<meta name="keywords" content=""/>
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  html { font-family: Times, serif; font-size: 12pt; }
+  .title  { text-align: center; }
+  .todo   { color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #add8e6; font-weight:normal }
+  .target { }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  p.verse { margin-left: 3% }
+  pre {
+	border: 1pt solid #AEBDCC;
+	background-color: #232323;
+	color: #E6E1DC;
+	padding: 5pt;
+	font-family: courier, monospace;
+        font-size: 90%;
+        overflow:auto;
+  }
+  table { border-collapse: collapse; }
+  td, th { vertical-align: top; }
+  dt { font-weight: bold; }
+  div.figure { padding: 0.5em; }
+  div.figure p { text-align: center; }
+  .linenr { font-size:smaller }
+  .code-highlighted {background-color:#ffff00;}
+  .org-info-js_info-navigation { border-style:none; }
+  #org-info-js_console-label { font-size:10px; font-weight:bold;
+                               white-space:nowrap; }
+  .org-info-js_search-highlight {background-color:#ffff00; color:#000000;
+                                 font-weight:bold; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">Distributed GP for IXM</h1>
+
+
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">Introduction </a></li>
+<li><a href="#sec-2">Instillation </a></li>
+<li><a href="#sec-3">Components </a>
+<ul>
+<li><a href="#collector">collector </a></li>
+<li><a href="#scrutinizer">scrutinizer </a></li>
+<li><a href="#evaluator">evaluator </a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-1" class="outline-2">
+<h2 id="sec-1">Introduction </h2>
+<div class="outline-text-2" id="text-1">
+
+
+<p>
+Implementing Genetic Programming (GP) in a distributed manner for a
+group of IXM boards.
+</p>
+<p>
+This repository contains the following&hellip;
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-2" class="outline-2">
+<h2 id="sec-2">Instillation </h2>
+<div class="outline-text-2" id="text-2">
+
+<p>use the following to grab a full copy of this repository
+</p>
+
+
+<pre class="src src-sh">git clone http://cs.unm.edu/~eschulte/repos/gp4ixm/
+<span style="color: #D0D0FF;">cd</span> gp4ixm
+git submodule init
+git submodule update
+
+</pre>
+
+
+
+
+</div>
+
+</div>
+
+<div id="outline-container-3" class="outline-2">
+<h2 id="sec-3">Components </h2>
+<div class="outline-text-2" id="text-3">
+
+
+</div>
+
+<div id="outline-container-collector" class="outline-3">
+<h3 id="collector"><a name="sec-3.1" id="sec-3.1"></a>collector </h3>
+<div class="outline-text-3" id="text-collector">
+
+<p>This is a sketch which allows boards to regularly report data tagged
+with their location information.  The sketch assumes that the boards
+satisfy a nominal 2D layout (no upside down boards).  The data and
+location information is sent back to a central collector (most likely
+a computer connected to the group of boards via USB).
+</p>
+<p>
+Usage is as follows&hellip;
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-scrutinizer" class="outline-3">
+<h3 id="scrutinizer"><a name="sec-3.2" id="sec-3.2"></a>scrutinizer </h3>
+<div class="outline-text-3" id="text-scrutinizer">
+
+<p>The scrutinizer is a ruby script which uses <a href="http://github.com/mixonic/libixm">libixm</a> to monitor the
+output of the <a href="#sec-3.1">collector</a> sketch.  It uses the output of the collector
+to maintain a collection of data structures representing the reporting
+boards in the group.  Each board holds the following information
+</p>
+
+
+<pre class="src src-ruby"><span style="color: #BC9458; font-style: italic;"># </span><span style="color: #BC9458; font-style: italic;">An ixm board with location and value
+</span><span style="color: #CC7833;">class</span> <span style="color: #ffffff;">Board</span>
+  attr_accessor <span style="color: #6D9CBE;">:location</span>, <span style="color: #6D9CBE;">:value</span>, <span style="color: #6D9CBE;">:cords</span>
+
+</pre>
+
+
+
+<p>
+where <code>location</code> is the location of the board in terms of turns, as
+reported form the ixms (e.g. "flrfflf"), <code>value</code> is a scalar value
+reported by the board, and <code>cords</code> is the 2D coordinates of the board
+with the laptop/usb-cord positioned at the origin.
+</p>
+<p>
+The scrutinizer can generate 3D graphs of the data collected form the
+boards using <a href="http://www.gnuplot.info/">gnuplot</a>.
+</p>
+
+</div>
+
+<div id="outline-container-3.2.1" class="outline-4">
+<h4 id="sec-3.2.1">usage </h4>
+<div class="outline-text-4" id="text-3.2.1">
+
+<p>to run the scrutinizer
+</p><ol>
+<li>
+be sure that you have built the collector sketch
+
+
+
+<pre class="src src-sh"><span style="color: #D0D0FF;">cd</span> collector
+make
+
+</pre>
+
+
+
+</li>
+<li>
+then run the scrutinizer
+
+
+
+<pre class="src src-sh">ruby scrutinizer.rb
+
+</pre>
+
+
+
+<p>
+which should result in the following output to your terminal
+</p>
+
+
+<pre class="example">initializing ixm connection
+creating board group
+telling boards I am here [24]
+got packet "c6 f"
+2
+Warning: empty x range [0:0], adjusting to [-1:1]
+got packet "c111 fl"
+4
+got packet "c81 fr"
+6
+got packet "c20 fll"
+6
+got packet "c16 f"
+6
+got packet "c94 fl"
+6
+...
+</pre>
+
+
+
+<p>
+and which will also begin creating images in <code>/tmp/scrutinizer/</code>
+</p></li>
+<li>
+to generate an animation of the images output by the scrutinizer
+try to following command (which uses <a href="http://www.imagemagick.org/script/index.php">imagemagick</a>)
+
+
+
+<pre class="src src-sh"><span style="color: #D0D0FF;">cd</span> /tmp/scrutinizer
+convert -delay 20 -loop 1 group.*.png group.gif
+
+</pre>
+
+
+
+<p>
+the resulting <code>group.gif</code>, should look something like the following
+<img src="data/group.gif"  alt="data/group.gif" />
+</p>
+</li>
+</ol>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-evaluator" class="outline-3">
+<h3 id="evaluator"><a name="sec-3.3" id="sec-3.3"></a>evaluator </h3>
+<div class="outline-text-3" id="text-evaluator">
+
+<p>This sketch allows boards to evaluate strings of integers and
+operators (<code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>) on board using reverse polish notation.
+</p>
+
+</div>
+</div>
+</div>
+<div class="clear-fix"></div>
+<div id="doc-info">
+  This document is created
+  using <a href="http://orgmode.org/">Org-mode</a>
+  and <a href="http://orgmode.org/worg/org-contrib/babel/org-babel.php">Org-babel</a>.
+  The original plain-text document is available
+  at <a href="gp4ixm.org">gp4ixm.org</a>
+  (<a href="gp4ixm.org.html" title="how this document looks from inside Emacs">preview</a>).
+</div>
+</div>
+</body>
+</html>
