@@ -8,12 +8,15 @@
 Implementing Genetic Programming (GP) in a distributed manner for a
 group of IXM boards.
 
-This repository contains the following...
+links
+- [[http://harvey.cs.unm.edu/robust/doku.php?id=projects:distributed_ga_for_ixm][project wiki page]]
+- [[http://github.com/eschulte/gp4ixm][github code page]]
+- [[http://eschulte.github.com/gp4ixm/gp4ixm.html][github project page]]
 
 * Instillation
 use the following to grab a full copy of this repository
 #+begin_src sh
-  git clone http://cs.unm.edu/~eschulte/repos/gp4ixm/
+  git clone git://github.com/eschulte/gp4ixm.git
   cd gp4ixm
   git submodule init
   git submodule update
