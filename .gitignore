@@ -4,3 +4,6 @@
 sketch
 Makefile
 sketch-wrapper.cpp
+
+## exported documentation
+doc

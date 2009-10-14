@@ -111,7 +111,7 @@ operators (=+=, =-=, =*=, =/=) on board using reverse polish notation.
                   :base-directory ,gp4ixm-dir
                   :base-extension "org"
                   ;; :publishing-directory "www"
-                  :publishing-directory "/ssh:eschulte@moons:~/public_html/gp4ixm"
+                  :publishing-directory "doc"
                   :index-filename "gp4ixm.org"
                   :auto-postamble nil
                   :postamble
@@ -131,7 +131,7 @@ operators (=+=, =-=, =*=, =/=) on board using reverse polish notation.
                `("gp4ixm-data"
                  :base-directory ,(expand-file-name "data" gp4ixm-dir)
                  :base-extension "jpg\\|gif\\|png\\|pdf\\|css"
-                  :publishing-directory "/ssh:eschulte@moons:~/public_html/gp4ixm/data/"
+                  :publishing-directory "doc/data"
                   :publishing-function org-publish-attachment))
   (add-to-list 'org-publish-project-alist
                '("gp4ixm" :components
