@@ -10,6 +10,9 @@
 #define DEFAULT_VAL 0
 #define CHECK_SIZE 10
 
+/*
+ * Reverse Polish Notation Calculator 
+ */
 struct RpnStack {
   int ind;
   int stack[IND_SIZE];
@@ -38,6 +41,9 @@ void RpnStack::apply(char op) {
 }
 RpnStack rpn_stack;
 
+/*
+ * Evaluation
+ */
 int evaluate(int x, char * representation) {
   char ch;
   rpn_stack.reset();
@@ -55,54 +61,74 @@ int evaluate(int x, char * representation) {
   return rpn_stack.value();
 }
 
+/*
+ * Individual
+ */
 struct individual {
   char representation[IND_SIZE];
-  double fitness;
-  double score();
+  int fitness;
+  int size() {
+    int size = 0;
+    while(representation[size] != '\0') ++size;
+    return size;
+  }
+  int score();
 };
-double individual::score () {
+int individual::score() {
   int values[CHECK_SIZE];
   fitness = 0;
+  int difference;
   char goal[4] = "xx*";
   for(int i=0; i<CHECK_SIZE; i++) values[i] = random(10);
-  for(int i=0; i<CHECK_SIZE; ++i)
-    fitness = fitness + (evaluate(values[i], goal) - evaluate(values[i], representation));
+  for(int i=0; i<CHECK_SIZE; ++i) {
+    difference = (evaluate(values[i], goal) - evaluate(values[i], representation));
+    if (difference < 0)
+      fitness = fitness - difference;
+    else
+      fitness = fitness + difference;
+  }
   return fitness;
 }
 
+/*
+ * Population
+ */
 struct population {
   individual pop[POP_SIZE];
   void incorporate(individual ind);
-  void evict();
   individual breed();
   individual best() {
-    individual best; best.fitness = 0;
-    for(int i = 0; i < POP_SIZE; ++i) if (pop[i].fitness < best.fitness) best = pop[i];
+    individual best = pop[0];
+    for(int i=0; i<POP_SIZE; ++i) if (pop[i].fitness < best.fitness) best = pop[i];
     return best;
   }
-  double best_fitness() {
-    double best = 0;
-    for(int i = 0; i < POP_SIZE; ++i) if (pop[i].fitness < best) best = pop[i].fitness;
+  int best_fitness() {
+    int best = pop[0].fitness;
+    for(int i=0; i<POP_SIZE; ++i) if (pop[i].fitness < best) best = pop[i].fitness;
     return best;
   }
   double mean_fitness() {
     double mean = 0;
-    for(int i = 0; i < POP_SIZE; ++i) mean = mean + pop[i].fitness;
+    for(int i=0; i<POP_SIZE; ++i) mean = mean + pop[i].fitness;
     return (mean / POP_SIZE);
   }
 };
-
-void population::incorporate(individual ind) { // add a new individual, evicting if necessary
-}
-void population::evict() {                     // remove an individual from the population
+void population::incorporate(individual ind) { // add a new individual, evicting the worst
+  int worst_ind = 0;
+  for(int i=0; i<POP_SIZE; ++i)
+    if (pop[i].fitness > pop[worst_ind].fitness)
+      worst_ind = i;
+  pop[worst_ind] = ind;
 }
 individual population::breed() {               // breed two members returning a new individual
   individual child;
   return child;
 }
-
 population pop;
 
+/*
+ * Helper Functions
+ */
 individual new_ind() {                         // randomly generate a new individual
   individual ind;
   int index = 0;
@@ -113,6 +139,7 @@ individual new_ind() {                         // randomly generate a new indivi
     index = i;
   }
   ind.representation[index+1] = '\0';
+  ind.score();                                 // evaluate the fitness of the new individual
   return ind;
 }
 
@@ -124,19 +151,14 @@ void setup() {
 void loop() {
   delay(1000);
   ledToggle(BODY_RGB_BLUE_PIN);                // heartbeat
-  int index = random(POP_SIZE);
-  pprintf("random individual %d is %s\n", index, pop.pop[index].representation);
-  pprintf("\tscore = ");
-  facePrint(SOUTH, pop.pop[index].score());
-  pprintf("\n");
-  individual best;
-  best.representation[0] = 'x';
-  best.representation[1] = 'x';
-  best.representation[2] = '*';
-  best.representation[3] = '\0';
-  pprintf("best has score = ");
-  facePrint(SOUTH, best.score());
-  pprintf("\n");
+  // add new random individual
+  pop.incorporate(new_ind());
+  // output best score
+  pprintf("best fitness is %d\n", pop.best_fitness());
+  pprintf("best individual is %d long and is %s\n", pop.best().size(), pop.best().representation);
+  pprintf("mean fitness is ");
+  facePrint(SOUTH, pop.mean_fitness());
+  pprintf("\n\n");
 }
 
 #define SFB_SKETCH_CREATOR_ID B36_3(e,m,s)
