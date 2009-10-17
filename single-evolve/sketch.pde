@@ -7,6 +7,7 @@
  */
 #define POP_SIZE 24
 #define IND_SIZE 24
+#define BUILDING_BLOCKS "0123456789x+-*/"
 #define DEFAULT_VAL 0
 #define CHECK_SIZE 10
 #define TOURNAMENT_SIZE 4
@@ -74,6 +75,14 @@ struct individual {
     return size;
   }
   int score();
+  void mutate();
+  individual copy() {
+    individual my_copy;
+    for(int i=0; i<IND_SIZE; i++)
+      my_copy.representation[i] = representation[i];
+    my_copy.fitness = fitness;
+    return my_copy;
+  };
 };
 int individual::score() {
   int values[CHECK_SIZE];
@@ -89,6 +98,14 @@ int individual::score() {
       fitness = fitness + difference;
   }
   return fitness;
+}
+void individual::mutate() {                    // mutate an individual (each place change 1/size)
+  char possibilities[16] = BUILDING_BLOCKS;
+  for(int i=0; i<size(); ++i) {
+    if(random(size()) == 1)
+      representation[i] = possibilities[random(15)];
+  }
+  score();
 }
 
 /*
@@ -158,7 +175,7 @@ individual new_ind() {                         // randomly generate a new indivi
   individual ind;
   int index = 0;
   ind.fitness = -1;
-  char possibilities[16] = "0123456789x+-*/";
+  char possibilities[16] = BUILDING_BLOCKS;
   for(int i = 0; i < random(IND_SIZE); ++i) {
     ind.representation[i] = possibilities[random(15)];
     index = i;
@@ -173,25 +190,23 @@ void setup() {
     pop.pop[i] = new_ind();
 }
 
+int generation_counter = 0;
+
 void loop() {
   delay(1000);
   ledToggle(BODY_RGB_BLUE_PIN);                // heartbeat
-  // add new bred individual
-  pop.incorporate(pop.breed());
-  // // output best score
-  // pprintf("best fitness is %d\n", pop.best_fitness());
-  // pprintf("mean fitness is ");
-  // facePrint(SOUTH, pop.mean_fitness());
-  // pprintf("\n");
-  // pprintf("best individual is %d long and is %s\n", pop.best().size(), pop.best().representation);
-  // display crossover results
-  individual mother = pop.pop[random(POP_SIZE)];
-  individual father = pop.pop[random(POP_SIZE)];
-  individual child = pop.crossover(mother, father);
-  pprintf("mother[%d]: %s\n", mother.size(), mother.representation);
-  pprintf("father[%d]: %s\n", father.size(), father.representation);
-  pprintf("child[%d]: %s\n", child.size(), child.representation);
+  ++generation_counter;
   pprintf("\n");
+  pprintf("Generation %d\n", generation_counter);
+  pop.incorporate(pop.breed());                // add new bred individual
+  individual new_guy = pop.tournament().copy();
+  new_guy.mutate();
+  pop.incorporate(new_guy);                    // add new mutated individual
+  pprintf("best fitness is %d\n", pop.best_fitness());
+  pprintf("mean fitness is ");
+  print(pop.mean_fitness());            // output mean score
+  pprintf("\n");
+  pprintf("best individual is %d long and is %s\n", pop.best().size(), pop.best().representation);
 }
 
 #define SFB_SKETCH_CREATOR_ID B36_3(e,m,s)
