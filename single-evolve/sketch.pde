@@ -126,7 +126,9 @@ void loop() {
   ledToggle(BODY_RGB_BLUE_PIN);                // heartbeat
   int index = random(POP_SIZE);
   pprintf("random individual %d is %s\n", index, pop.pop[index].representation);
-  pprintf("\twith x = 3 %f\n", evaluate(3, pop.pop[index].representation));
+  pprintf("\twith x = 3 ");
+  facePrint(SOUTH, evaluate(3, pop.pop[index].representation));
+  pprintf("\n");
 }
 
 #define SFB_SKETCH_CREATOR_ID B36_3(e,m,s)
