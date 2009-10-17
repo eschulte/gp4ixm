@@ -9,6 +9,7 @@
 #define IND_SIZE 24
 #define DEFAULT_VAL 0
 #define CHECK_SIZE 10
+#define TOURNAMENT_SIZE 4
 
 /*
  * Reverse Polish Notation Calculator 
@@ -95,7 +96,9 @@ int individual::score() {
  */
 struct population {
   individual pop[POP_SIZE];
-  void incorporate(individual ind);
+  void       incorporate(individual ind);
+  individual tournament();
+  individual crossover(individual mother, individual father);
   individual breed();
   individual best() {
     individual best = pop[0];
@@ -120,9 +123,31 @@ void population::incorporate(individual ind) { // add a new individual, evicting
       worst_ind = i;
   pop[worst_ind] = ind;
 }
-individual population::breed() {               // breed two members returning a new individual
+individual population::tournament() {          // select individual with tournament of size SIZE
+  individual fighters[TOURNAMENT_SIZE];
+  for(int i=0; i<TOURNAMENT_SIZE; ++i)
+    fighters[i] = pop[random(POP_SIZE)];
+  individual winner = fighters[0];
+  for(int i=0; i<TOURNAMENT_SIZE; ++i)
+    if(fighters[i].fitness < winner.fitness)
+      winner = fighters[i];
+  return winner;
+}
+individual population::crossover(individual mother, individual father) {
   individual child;
+  int shortest = mother.size();
+  if (father.size() < shortest) shortest = father.size();
+  int crossover_point = random(shortest);
+  for(int i=0; i<crossover_point; i++)
+    child.representation[i] = mother.representation[i];
+  for(int i=crossover_point; i<shortest; i++)
+    child.representation[i] = father.representation[i];
+  child.representation[shortest+1] = '\0';
+  child.score();
   return child;
+}
+individual population::breed() {               // breed two members returning a new individual
+  return crossover(tournament(), tournament());
 }
 population pop;
 
@@ -151,14 +176,14 @@ void setup() {
 void loop() {
   delay(1000);
   ledToggle(BODY_RGB_BLUE_PIN);                // heartbeat
-  // add new random individual
-  pop.incorporate(new_ind());
+  // add new bred individual
+  pop.incorporate(pop.breed());
   // output best score
-  pprintf("best fitness is %d\n", pop.best_fitness());
-  pprintf("best individual is %d long and is %s\n", pop.best().size(), pop.best().representation);
+  pprintf("\nbest fitness is %d\n", pop.best_fitness());
   pprintf("mean fitness is ");
   facePrint(SOUTH, pop.mean_fitness());
-  pprintf("\n\n");
+  pprintf("\n");
+  pprintf("best individual is %d long and is %s\n", pop.best().size(), pop.best().representation);
 }
 
 #define SFB_SKETCH_CREATOR_ID B36_3(e,m,s)
