@@ -142,7 +142,7 @@ individual population::crossover(individual mother, individual father) {
     child.representation[i] = mother.representation[i];
   for(int i=crossover_point; i<shortest; i++)
     child.representation[i] = father.representation[i];
-  child.representation[shortest+1] = '\0';
+  child.representation[shortest] = '\0';
   child.score();
   return child;
 }
@@ -178,12 +178,20 @@ void loop() {
   ledToggle(BODY_RGB_BLUE_PIN);                // heartbeat
   // add new bred individual
   pop.incorporate(pop.breed());
-  // output best score
-  pprintf("best fitness is %d\n", pop.best_fitness());
-  pprintf("mean fitness is ");
-  facePrint(SOUTH, pop.mean_fitness());
+  // // output best score
+  // pprintf("best fitness is %d\n", pop.best_fitness());
+  // pprintf("mean fitness is ");
+  // facePrint(SOUTH, pop.mean_fitness());
+  // pprintf("\n");
+  // pprintf("best individual is %d long and is %s\n", pop.best().size(), pop.best().representation);
+  // display crossover results
+  individual mother = pop.pop[random(POP_SIZE)];
+  individual father = pop.pop[random(POP_SIZE)];
+  individual child = pop.crossover(mother, father);
+  pprintf("mother[%d]: %s\n", mother.size(), mother.representation);
+  pprintf("father[%d]: %s\n", father.size(), father.representation);
+  pprintf("child[%d]: %s\n", child.size(), child.representation);
   pprintf("\n");
-  pprintf("best individual is %d long and is %s\n", pop.best().size(), pop.best().representation);
 }
 
 #define SFB_SKETCH_CREATOR_ID B36_3(e,m,s)
