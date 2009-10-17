@@ -35,7 +35,7 @@ void RpnStack::apply(char op) {
   if     (op == '+')   result = (left + right);
   else if(op == '-')   result = left - right;
   else if(op == '*')   result = left * right;
-  else if(op == '/')   result = left / right;
+  else if(op == '/')   result = if (right = 0) 0 else left / right;
   else             {   pprintf("L hork on operator %c\n", op); return; }
   push_value(result);
 }
