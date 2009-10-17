@@ -179,11 +179,16 @@ void loop() {
   // add new bred individual
   pop.incorporate(pop.breed());
   // output best score
-  pprintf("\nbest fitness is %d\n", pop.best_fitness());
+  pprintf("best fitness is %d\n", pop.best_fitness());
   pprintf("mean fitness is ");
   facePrint(SOUTH, pop.mean_fitness());
   pprintf("\n");
   pprintf("best individual is %d long and is %s\n", pop.best().size(), pop.best().representation);
+  // output crossover test 
+  int cross_ind = random(POP_SIZE - 2);
+  pprintf("first individual: %s\n", pop.pop[cross_ind]);
+  pprintf("second individual: %s\n", pop.pop[cross_ind + 2]);
+  pprintf("crossover: %s\n", pop.crossover(pop.pop[cross_ind], pop.pop[cross_ind+2]));
 }
 
 #define SFB_SKETCH_CREATOR_ID B36_3(e,m,s)
