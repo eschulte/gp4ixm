@@ -62,7 +62,7 @@ struct individual {
 };
 double individual::score () {
   int values[CHECK_SIZE];
-  double fitness = 0;
+  fitness = 0;
   char goal[4] = "xx*";
   for(int i=0; i<CHECK_SIZE; i++) values[i] = random(10);
   for(int i=0; i<CHECK_SIZE; ++i)
@@ -126,8 +126,16 @@ void loop() {
   ledToggle(BODY_RGB_BLUE_PIN);                // heartbeat
   int index = random(POP_SIZE);
   pprintf("random individual %d is %s\n", index, pop.pop[index].representation);
-  pprintf("\twith x = 3 ");
-  facePrint(SOUTH, evaluate(3, pop.pop[index].representation));
+  pprintf("\tscore = ");
+  facePrint(SOUTH, pop.pop[index].score());
+  pprintf("\n");
+  individual best;
+  best.representation[0] = 'x';
+  best.representation[1] = 'x';
+  best.representation[2] = '*';
+  best.representation[3] = '\0';
+  pprintf("best has score = ");
+  facePrint(SOUTH, best.score());
   pprintf("\n");
 }
 
