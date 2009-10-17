@@ -1,7 +1,7 @@
 /*                                             -*- mode:C++ -*-
  *
  * Sketch description: Run GP on a single ixm board.
- * 
+ *
  * Sketch author: Eric Schulte
  *
  */
@@ -15,20 +15,17 @@ struct RpnStack {
   int stack[IND_SIZE];
   int default_value;
   void reset() { ind = 0; default_value = DEFAULT_VAL; }
-  void push_value(int val) { pprintf("L push[%d] %d\n", ind, val); stack[ind] = val; ++ind; return; }
+  void push_value(int val) { stack[ind] = val; ++ind; return; }
   int pop_value() {
-    pprintf("L pop[%d] %d\n", (ind - 1), stack[(ind - 1)]);
     if(ind > 0) {
       --ind; return stack[ind];
-    } else {
+    } else
       return default_value;
-    }
   }
   int value() { return stack[(ind - 1)]; }
   void apply(char op);
 };
 void RpnStack::apply(char op) {
-  pprintf("L apply %c\n", op);
   int right = pop_value();
   int left = pop_value();
   int result;
