@@ -9,8 +9,8 @@
 #define IND_SIZE 24
 #define BUILDING_BLOCKS "0123456789x+-*/"
 #define DEFAULT_VAL 0
-#define MUTATION_TICK 250                     // ms per mutation
-#define BREEDING_TICK 250                     // ms per breeding
+#define MUTATION_TICK 100                     // ms per mutation
+#define BREEDING_TICK 100                     // ms per breeding
 #define CHECK_SIZE 10
 #define TOURNAMENT_SIZE 4
 
@@ -129,6 +129,7 @@ individual crossover(individual mother, individual father) {
  */
 struct population {
   individual pop[POP_SIZE];
+  void       rescore();
   void       incorporate(individual ind);
   individual tournament();
   individual breed();
@@ -148,6 +149,10 @@ struct population {
     return (mean / POP_SIZE);
   }
 };
+void population::rescore() {                   // re-evaluate the fitness of every individual
+  for(int i=0; i<POP_SIZE; ++i)
+    pop[i].score();
+}
 void population::incorporate(individual ind) { // add a new individual, evicting the worst
   int worst_ind = 0;
   for(int i=0; i<POP_SIZE; ++i)
@@ -201,7 +206,7 @@ individual new_ind() {                         // randomly generate a new indivi
   return ind;
 }
 
-int generation_counter = 0;
+int goal_seconds = 0;
 
 void newGoal(u8 * packet) {
   char ch;
@@ -214,8 +219,9 @@ void newGoal(u8 * packet) {
     goal[goal_ind] = ch;
     ++goal_ind;
   }
-  generation_counter = 0;
+  goal_seconds = 0;
   goal[goal_ind] = '\0';
+  pop.rescore();
   pprintf("new goal is %s\n", goal);
 }
 
@@ -230,15 +236,14 @@ void setup() {
   Alarms.set(alarm_index,millis() + 1250);
 }
 
-int goal_seconds = 0;
 void loop() {
   delay(1000); ++goal_seconds;                 // heartbeat
   ledToggle(BODY_RGB_BLUE_PIN);
-  pprintf("seconds %d\n", goal_seconds);       // print status information
+  pprintf(" \n");                              // print status information
+  pprintf("%d second on %s\n", goal_seconds, goal);
   pprintf("best fitness is %d\n", pop.best_fitness());
   pprintf("mean fitness is "); print(pop.mean_fitness()); pprintf("\n");
   pprintf("best individual is %d long and is %s\n", pop.best().size(), pop.best().representation);
-  pprintf(" \n");
 }
 
 #define SFB_SKETCH_CREATOR_ID B36_3(e,m,s)
