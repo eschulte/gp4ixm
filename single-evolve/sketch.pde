@@ -12,6 +12,8 @@
 #define CHECK_SIZE 10
 #define TOURNAMENT_SIZE 4
 
+char goal[100] = "xx*";
+
 /*
  * Reverse Polish Notation Calculator 
  */
@@ -88,7 +90,6 @@ int individual::score() {
   int values[CHECK_SIZE];
   fitness = 0;
   int difference;
-  char goal[4] = "xx*";
   for(int i=0; i<CHECK_SIZE; i++) values[i] = random(10);
   for(int i=0; i<CHECK_SIZE; ++i) {
     difference = (evaluate(values[i], goal) - evaluate(values[i], representation));
@@ -185,12 +186,29 @@ individual new_ind() {                         // randomly generate a new indivi
   return ind;
 }
 
+int generation_counter = 0;
+
+void newGoal(u8 * packet) {
+  char ch;
+  int goal_ind = 0;
+  if (packetScanf(packet, "g ") != 2) {
+    pprintf("L bad '%#p'\n",packet);
+    return;
+  }
+  while(packetScanf(packet, "%c", &ch)) {       // extract the return path
+    goal[goal_ind] = ch;
+    ++goal_ind;
+  }
+  generation_counter = 0;
+  goal[goal_ind] = '\0';
+  pprintf("new goal is %s\n", goal);
+}
+
 void setup() {
+  Body.reflex('g', newGoal);                   // reset the goal function.
   for(int i = 0; i < POP_SIZE; ++i)            // randomly generate a population
     pop.pop[i] = new_ind();
 }
-
-int generation_counter = 0;
 
 void loop() {
   delay(1000);
