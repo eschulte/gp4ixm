@@ -9,11 +9,13 @@
 #define IND_SIZE 24
 #define BUILDING_BLOCKS "0123456789x+-*/"
 #define DEFAULT_VAL 0
+#define MUTATION_TICK 250                     // ms per mutation
+#define BREEDING_TICK 250                     // ms per breeding
 #define CHECK_SIZE 10
 #define TOURNAMENT_SIZE 4
 
 /*
- * Reverse Polish Notation Calculator 
+ * Reverse Polish Notation Calculator
  */
 struct RpnStack {
   int ind;
@@ -115,7 +117,6 @@ struct population {
   individual pop[POP_SIZE];
   void       incorporate(individual ind);
   individual tournament();
-  individual crossover(individual mother, individual father);
   individual breed();
   individual best() {
     individual best = pop[0];
@@ -150,23 +151,24 @@ individual population::tournament() {          // select individual with tournam
       winner = fighters[i];
   return winner;
 }
-individual population::crossover(individual mother, individual father) {
-  individual child;
-  int shortest = mother.size();
-  if (father.size() < shortest) shortest = father.size();
-  int crossover_point = random(shortest);
-  for(int i=0; i<crossover_point; i++)
-    child.representation[i] = mother.representation[i];
-  for(int i=crossover_point; i<shortest; i++)
-    child.representation[i] = father.representation[i];
-  child.representation[shortest] = '\0';
-  child.score();
-  return child;
-}
 individual population::breed() {               // breed two members returning a new individual
   return crossover(tournament(), tournament());
 }
 population pop;
+
+/*
+ * Alarms (Mutation and Breeding) eventually (Sharing and Data collection)
+ */
+static void do_mutate(u32 when) {
+  individual new_guy = pop.tournament().copy();
+  new_guy.mutate();
+  pop.incorporate(new_guy);
+  Alarms.set(Alarms.currentAlarmNumber(), when+MUTATION_TICK);
+}
+static void do_breed(u32 when) {
+  pop.incorporate(pop.breed());
+  Alarms.set(Alarms.currentAlarmNumber(), when+BREEDING_TICK);
+}
 
 /*
  * Helper Functions
@@ -184,28 +186,33 @@ individual new_ind() {                         // randomly generate a new indivi
   ind.score();                                 // evaluate the fitness of the new individual
   return ind;
 }
+individual crossover(individual mother, individual father) {
+  individual child;
+  int shortest = mother.size();
+  if (father.size() < shortest) shortest = father.size();
+  int crossover_point = random(shortest);
+  for(int i=0; i<crossover_point; i++)
+    child.representation[i] = mother.representation[i];
+  for(int i=crossover_point; i<shortest; i++)
+    child.representation[i] = father.representation[i];
+  child.representation[shortest] = '\0';
+  child.score();
+  return child;
+}
 
 void setup() {
   for(int i = 0; i < POP_SIZE; ++i)            // randomly generate a population
     pop.pop[i] = new_ind();
 }
 
-int generation_counter = 0;
-
+int seconds = 0;
 void loop() {
-  delay(1000);
-  ledToggle(BODY_RGB_BLUE_PIN);                // heartbeat
-  ++generation_counter;
-  pprintf("\n");
-  pprintf("Generation %d\n", generation_counter);
-  pop.incorporate(pop.breed());                // add new bred individual
-  individual new_guy = pop.tournament().copy();
-  new_guy.mutate();
-  pop.incorporate(new_guy);                    // add new mutated individual
+  delay(1000); ++seconds;                      // heartbeat
+  ledToggle(BODY_RGB_BLUE_PIN);
+  pprintf("\n");                               // print status information
+  pprintf("Seconds %d\n", seconds);
   pprintf("best fitness is %d\n", pop.best_fitness());
-  pprintf("mean fitness is ");
-  print(pop.mean_fitness());            // output mean score
-  pprintf("\n");
+  pprintf("mean fitness is "); print(pop.mean_fitness()); pprintf("\n");
   pprintf("best individual is %d long and is %s\n", pop.best().size(), pop.best().representation);
 }
 
