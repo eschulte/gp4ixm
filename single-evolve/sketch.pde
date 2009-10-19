@@ -5,12 +5,14 @@
  * Sketch author: Eric Schulte
  *
  */
-#define POP_SIZE 24
+#define POP_SIZE 100
 #define IND_SIZE 24
 #define BUILDING_BLOCKS "0123456789x+-*/"
 #define DEFAULT_VAL 0
-#define MUTATION_TICK 100                     // ms per mutation
-#define BREEDING_TICK 100                     // ms per breeding
+#define MUTATION_PROB 4                        // PROB/SIZE = chance_mut of each spot in rep.
+#define MUTATION_TICK 10                       // ms per mutation
+#define BREEDING_TICK 10                       // ms per breeding
+#define INJECTION_TICK 100                     // ms per breeding
 #define CHECK_SIZE 10
 #define TOURNAMENT_SIZE 4
 
@@ -89,12 +91,12 @@ struct individual {
   };
 };
 int individual::score() {
-  int values[CHECK_SIZE];
+  // int values[CHECK_SIZE];
   fitness = 0;
   int difference;
-  for(int i=0; i<CHECK_SIZE; i++) values[i] = random(10);
+  // for(int i=0; i<CHECK_SIZE; i++) values[i] = random(10);
   for(int i=0; i<CHECK_SIZE; ++i) {
-    difference = (evaluate(values[i], goal) - evaluate(values[i], representation));
+    difference = (evaluate(i, goal) - evaluate(i, representation));
     if (difference < 0)
       fitness = fitness - difference;
     else
@@ -104,12 +106,29 @@ int individual::score() {
 }
 void individual::mutate() {                    // mutate an individual (each place change 1/size)
   char possibilities[16] = BUILDING_BLOCKS;
-  for(int i=0; i<size(); ++i) {
-    if(random(size()) == 1)
+  for(int i=0; i<size(); ++i)
+    if(random(size()) == MUTATION_PROB)
       representation[i] = possibilities[random(15)];
-  }
   score();
 }
+
+/*
+ * Helper Functions
+ */
+individual new_ind() {                         // randomly generate a new individual
+  individual ind;
+  int index = 0;
+  ind.fitness = -1;
+  char possibilities[16] = BUILDING_BLOCKS;
+  for(int i = 0; i < random(IND_SIZE); ++i) {
+    ind.representation[i] = possibilities[random(15)];
+    index = i;
+  }
+  ind.representation[index+1] = '\0';
+  ind.score();                                 // evaluate the fitness of the new individual
+  return ind;
+}
+
 individual crossover(individual mother, individual father) {
   individual child;
   int shortest = mother.size();
@@ -188,26 +207,15 @@ static void do_breed(u32 when) {
   pop.incorporate(pop.breed());
   Alarms.set(Alarms.currentAlarmNumber(), when+BREEDING_TICK);
 }
-
-/*
- * Helper Functions
- */
-individual new_ind() {                         // randomly generate a new individual
-  individual ind;
-  int index = 0;
-  ind.fitness = -1;
-  char possibilities[16] = BUILDING_BLOCKS;
-  for(int i = 0; i < random(IND_SIZE); ++i) {
-    ind.representation[i] = possibilities[random(15)];
-    index = i;
-  }
-  ind.representation[index+1] = '\0';
-  ind.score();                                 // evaluate the fitness of the new individual
-  return ind;
+static void do_inject(u32 when) {
+  pop.incorporate(new_ind());
+  Alarms.set(Alarms.currentAlarmNumber(), when+INJECTION_TICK);
 }
 
+/*
+ * Goal Updates
+ */
 int goal_seconds = 0;
-
 void newGoal(u8 * packet) {
   char ch;
   int goal_ind = 0;
@@ -215,7 +223,7 @@ void newGoal(u8 * packet) {
     pprintf("L bad '%#p'\n",packet);
     return;
   }
-  while(packetScanf(packet, "%c", &ch)) {       // extract the return path
+  while(packetScanf(packet, "%c", &ch)) {      // extract the return path
     goal[goal_ind] = ch;
     ++goal_ind;
   }
@@ -234,6 +242,8 @@ void setup() {
   Alarms.set(alarm_index,millis() + 1000);
   alarm_index = Alarms.create(do_breed);       // begin the breeding alarm
   Alarms.set(alarm_index,millis() + 1250);
+  alarm_index = Alarms.create(do_inject);      // begin the injection alarm
+  Alarms.set(alarm_index,millis() + 2000);
 }
 
 void loop() {
