@@ -109,6 +109,19 @@ void individual::mutate() {                    // mutate an individual (each pla
   }
   score();
 }
+individual crossover(individual mother, individual father) {
+  individual child;
+  int shortest = mother.size();
+  if (father.size() < shortest) shortest = father.size();
+  int crossover_point = random(shortest);
+  for(int i=0; i<crossover_point; i++)
+    child.representation[i] = mother.representation[i];
+  for(int i=crossover_point; i<shortest; i++)
+    child.representation[i] = father.representation[i];
+  child.representation[shortest] = '\0';
+  child.score();
+  return child;
+}
 
 /*
  * Population
@@ -186,31 +199,23 @@ individual new_ind() {                         // randomly generate a new indivi
   ind.score();                                 // evaluate the fitness of the new individual
   return ind;
 }
-individual crossover(individual mother, individual father) {
-  individual child;
-  int shortest = mother.size();
-  if (father.size() < shortest) shortest = father.size();
-  int crossover_point = random(shortest);
-  for(int i=0; i<crossover_point; i++)
-    child.representation[i] = mother.representation[i];
-  for(int i=crossover_point; i<shortest; i++)
-    child.representation[i] = father.representation[i];
-  child.representation[shortest] = '\0';
-  child.score();
-  return child;
-}
 
 void setup() {
   for(int i = 0; i < POP_SIZE; ++i)            // randomly generate a population
     pop.pop[i] = new_ind();
+  int alarm_index;
+  alarm_index = Alarms.create(do_mutate);      // begin the mutation alarm
+  Alarms.set(alarm_index,millis());
+  alarm_index = Alarms.create(do_breed);       // begin the breeding alarm
+  Alarms.set(alarm_index,millis());
 }
 
-int seconds = 0;
+int goal_seconds = 0;
 void loop() {
-  delay(1000); ++seconds;                      // heartbeat
+  delay(1000); ++goal_seconds;                 // heartbeat
   ledToggle(BODY_RGB_BLUE_PIN);
   pprintf("\n");                               // print status information
-  pprintf("Seconds %d\n", seconds);
+  pprintf("Seconds %d\n", goal_seconds);
   pprintf("best fitness is %d\n", pop.best_fitness());
   pprintf("mean fitness is "); print(pop.mean_fitness()); pprintf("\n");
   pprintf("best individual is %d long and is %s\n", pop.best().size(), pop.best().representation);
