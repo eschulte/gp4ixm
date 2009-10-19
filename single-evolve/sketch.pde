@@ -205,20 +205,20 @@ void setup() {
     pop.pop[i] = new_ind();
   int alarm_index;
   alarm_index = Alarms.create(do_mutate);      // begin the mutation alarm
-  Alarms.set(alarm_index,millis());
+  Alarms.set(alarm_index,millis() + 1000);
   alarm_index = Alarms.create(do_breed);       // begin the breeding alarm
-  Alarms.set(alarm_index,millis());
+  Alarms.set(alarm_index,millis() + 1250);
 }
 
 int goal_seconds = 0;
 void loop() {
   delay(1000); ++goal_seconds;                 // heartbeat
   ledToggle(BODY_RGB_BLUE_PIN);
-  pprintf("\n");                               // print status information
-  pprintf("Seconds %d\n", goal_seconds);
+  pprintf("seconds %d\n", goal_seconds);       // print status information
   pprintf("best fitness is %d\n", pop.best_fitness());
   pprintf("mean fitness is "); print(pop.mean_fitness()); pprintf("\n");
   pprintf("best individual is %d long and is %s\n", pop.best().size(), pop.best().representation);
+  pprintf(" \n");
 }
 
 #define SFB_SKETCH_CREATOR_ID B36_3(e,m,s)
