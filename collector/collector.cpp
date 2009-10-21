@@ -1,5 +1,7 @@
 #include "collector.h"
 #include "SFBRandom.h"          // For random(int)
+#include "SFBPacket.h"          // For packetSource
+#include "SFBReactor.h"         // For Body
 #include "SFBPrintf.h"          // For pprintf, etc
 #include "SFBAlarm.h"           // For Alarms, etc
 
@@ -80,6 +82,11 @@ void noticeCollector(u8 * packet) {
 }
 
 void collector_init() {
+  Collector collector;
   collector.initialized = false;
   Body.reflex('c', noticeCollector);
+}
+
+void report(int val) {
+  collector.report(val);
 }

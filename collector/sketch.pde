@@ -6,17 +6,18 @@
  * Sketch author: Eric Schulte
  *
  */
-#include collector.h
+#include "collector.h"
+
+int ident;
 
 void setup() {
-  ident = random(100);                             // my unique identity
   collector_init();
 }
 
 void loop() {
   delay(1000);
   ledToggle(BODY_RGB_BLUE_PIN);                    // heartbeat
-  collector.report(ident + random(20));            // repot quasi-random number
+  report(45);                                      // repot quasi-random number
 }
 
 #define SFB_SKETCH_CREATOR_ID B36_3(e,m,s)
