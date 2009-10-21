@@ -25,7 +25,7 @@ char reverseStep(char step) {
     }
 }
 
-void Collector::report (int val) {
+void Collector::report (const char * format, ...) {
   if (initialized) {
     int ind = 0;
     while(path[ind] != '\0') ++ind;       // rewind to the end of the string
@@ -87,6 +87,7 @@ void collector_init() {
   Body.reflex('c', noticeCollector);
 }
 
-void report(int val) {
-  collector.report(val);
+void report(const char * format, ...) {
+  va_list ap;
+  collector.report(format, ap);
 }

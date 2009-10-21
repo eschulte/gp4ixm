@@ -13,6 +13,6 @@
 
 void collector_init();
 
-void report(int val);
+void report(const char * format, ...);
 
 #endif /* collector_H */
