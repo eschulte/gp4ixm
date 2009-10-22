@@ -16,8 +16,10 @@ void setup() {
 
 void loop() {
   delay(1000);
-  ledToggle(BODY_RGB_BLUE_PIN);                    // heartbeat
-  report(45);                                      // repot quasi-random number
+  ledToggle(BODY_RGB_BLUE_PIN);                    // blue heartbeat
+  report_int(45);                                  // repot an integer
+  report_double(3.14159);                          // repot a double
+  report_string("schulte");                        // repot a string
 }
 
 #define SFB_SKETCH_CREATOR_ID B36_3(e,m,s)

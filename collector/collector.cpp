@@ -2,6 +2,7 @@
 #include "SFBRandom.h"          // For random(int)
 #include "SFBPacket.h"          // For packetSource
 #include "SFBReactor.h"         // For Body
+#include "SFBPrint.h"           // For facePrint
 #include "SFBPrintf.h"          // For pprintf, etc
 #include "SFBAlarm.h"           // For Alarms, etc
 
@@ -12,32 +13,56 @@ struct Collector {
   int  count;                 // keep track of the last update
   u32  out_face;              // the immediate face through which to send data back
   char path[MAX_DIST];        // the path back to the central scrutinizer
-  void report(int val);       // reporting string "Rd1Rd2Rd3Rd4cvalue d4d3d2d1\n"
+  int ind;                    // counter used by report_prefix/postfix
+  // a variety of functions for reporting back to the central scrutinizer
+  void report_prefix();
+  void report_postfix();
+  void report_string(const char * val) {
+    if (initialized) {
+      report_prefix();
+      facePrintf(out_face, "c%s ", val);
+      report_postfix();
+    }
+  }
+  void report_double(double val) {
+    if (initialized) {
+      report_prefix();
+      facePrintf(out_face, "c"); facePrint(out_face, val); facePrintf(out_face, " ");
+      report_postfix();
+    }
+  }
+  void report_int(int val) {
+    if (initialized) {
+      report_prefix();
+      facePrintf(out_face, "c%d ", val);
+      report_postfix();
+    }
+  }
 };
 Collector collector;
 
 char reverseStep(char step) {
   switch(step) {
-    case 'f': return 'f';
-    case 'l': return 'r';
-    case 'r': return 'l';
-    default:  pprintf("L hork on %c\n", step); return 'z';
-    }
+  case 'f': return 'f';
+  case 'l': return 'r';
+  case 'r': return 'l';
+  default:  pprintf("L hork on %c\n", step); return 'z';
+  }
 }
 
-void Collector::report (int val) {
-  if (initialized) {
-    int ind = 0;
-    while(path[ind] != '\0') ++ind;       // rewind to the end of the string
-    while(ind > 0) {                      // then step back to front building an R packet
-      --ind; facePrintf(out_face, "R%c", reverseStep(path[ind]));
-    }
-    facePrintf(out_face, "c%d ", val);    // print out our value
-    while(path[ind] != '\0') {            // then step back to the end recording position
-      facePrintf(out_face, "%c", path[ind]); ++ind;
-    }
-    facePrintf(out_face, "\n");           // end the packet
+void Collector::report_prefix() {
+  ind = 0;
+  while(path[ind] != '\0') ++ind;       // rewind to the end of the string
+  while(ind > 0) {                      // then step back to front building an R packet
+    --ind; facePrintf(out_face, "R%c", reverseStep(path[ind]));
   }
+}
+
+void Collector::report_postfix() {
+  while(path[ind] != '\0') {            // then step back to the end recording position
+    facePrintf(out_face, "%c", path[ind]); ++ind;
+  }
+  facePrintf(out_face, "\n");           // end the packet
 }
 
 void noticeCollector(u8 * packet) {
@@ -87,6 +112,14 @@ void collector_init() {
   Body.reflex('c', noticeCollector);
 }
 
-void report(int val) {
-  collector.report(val);
+void report_int(int val) {
+  collector.report_int(val);
+}
+
+void report_string(const char * val) {
+  collector.report_string(val);
+}
+
+void report_double(double val) {
+  collector.report_double(val);
 }
