@@ -131,14 +131,19 @@ individual new_ind() {                         // randomly generate a new indivi
 
 individual crossover(individual mother, individual father) {
   individual child;
-  int shortest = mother.size();
-  if (father.size() < shortest) shortest = father.size();
-  int crossover_point = random(shortest);
-  for(int i=0; i<crossover_point; i++)
-    child.representation[i] = mother.representation[i];
-  for(int i=crossover_point; i<shortest; i++)
-    child.representation[i] = father.representation[i];
-  child.representation[shortest] = '\0';
+  int index = 0;
+  int mother_cross = random(mother.size());
+  int father_cross = random(father.size());
+  for(int i=0; i<mother_cross; i++) {
+    child.representation[index] = mother.representation[index];
+    ++index;
+  }
+  for(int i=father_cross; i<father.size(); i++) {
+    if (i >= IND_SIZE) break;                   // protect from overflowing individuals
+    child.representation[index] = father.representation[i];
+    ++index;
+  }
+  child.representation[index] = '\0';
   child.score();
   return child;
 }
