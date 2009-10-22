@@ -8,7 +8,7 @@ lang="en" xml:lang="en">
 <title>Distributed GP for IXM</title>
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2009-10-14 13:42:13 MDT"/>
+<meta name="generated" content="2009-10-22 16:37:29 MDT"/>
 <meta name="author" content="Eric Schulte"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -151,15 +151,61 @@ git submodule update
 <h3 id="collector"><a name="sec-3.1" id="sec-3.1"></a>collector </h3>
 <div class="outline-text-3" id="text-collector">
 
-<p>This is a sketch which allows boards to regularly report data tagged
-with their location information.  The sketch assumes that the boards
-satisfy a nominal 2D layout (no upside down boards).  The data and
-location information is sent back to a central collector (most likely
-a computer connected to the group of boards via USB).
+<p>This functionality is now extracted into a separate file
+<code>collector.cpp</code> which can be included into a sketch as demonstrated in
+<code>collector/sketch.pde</code> in the repository.
 </p>
 <p>
-Usage is as follows&hellip;
+It can be used to report integers, strings, or doubles to a laptop or
+central collector attached to a group of IXM boards.  Along with the
+value boards will report their location in terms of the path taken
+from the central collector to get to the board.  For example of path
+of "rflf" mean from the board immediately next to the laptop go&hellip;
+</p><ul>
+<li>
+out the right (from the laptop)
+</li>
+<li>
+forward (straight through the board out the far face)
+</li>
+<li>
+left (from the entering face)
+</li>
+<li>
+forward
+
+</li>
+</ul>
+
+<p>The boards need to be told where to report to before they will begin
+their reports.  So to use this functionality you must first send a <code>c</code>
+packet to your sketch containing an integer counter (boards will only
+pay attention if the integer counter is greater than what they've
+already seen).  So for example the following is the output of the
+example sketch in <code>collector/sketch.pde</code>&hellip;
 </p>
+
+
+
+<pre class="example">c2                  # user input
+
+c45                 # output from first board (no path)
+c3.14
+cschulte
+c45 r               # output from board to the right of first board
+c3.14 r
+cschulte r
+c45
+c3.14
+cschulte
+c45 r
+c3.14 r
+cschulte r
+</pre>
+
+
+
+
 </div>
 
 </div>
