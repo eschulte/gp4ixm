@@ -12,7 +12,7 @@ struct Collector {
   int  count;                 // keep track of the last update
   u32  out_face;              // the immediate face through which to send data back
   char path[MAX_DIST];        // the path back to the central scrutinizer
-  void report(int val);       // reporting string "Rd1Rd2Rd3Rd4cvalue d4d3d2d1\n"
+  void report(const char * format, ...);
 };
 Collector collector;
 
@@ -26,13 +26,14 @@ char reverseStep(char step) {
 }
 
 void Collector::report (const char * format, ...) {
+  va_list ap;
   if (initialized) {
     int ind = 0;
     while(path[ind] != '\0') ++ind;       // rewind to the end of the string
     while(ind > 0) {                      // then step back to front building an R packet
       --ind; facePrintf(out_face, "R%c", reverseStep(path[ind]));
     }
-    facePrintf(out_face, "c%d ", val);    // print out our value
+    facePrintf(out_face, format, ap);     // print out our value
     while(path[ind] != '\0') {            // then step back to the end recording position
       facePrintf(out_face, "%c", path[ind]); ++ind;
     }
