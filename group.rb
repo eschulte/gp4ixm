@@ -73,6 +73,7 @@ class Group
         "set output \"#{base}.png\""
       end),
      "set dgrid3d 30, 30",
+     "set zrange [0:100]",
      "set hidden3d",
      "splot \"#{self.data_file}\" with lines title 'fitness' "].join("\n")
   end
