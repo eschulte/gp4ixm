@@ -129,6 +129,7 @@ individual new_ind() {                         // randomly generate a new indivi
   return ind;
 }
 
+// as current implemented crossover segfaults!!
 individual crossover(individual mother, individual father) {
   individual child;
   int index = 0;
@@ -144,6 +145,7 @@ individual crossover(individual mother, individual father) {
     ++index;
   }
   child.representation[index] = '\0';
+  child = father.copy();
   child.score();
   return child;
 }
@@ -208,10 +210,10 @@ static void do_mutate(u32 when) {
   pop.incorporate(new_guy);
   Alarms.set(Alarms.currentAlarmNumber(), when+MUTATION_TICK);
 }
-static void do_breed(u32 when) {
-  pop.incorporate(pop.breed());
-  Alarms.set(Alarms.currentAlarmNumber(), when+BREEDING_TICK);
-}
+// static void do_breed(u32 when) {
+//   pop.incorporate(pop.breed());
+//   Alarms.set(Alarms.currentAlarmNumber(), when+BREEDING_TICK);
+// }
 static void do_inject(u32 when) {
   pop.incorporate(new_ind());
   Alarms.set(Alarms.currentAlarmNumber(), when+INJECTION_TICK);
@@ -245,8 +247,9 @@ void setup() {
   int alarm_index;
   alarm_index = Alarms.create(do_mutate);      // begin the mutation alarm
   Alarms.set(alarm_index,millis() + 1000);
-  alarm_index = Alarms.create(do_breed);       // begin the breeding alarm
-  Alarms.set(alarm_index,millis() + 1250);
+  // for now lets look at the effects of *not* breeding
+  // alarm_index = Alarms.create(do_breed);       // begin the breeding alarm
+  // Alarms.set(alarm_index,millis() + 1250);
   alarm_index = Alarms.create(do_inject);      // begin the injection alarm
   Alarms.set(alarm_index,millis() + 2000);
 }
