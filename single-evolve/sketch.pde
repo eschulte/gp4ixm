@@ -129,22 +129,21 @@ individual new_ind() {                         // randomly generate a new indivi
   return ind;
 }
 
-// as current implemented crossover segfaults!!
 individual crossover(individual mother, individual father) {
   individual child;
-  int index = 0;
-  int mother_cross = random(mother.size());
-  int father_cross = random(father.size());
-  for(int i=0; i<mother_cross; i++) {
-    child.representation[index] = mother.representation[index];
-    ++index;
-  }
-  for(int i=father_cross; i<father.size(); i++) {
-    if (i >= IND_SIZE) break;                   // protect from overflowing individuals
-    child.representation[index] = father.representation[i];
-    ++index;
-  }
-  child.representation[index] = '\0';
+  // int index = 0;
+  // int mother_cross = random(mother.size());
+  // int father_cross = random(father.size());
+  // for(int i=0; i<mother_cross; i++) {
+  //   child.representation[index] = mother.representation[index];
+  //   ++index;
+  // }
+  // for(int i=father_cross; i<father.size(); i++) {
+  //   if (i >= IND_SIZE) break;                   // protect from overflowing individuals
+  //   child.representation[index] = father.representation[i];
+  //   ++index;
+  // }
+  // child.representation[index] = '\0';
   child = father.copy();
   child.score();
   return child;
@@ -210,10 +209,10 @@ static void do_mutate(u32 when) {
   pop.incorporate(new_guy);
   Alarms.set(Alarms.currentAlarmNumber(), when+MUTATION_TICK);
 }
-// static void do_breed(u32 when) {
-//   pop.incorporate(pop.breed());
-//   Alarms.set(Alarms.currentAlarmNumber(), when+BREEDING_TICK);
-// }
+static void do_breed(u32 when) {
+  pop.incorporate(pop.breed());
+  Alarms.set(Alarms.currentAlarmNumber(), when+BREEDING_TICK);
+}
 static void do_inject(u32 when) {
   pop.incorporate(new_ind());
   Alarms.set(Alarms.currentAlarmNumber(), when+INJECTION_TICK);
@@ -247,9 +246,8 @@ void setup() {
   int alarm_index;
   alarm_index = Alarms.create(do_mutate);      // begin the mutation alarm
   Alarms.set(alarm_index,millis() + 1000);
-  // for now lets look at the effects of *not* breeding
-  // alarm_index = Alarms.create(do_breed);       // begin the breeding alarm
-  // Alarms.set(alarm_index,millis() + 1250);
+  alarm_index = Alarms.create(do_breed);       // begin the breeding alarm
+  Alarms.set(alarm_index,millis() + 1250);
   alarm_index = Alarms.create(do_inject);      // begin the injection alarm
   Alarms.set(alarm_index,millis() + 2000);
 }
