@@ -15,8 +15,9 @@
 #define INJECTION_TICK 100                     // ms per breeding
 #define CHECK_SIZE 10
 #define TOURNAMENT_SIZE 4
+#define MAX_GOAL_SIZE 64
 
-char goal[100] = "xx*";
+char goal[MAX_GOAL_SIZE];
 
 /*
  * Reverse Polish Notation Calculator
@@ -131,20 +132,19 @@ individual new_ind() {                         // randomly generate a new indivi
 
 individual crossover(individual mother, individual father) {
   individual child;
-  // int index = 0;
-  // int mother_cross = random(mother.size());
-  // int father_cross = random(father.size());
-  // for(int i=0; i<mother_cross; i++) {
-  //   child.representation[index] = mother.representation[index];
-  //   ++index;
-  // }
-  // for(int i=father_cross; i<father.size(); i++) {
-  //   if (i >= IND_SIZE) break;                   // protect from overflowing individuals
-  //   child.representation[index] = father.representation[i];
-  //   ++index;
-  // }
-  // child.representation[index] = '\0';
-  child = father.copy();
+  int mother_cross = random(mother.size()-1);
+  int father_cross = random(father.size()-1);
+  int index = 0;
+  while(index < mother_cross) {
+    child.representation[index] = mother.representation[index];
+    ++index;
+  }
+  for(int i=father_cross; i<(father.size() - 1); ++i) {
+    if (i >= (IND_SIZE - 1)) break;            // protect from overflowing individuals
+    child.representation[index] = father.representation[i];
+    ++index;
+  }
+  child.representation[index] = '\0';
   child.score();
   return child;
 }
@@ -226,20 +226,24 @@ void newGoal(u8 * packet) {
   char ch;
   int goal_ind = 0;
   if (packetScanf(packet, "g ") != 2) {
-    pprintf("L bad '%#p'\n",packet);
+    pprintf("L bad goal: '%#p'\n",packet);
     return;
   }
-  while(packetScanf(packet, "%c", &ch)) {      // extract the return path
+  while((packetScanf(packet, "%c", &ch)) && goal_ind < MAX_GOAL_SIZE) {
     goal[goal_ind] = ch;
     ++goal_ind;
   }
-  goal_seconds = 0;
   goal[goal_ind] = '\0';
+  goal_seconds = 0;
   pop.rescore();
   pprintf("new goal is %s\n", goal);
 }
 
 void setup() {
+  goal[0] = 'x';
+  goal[1] = 'x';
+  goal[2] = '*';
+  goal[3] = '\0';
   Body.reflex('g', newGoal);                   // reset the goal function.
   for(int i = 0; i < POP_SIZE; ++i)            // randomly generate a population
     pop.pop[i] = new_ind();
