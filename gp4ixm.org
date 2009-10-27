@@ -134,6 +134,58 @@ to run the scrutinizer
 This sketch allows boards to evaluate strings of integers and
 operators (=+=, =-=, =*=, =/=) on board using reverse polish notation.
 
+* Issues
+
+** segfault (possibly crossover)
+
+at commit 36b2f62205e6b1564987d819aee282319664543a
+
+still segfaulting, but seems to be caused by large goals, as show in
+this example output
+#+begin_example 
+34 second on xxxx***
+best fitness is 0
+mean fitness is 153.19
+best individual is 14 long and is 8+**8xx*x1/x**
+g 9x8x7x6x5**++*-*
+new goal is 9x8x7x6x5**++*-*
+ 
+1 second on 9x8x7x6x5**++*-*
+best fitness is 64410
+mean fitness is 74313.37
+best individual is 14 long and is 81**8xx*-1/x**
+ 
+2 second on 9x8x7x6x5**++*-*
+best fitness is 64125
+mean fitness is 64353.00
+best individual is 8 long and is xx*-1/1*
+ 
+3 second on 9x8x7x6x5**++*-*
+best fitness is 61966
+mean fitness is 64070.36
+best individual is 17 long and is 311*88**8-x*-1/1*
+ 
+4 second on 9x8x7x6x5**++*-*
+best fitness is 61641
+mean fitness is 63532.51
+best individual is 17 long and is 811*8-23xx8*-1/9*
+ 
+5 second on 9x8x7x6x5**++*-*
+best fitness is 47562
+mean fitness is 61740.08
+best individual is 17 long and is 311788**8-x*-1/1*
+ 
+6 second on 9x8x7x6x5**++*-*
+best fitness is 41028
+mean fitness is 57034.68
+best individual is 17 long and is 315788**8-x*-1/5*
+ 
+7 second on 9x8x7x6x5**++*-*
+Ln Mon Oct 26 18:02:06 2009 [North baud rate set to 9600]
+  C-c C-c%                                                                                                          
+$
+#+end_example
+
 * COMMENT publishing
 #+begin_src emacs-lisp :results silent
   (setq gp4ixm-dir (file-name-directory (or load-file-name buffer-file-name)))
