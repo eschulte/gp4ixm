@@ -41,8 +41,8 @@ class Group
 
   # update this group with a packet
   def update(packet)
-    if packet.match(/^c(\d+) (.+)/)
-      new_b = Board.new($2, Integer($1))
+    if packet.match(/^c([\.\d]+) (.+)/)
+      new_b = Board.new($2, Float($1))
       remaining = self.boards.reject{ |b| b.x_y == new_b.x_y }
       self.boards = remaining << new_b
       self.fill_boards
