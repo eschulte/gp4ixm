@@ -272,15 +272,15 @@ void newGoal(u8 * packet) {
     ++goal_ind;
   }
   goal[goal_ind] = '\0';
-  goal_seconds = 0;
   pop.rescore();
-  if (old_goal != goal) {              // propigate the goal to neighbors if it's new
-    ledToggle(BODY_RGB_RED_PIN);       // indicate that the new goal has arrived
+  if ((old_goal != goal) && (goal_seconds > 2)) { // check if the new goal is new
+    goal_seconds = 0;
+    ledToggle(BODY_RGB_RED_PIN);
     delay(250);
     ledToggle(BODY_RGB_RED_PIN);
     pprintf("g %s\n", goal);
-  } else {
-    ledToggle(BODY_RGB_GREEN_PIN);     // indicate seen this before
+  } else {                                        // indicate seen this before
+    ledToggle(BODY_RGB_GREEN_PIN);
     delay(250);
     ledToggle(BODY_RGB_GREEN_PIN);
   }
@@ -302,6 +302,11 @@ void acceptIndividual(u8 * packet) {
   }
   ind.representation[index] = '\0';
   ind.score();
+  if(ind.fitness < pop.best_fitness()) {
+      ledToggle(BODY_RGB_BLUE_PIN);
+      delay(250);
+      ledToggle(BODY_RGB_BLUE_PIN);
+  }
   pop.incorporate(ind);
 }
 
@@ -327,8 +332,7 @@ void setup() {
 }
 
 void loop() {
-  delay(1000); ++goal_seconds;                 // heartbeat
-  ledToggle(BODY_RGB_BLUE_PIN);
+  delay(1000); ++goal_seconds;
   pprintf("L \n");                             // print status information
   pprintf("L %d second on %s\n", goal_seconds, goal);
   pprintf("L best fitness is %d\n", pop.best_fitness());

@@ -143,8 +143,6 @@ operators (=+=, =-=, =*=, =/=) on board using reverse polish notation.
 | g 999xxx*****      |            0 | 19 seconds | 729x^3                |
 |                    |              |            |                       |
 
-
-
 ** possibility of over-clocking the ixm w/alarms
 this is currently handled by checking before every alarm is set and
 when trying to set an alarm in the past, it instead sets it for a
