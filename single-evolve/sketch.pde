@@ -13,6 +13,7 @@
 #define MUTATION_TICK 10                       // ms per mutation
 #define BREEDING_TICK 10                       // ms per breeding
 #define INJECTION_TICK 10                      // ms per breeding
+#define SHARING_TICK 500                       // ms per sharing
 #define CHECK_SIZE 10
 #define TOURNAMENT_SIZE 4
 #define MAX_GOAL_SIZE 64
@@ -150,6 +151,13 @@ individual crossover(individual mother, individual father) {
   return child;
 }
 
+void share(individual candidate) {
+  pprintf("i ");
+  for(int i=0; i<(candidate.size()-1); ++i)
+    pprintf("%c", candidate.representation[i]);
+  pprintf("\n");
+}
+
 /*
  * Population
  */
@@ -231,9 +239,18 @@ static void do_inject(u32 when) {
   else
     Alarms.set(Alarms.currentAlarmNumber(), when+INJECTION_TICK);
 }
+static void do_share(u32 when) {
+  share(pop.tournament());
+  if (when+INJECTION_TICK < millis()) {
+    pprintf("L sharing too fast\n");
+    Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
+  }
+  else
+    Alarms.set(Alarms.currentAlarmNumber(), when+SHARING_TICK);
+}
 
 /*
- * Goal Updates
+ * Reflexes
  */
 int goal_seconds = 0;
 void newGoal(u8 * packet) {
@@ -253,12 +270,31 @@ void newGoal(u8 * packet) {
   pprintf("new goal is %s\n", goal);
 }
 
+void acceptIndividual(u8 * packet) {
+  individual ind;
+  int index = 0;
+  ind.fitness = -1;
+  char ch;
+  if (packetScanf(packet, "i ") != 2) {
+    pprintf("L bad individual: '%#p'\n",packet);
+    return;
+  }
+  while((packetScanf(packet, "%c", &ch)) && index < IND_SIZE) {
+    ind.representation[index] = ch;
+    ++index;
+  }
+  ind.representation[index] = '\0';
+  ind.score();
+  pop.incorporate(ind);
+}
+
 void setup() {
   goal[0] = 'x';
   goal[1] = 'x';
   goal[2] = '*';
   goal[3] = '\0';
   Body.reflex('g', newGoal);                   // reset the goal function.
+  Body.reflex('i', acceptIndividual);          // incorporate a neighbor's individual
   for(int i = 0; i < POP_SIZE; ++i)            // randomly generate a population
     pop.pop[i] = new_ind();
   int alarm_index;
@@ -268,16 +304,18 @@ void setup() {
   Alarms.set(alarm_index,millis() + 1250);
   alarm_index = Alarms.create(do_inject);      // begin the injection alarm
   Alarms.set(alarm_index,millis() + 2000);
+  alarm_index = Alarms.create(do_share);       // begin the share alarm
+  Alarms.set(alarm_index,millis() + 2000);
 }
 
 void loop() {
   delay(1000); ++goal_seconds;                 // heartbeat
   ledToggle(BODY_RGB_BLUE_PIN);
   pprintf(" \n");                              // print status information
-  pprintf("%d second on %s\n", goal_seconds, goal);
-  pprintf("best fitness is %d\n", pop.best_fitness());
-  pprintf("mean fitness is "); print(pop.mean_fitness()); pprintf("\n");
-  pprintf("best individual is %d long and is %s\n", pop.best().size(), pop.best().representation);
+  pprintf("L %d second on %s\n", goal_seconds, goal);
+  pprintf("L best fitness is %d\n", pop.best_fitness());
+  pprintf("L mean fitness is "); print(pop.mean_fitness()); pprintf("\n");
+  pprintf("L best individual is %d long and is %s\n", pop.best().size(), pop.best().representation);
 }
 
 #define SFB_SKETCH_CREATOR_ID B36_3(e,m,s)
