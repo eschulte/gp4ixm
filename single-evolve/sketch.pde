@@ -227,10 +227,10 @@ static void do_mutate(u32 when) {
 static void do_breed(u32 when) {
   pop.incorporate(pop.breed());
   if (when+BREEDING_TICK < millis()) {
-    pprintf("L breeding to fast\n");
+    pprintf("L breeding too fast\n");
     Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
-  }
-  Alarms.set(Alarms.currentAlarmNumber(), when+BREEDING_TICK);
+  } else
+    Alarms.set(Alarms.currentAlarmNumber(), when+BREEDING_TICK);
 }
 static void do_inject(u32 when) {
   pop.incorporate(new_ind());
