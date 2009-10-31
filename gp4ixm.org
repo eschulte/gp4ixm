@@ -137,13 +137,20 @@ operators (=+=, =-=, =*=, =/=) on board using reverse polish notation.
 * Issues / Notes
 ** hard goals
 
-| goal               | best time to solution |
-|--------------------+-----------------------|
-| g 9x8x7x6x5**++*-* | forever               |
-| g 999xxx*****      | 19 seconds            |
-|                    |                       |
+| goal               | best fitness | after      |
+|--------------------+--------------+------------|
+| g 9x8x7x6x5**++*-* |          474 |            |
+| g 999xxx*****      |            0 | 19 seconds |
+|                    |              |            |
 
+** possibility of over-clocking the ixm w/alarms
+this is currently handled by checking before every alarm is set and
+when trying to set an alarm in the past, it instead sets it for a
+second in the future.
 
+currently this only happens when a new goal is being processed (which
+makes sense, because that triggers a re-evaluation of every individual
+in the population)
   
 ** DONE segfault (possibly crossover)
 
