@@ -65,8 +65,8 @@ int evaluate(int x, char * representation) {
       rpn_stack.push_value((ch - 48));
     else if (ch == 'x')                        // if x then push x's value
       rpn_stack.push_value(x);
-    else                                       // apply operator to rpn_stack
-      rpn_stack.apply(ch);
+    else if (ch == '+' || ch == '-' || ch == '*' || ch == '/')
+      rpn_stack.apply(ch);                     // apply operator to rpn_stack
   }
   return rpn_stack.value();
 }
@@ -255,6 +255,11 @@ static void do_share(u32 when) {
 int goal_seconds = 0;
 void newGoal(u8 * packet) {
   char ch;
+  char old_goal[MAX_GOAL_SIZE];
+  for(int i=0; i<MAX_GOAL_SIZE; ++i) {
+    old_goal[i] = goal[i];
+    if(goal[i] == '\0') break;
+  }
   int goal_ind = 0;
   if (packetScanf(packet, "g ") != 2) {
     pprintf("L bad goal: '%#p'\n",packet);
@@ -267,7 +272,17 @@ void newGoal(u8 * packet) {
   goal[goal_ind] = '\0';
   goal_seconds = 0;
   pop.rescore();
-  pprintf("new goal is %s\n", goal);
+  if (old_goal != goal) {              // propigate the goal to neighbors if it's new
+    ledToggle(BODY_RGB_RED_PIN);       // indicate that the new goal has arrived
+    delay(250);
+    ledToggle(BODY_RGB_RED_PIN);
+    pprintf("g %s\n", goal);
+  } else {
+    ledToggle(BODY_RGB_GREEN_PIN);     // indicate seen this before
+    delay(250);
+    ledToggle(BODY_RGB_GREEN_PIN);
+  }
+  pprintf("L new goal is %s\n", goal);
 }
 
 void acceptIndividual(u8 * packet) {
@@ -311,7 +326,7 @@ void setup() {
 void loop() {
   delay(1000); ++goal_seconds;                 // heartbeat
   ledToggle(BODY_RGB_BLUE_PIN);
-  pprintf(" \n");                              // print status information
+  pprintf("L \n");                             // print status information
   pprintf("L %d second on %s\n", goal_seconds, goal);
   pprintf("L best fitness is %d\n", pop.best_fitness());
   pprintf("L mean fitness is "); print(pop.mean_fitness()); pprintf("\n");
