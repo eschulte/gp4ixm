@@ -137,11 +137,13 @@ operators (=+=, =-=, =*=, =/=) on board using reverse polish notation.
 * Issues / Notes
 ** hard goals
 
-| goal               | best fitness | after      |
-|--------------------+--------------+------------|
-| g 9x8x7x6x5**++*-* |          474 |            |
-| g 999xxx*****      |            0 | 19 seconds |
-|                    |              |            |
+| goal               | best fitness | after      | meaning               |
+|--------------------+--------------+------------+-----------------------|
+| g 9x8x7x6x5**++*-* |          474 |            | x(x(30x + x + 7) - 8) |
+| g 999xxx*****      |            0 | 19 seconds | 729x^3                |
+|                    |              |            |                       |
+
+
 
 ** possibility of over-clocking the ixm w/alarms
 this is currently handled by checking before every alarm is set and

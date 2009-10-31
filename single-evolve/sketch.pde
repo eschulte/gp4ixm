@@ -5,6 +5,8 @@
  * Sketch author: Eric Schulte
  *
  */
+#include "collector.h"
+
 #define POP_SIZE 100
 #define IND_SIZE 24
 #define BUILDING_BLOCKS "0123456789x+-*/"
@@ -13,7 +15,7 @@
 #define MUTATION_TICK 10                       // ms per mutation
 #define BREEDING_TICK 10                       // ms per breeding
 #define INJECTION_TICK 10                      // ms per breeding
-#define SHARING_TICK 500                       // ms per sharing
+#define SHARING_TICK 2000                      // ms per sharing
 #define CHECK_SIZE 10
 #define TOURNAMENT_SIZE 4
 #define MAX_GOAL_SIZE 64
@@ -308,6 +310,7 @@ void setup() {
   goal[1] = 'x';
   goal[2] = '*';
   goal[3] = '\0';
+  collector_init();                            // initialize the collector
   Body.reflex('g', newGoal);                   // reset the goal function.
   Body.reflex('i', acceptIndividual);          // incorporate a neighbor's individual
   for(int i = 0; i < POP_SIZE; ++i)            // randomly generate a population
@@ -330,7 +333,9 @@ void loop() {
   pprintf("L %d second on %s\n", goal_seconds, goal);
   pprintf("L best fitness is %d\n", pop.best_fitness());
   pprintf("L mean fitness is "); print(pop.mean_fitness()); pprintf("\n");
-  pprintf("L best individual is %d long and is %s\n", pop.best().size(), pop.best().representation);
+  pprintf("L best individual is %d long and is %s\n",
+          pop.best().size(), pop.best().representation);
+  report_double(pop.mean_fitness());
 }
 
 #define SFB_SKETCH_CREATOR_ID B36_3(e,m,s)
