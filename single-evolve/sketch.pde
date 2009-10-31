@@ -15,7 +15,7 @@
 #define MUTATION_TICK 10                       // ms per mutation
 #define BREEDING_TICK 10                       // ms per breeding
 #define INJECTION_TICK 10                      // ms per breeding
-#define SHARING_TICK 2000                      // ms per sharing
+#define SHARING_TICK 500                       // ms per sharing
 #define CHECK_SIZE 10
 #define TOURNAMENT_SIZE 4
 #define MAX_GOAL_SIZE 64
@@ -166,6 +166,10 @@ void share(individual candidate) {
 struct population {
   individual pop[POP_SIZE];
   void       rescore();
+  void       reset() {
+    for(int i = 0; i < POP_SIZE; ++i)
+      pop[i] = new_ind();
+  }
   void       incorporate(individual ind);
   individual tournament();
   individual breed();
@@ -316,8 +320,7 @@ void setup() {
   collector_init();                            // initialize the collector
   Body.reflex('g', newGoal);                   // reset the goal function.
   Body.reflex('i', acceptIndividual);          // incorporate a neighbor's individual
-  for(int i = 0; i < POP_SIZE; ++i)            // randomly generate a population
-    pop.pop[i] = new_ind();
+  pop.reset();                                 // randomly generate a population
   int alarm_index;
   alarm_index = Alarms.create(do_mutate);      // begin the mutation alarm
   Alarms.set(alarm_index,millis() + 1000);
@@ -338,6 +341,7 @@ void loop() {
   pprintf("L best individual is %d long and is %s\n",
           pop.best().size(), pop.best().representation);
   report_double(pop.mean_fitness());
+  if (buttonDown()) pop.reset();
 }
 
 #define SFB_SKETCH_CREATOR_ID B36_3(e,m,s)
