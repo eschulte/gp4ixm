@@ -256,35 +256,33 @@ static void do_share(u32 when) {
  */
 int goal_seconds = 0;
 void newGoal(u8 * packet) {
+  bool new_p = false;
   char ch;
-  char old_goal[MAX_GOAL_SIZE];
-  for(int i=0; i<MAX_GOAL_SIZE; ++i) {
-    old_goal[i] = goal[i];
-    if(goal[i] == '\0') break;
-  }
   int goal_ind = 0;
   if (packetScanf(packet, "g ") != 2) {
     pprintf("L bad goal: '%#p'\n",packet);
     return;
   }
-  while((packetScanf(packet, "%c", &ch)) && goal_ind < MAX_GOAL_SIZE) {
+  while((packetScanf(packet, "%c", &ch)) && (goal_ind < MAX_GOAL_SIZE)) {
+    if(goal[goal_ind] != ch)
+      new_p = true;
     goal[goal_ind] = ch;
     ++goal_ind;
   }
   goal[goal_ind] = '\0';
-  pop.rescore();
-  if ((old_goal != goal) && (goal_seconds > 2)) { // check if the new goal is new
+  if (new_p) {                                    // check if the new goal is new
+    ledToggle(BODY_RGB_RED_PIN);
     goal_seconds = 0;
-    ledToggle(BODY_RGB_RED_PIN);
+    pop.rescore();
     delay(250);
-    ledToggle(BODY_RGB_RED_PIN);
     pprintf("g %s\n", goal);
+    pprintf("L new goal is %s\n", goal);
+    ledToggle(BODY_RGB_RED_PIN);
   } else {                                        // indicate seen this before
     ledToggle(BODY_RGB_GREEN_PIN);
     delay(250);
     ledToggle(BODY_RGB_GREEN_PIN);
   }
-  pprintf("L new goal is %s\n", goal);
 }
 
 void acceptIndividual(u8 * packet) {
