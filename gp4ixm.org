@@ -135,9 +135,16 @@ This sketch allows boards to evaluate strings of integers and
 operators (=+=, =-=, =*=, =/=) on board using reverse polish notation.
 
 * Issues
+** DONE segfault (possibly crossover)
 
-** segfault (possibly crossover)
+problem is in segfault, but it may not be noticed unless there are
+large goals
 
+we're copying past the end of our strings...
+
+checking for end-of-string characters seems to help.
+
+*** initial
 at commit 36b2f62205e6b1564987d819aee282319664543a
 
 still segfaulting, but seems to be caused by large goals, as show in
@@ -185,6 +192,10 @@ Ln Mon Oct 26 18:02:06 2009 [North baud rate set to 9600]
   C-c C-c%                                                                                                          
 $
 #+end_example
+
+*** does it segfault w/crossover commented out?
+It seems that with crossover commented out, there is no possibility of
+segfault.
 
 * COMMENT publishing
 #+begin_src emacs-lisp :results silent

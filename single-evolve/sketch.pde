@@ -135,12 +135,13 @@ individual crossover(individual mother, individual father) {
   int mother_cross = random(mother.size()-1);
   int father_cross = random(father.size()-1);
   int index = 0;
-  while(index < mother_cross) {
-    child.representation[index] = mother.representation[index];
+  for(int i=0; i<mother_cross; ++i) {
+    if (mother.representation[i] == '\0') break;
+    child.representation[index] = mother.representation[i];
     ++index;
   }
   for(int i=father_cross; i<(father.size() - 1); ++i) {
-    if (i >= (IND_SIZE - 1)) break;            // protect from overflowing individuals
+    if ((i >= (IND_SIZE - 1)) || (father.representation[i] == '\0')) break;
     child.representation[index] = father.representation[i];
     ++index;
   }
