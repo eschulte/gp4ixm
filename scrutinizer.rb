@@ -18,10 +18,10 @@ require 'group.rb'
 
 # create the ixm object
 puts "initializing ixm connection"
-ixm = LibIXM.new(:sfbprog_path =>   '/home/eschulte/bin/sfbprog', # path for sfbprog or sfbprog.exe
-                 :sfbprog_args =>   '',                           # additional arguments
-                 :sfbprog_device => '/dev/ttyUSB0',               # device for serial-over-usb
-                 :sfbprog_sketch => 'collector/sketch.hex')       # sketch
+ixm = LibIXM.new(:sfbprog_path =>   '/Users/eschulte/bin/sfbprog', # path for sfbprog or sfbprog.exe
+                 :sfbprog_args =>   '',                            # additional arguments
+                 :sfbprog_device => '/dev/tty.usbserial-FTE5HPVE', # device for serial-over-usb
+                 :sfbprog_sketch => 'single-evolve/sketch.hex')    # sketch
 
 puts "creating board group"
 g = Group.new
