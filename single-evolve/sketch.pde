@@ -12,7 +12,7 @@
 #define MUTATION_PROB 4                        // PROB/SIZE = chance_mut of each spot in rep.
 #define MUTATION_TICK 10                       // ms per mutation
 #define BREEDING_TICK 10                       // ms per breeding
-#define INJECTION_TICK 100                     // ms per breeding
+#define INJECTION_TICK 10                      // ms per breeding
 #define CHECK_SIZE 10
 #define TOURNAMENT_SIZE 4
 #define MAX_GOAL_SIZE 64
@@ -208,15 +208,28 @@ static void do_mutate(u32 when) {
   individual new_guy = pop.tournament().copy();
   new_guy.mutate();
   pop.incorporate(new_guy);
-  Alarms.set(Alarms.currentAlarmNumber(), when+MUTATION_TICK);
+  if (when+MUTATION_TICK < millis()){
+    pprintf("L mutating too fast\n");
+    Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
+  } else
+    Alarms.set(Alarms.currentAlarmNumber(), when+MUTATION_TICK);
 }
 static void do_breed(u32 when) {
   pop.incorporate(pop.breed());
+  if (when+BREEDING_TICK < millis()) {
+    pprintf("L breeding to fast\n");
+    Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
+  }
   Alarms.set(Alarms.currentAlarmNumber(), when+BREEDING_TICK);
 }
 static void do_inject(u32 when) {
   pop.incorporate(new_ind());
-  Alarms.set(Alarms.currentAlarmNumber(), when+INJECTION_TICK);
+  if (when+INJECTION_TICK < millis()) {
+    pprintf("L injecting too fast\n");
+    Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
+  }
+  else
+    Alarms.set(Alarms.currentAlarmNumber(), when+INJECTION_TICK);
 }
 
 /*

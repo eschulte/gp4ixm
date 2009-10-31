@@ -134,7 +134,17 @@ to run the scrutinizer
 This sketch allows boards to evaluate strings of integers and
 operators (=+=, =-=, =*=, =/=) on board using reverse polish notation.
 
-* Issues
+* Issues / Notes
+** hard goals
+
+| goal               | best time to solution |
+|--------------------+-----------------------|
+| g 9x8x7x6x5**++*-* | forever               |
+| g 999xxx*****      | 19 seconds            |
+|                    |                       |
+
+
+  
 ** DONE segfault (possibly crossover)
 
 problem is in segfault, but it may not be noticed unless there are
