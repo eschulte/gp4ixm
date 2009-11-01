@@ -11,16 +11,16 @@
 #define IND_SIZE 24
 #define BUILDING_BLOCKS "0123456789x+-*/"
 #define DEFAULT_VAL 0
-#define MUTATION_PROB 4                        // PROB/SIZE = chance_mut of each spot in rep.
-#define MUTATION_TICK 10                       // ms per mutation
-#define BREEDING_TICK 10                       // ms per breeding
-#define INJECTION_TICK 10                      // ms per breeding
-#define SHARING_TICK 500                       // ms per sharing
 #define CHECK_SIZE 10
-#define TOURNAMENT_SIZE 4
 #define MAX_GOAL_SIZE 64
 
 char goal[MAX_GOAL_SIZE];
+int mutation_tick   = 10;                      // ms per mutation
+int breeding_tick   = 10;                      // ms per breeding
+int injection_tick  = 10;                      // ms per breeding
+int sharing_tick    = 500;                     // ms per sharing
+int tournament_size = 4;
+int mutation_prob   = 4;                       // PROB/SIZE = chance_mut of each spot in rep.
 
 /*
  * Reverse Polish Notation Calculator
@@ -111,7 +111,7 @@ int individual::score() {
 void individual::mutate() {                    // mutate an individual (each place change 1/size)
   char possibilities[16] = BUILDING_BLOCKS;
   for(int i=0; i<size(); ++i)
-    if(random(size()) == MUTATION_PROB)
+    if(random(size()) == mutation_prob)
       representation[i] = possibilities[random(15)];
   score();
 }
@@ -201,11 +201,11 @@ void population::incorporate(individual ind) { // add a new individual, evicting
   pop[worst_ind] = ind;
 }
 individual population::tournament() {          // select individual with tournament of size SIZE
-  individual fighters[TOURNAMENT_SIZE];
-  for(int i=0; i<TOURNAMENT_SIZE; ++i)
+  individual fighters[POP_SIZE];
+  for(int i=0; i<tournament_size; ++i)
     fighters[i] = pop[random(POP_SIZE)];
   individual winner = fighters[0];
-  for(int i=0; i<TOURNAMENT_SIZE; ++i)
+  for(int i=0; i<tournament_size; ++i)
     if(fighters[i].fitness < winner.fitness)
       winner = fighters[i];
   return winner;
@@ -222,37 +222,37 @@ static void do_mutate(u32 when) {
   individual new_guy = pop.tournament().copy();
   new_guy.mutate();
   pop.incorporate(new_guy);
-  if (when+MUTATION_TICK < millis()){
+  if (when+mutation_tick < millis()){
     pprintf("L mutating too fast\n");
     Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
   } else
-    Alarms.set(Alarms.currentAlarmNumber(), when+MUTATION_TICK);
+    Alarms.set(Alarms.currentAlarmNumber(), when+mutation_tick);
 }
 static void do_breed(u32 when) {
   pop.incorporate(pop.breed());
-  if (when+BREEDING_TICK < millis()) {
+  if (when+breeding_tick < millis()) {
     pprintf("L breeding too fast\n");
     Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
   } else
-    Alarms.set(Alarms.currentAlarmNumber(), when+BREEDING_TICK);
+    Alarms.set(Alarms.currentAlarmNumber(), when+breeding_tick);
 }
 static void do_inject(u32 when) {
   pop.incorporate(new_ind());
-  if (when+INJECTION_TICK < millis()) {
+  if (when+injection_tick < millis()) {
     pprintf("L injecting too fast\n");
     Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
   }
   else
-    Alarms.set(Alarms.currentAlarmNumber(), when+INJECTION_TICK);
+    Alarms.set(Alarms.currentAlarmNumber(), when+injection_tick);
 }
 static void do_share(u32 when) {
   share(pop.tournament());
-  if (when+INJECTION_TICK < millis()) {
+  if (when+injection_tick < millis()) {
     pprintf("L sharing too fast\n");
     Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
   }
   else
-    Alarms.set(Alarms.currentAlarmNumber(), when+SHARING_TICK);
+    Alarms.set(Alarms.currentAlarmNumber(), when+sharing_tick);
 }
 
 /*
@@ -312,12 +312,46 @@ void acceptIndividual(u8 * packet) {
   pop.incorporate(ind);
 }
 
+void reset() {
+  pop.reset();                                 // randomly generate a population
+  int alarm_index;
+  if(mutation_tick > 0) {
+    alarm_index = Alarms.create(do_mutate);    // begin the mutation alarm
+    Alarms.set(alarm_index,millis() + 1000);
+  }
+  if(breeding_tick > 0) {
+    alarm_index = Alarms.create(do_breed);     // begin the breeding alarm
+    Alarms.set(alarm_index,millis() + 1250);
+  }
+  if(injection_tick > 0) {
+    alarm_index = Alarms.create(do_inject);    // begin the injection alarm
+    Alarms.set(alarm_index,millis() + 1500);
+  }
+  if(sharing_tick) {
+    alarm_index = Alarms.create(do_share);     // begin the share alarm
+    Alarms.set(alarm_index,millis() + 1750);
+  }
+}
+
 void populationReset(u8 * packet) {
-  if (packetScanf(packet, "r ") != 2) {
+  if (packetScanf(packet, "r") != 1) {
     pprintf("L bad reset: '%#p'\n",packet);
     return;
   }
-  pop.reset();
+  char key = '\0';
+  int val = 0;
+  while (packetScanf(packet, "%c:%d", key, val)) {
+    switch(key) {
+    case 'm': mutation_tick = val;
+    case 'b': breeding_tick = val;
+    case 'i': injection_tick = val;
+    case 's': sharing_tick = val;
+    case 't': tournament_size = val;
+    case 'p': mutation_prob = val;
+    default: pprintf("L hork on key: %c\n", key);
+    }
+  }
+  reset();
 }
 
 void setup() {
@@ -329,16 +363,7 @@ void setup() {
   Body.reflex('g', newGoal);                   // reset the goal function.
   Body.reflex('i', acceptIndividual);          // incorporate a neighbor's individual
   Body.reflex('r', populationReset);           // reset the population (and settings)
-  pop.reset();                                 // randomly generate a population
-  int alarm_index;
-  alarm_index = Alarms.create(do_mutate);      // begin the mutation alarm
-  Alarms.set(alarm_index,millis() + 1000);
-  alarm_index = Alarms.create(do_breed);       // begin the breeding alarm
-  Alarms.set(alarm_index,millis() + 1250);
-  alarm_index = Alarms.create(do_inject);      // begin the injection alarm
-  Alarms.set(alarm_index,millis() + 2000);
-  alarm_index = Alarms.create(do_share);       // begin the share alarm
-  Alarms.set(alarm_index,millis() + 2000);
+  reset();
 }
 
 void loop() {
