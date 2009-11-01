@@ -135,6 +135,46 @@ This sketch allows boards to evaluate strings of integers and
 operators (=+=, =-=, =*=, =/=) on board using reverse polish notation.
 
 * Issues / Notes
+** new segfaults...
+this is the pre-fault output
+#+begin_example 
+  L 
+  L 6 second on xxxx***
+  L best fitness is 9965
+  L mean fitness is 14188.25
+  L best individual is 10 long and is 9x9+x92+**
+  i 9x9+x9x99x*x*
+  i 9x*x9+x+x92+**
+  i 9x9+x*2++x*
+  i 9x9+x9x99x*x*
+  i 9x9x9+x*2++x*
+  i 9x9+x9xx992+**
+  L 
+  L 7 second on xxxx***
+  L best fitness is 2892
+  L mean fitness is 12357.34
+  L best individual is 13 long and is 9x7+x9x9*x*x*
+  i 9x9x9+x*2++x*
+  i 9x9+x9x99x9+x+x92+**
+  i 9x9+x9x99x9+x+x92+**
+  i 9x9x9+x+xx9*x*x*
+  i 9x7+*9499**x*
+  i 9x9+x9x99x98x*2++x9*x*x*L
+  L 
+  L 8 second on xxxx***
+  L best fitness is 2892
+  L mean fitness is 9667.04
+  L best individual is 26 long and is 9x9+x9x99x9+x*2++x9*x*x*L
+  i 9x9+x9x99x9+x*2++x9*x*x*L
+  i 9x9+x9x99x9+x*2++x9*x*x*L
+  i 9x9+x9x99x9+x*2++x9*x*x*L
+  Ln Sun Nov  1 16:00:10 2009 [North baud rate set to 9600]
+#+end_example
+
+** size overflow
+It looks like passing individuals by value rather than by reference is
+overflowing the chips.  begin to change to passing by reference.
+
 ** hard goals
 
 | goal               | best fitness | after      | meaning               |

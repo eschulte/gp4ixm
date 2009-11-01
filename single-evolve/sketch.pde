@@ -133,19 +133,19 @@ individual new_ind() {                         // randomly generate a new indivi
   return ind;
 }
 
-individual crossover(individual mother, individual father) {
+individual crossover(individual * mother, individual * father) {
   individual child;
-  int mother_cross = random(mother.size());
-  int father_cross = random(father.size());
+  int mother_cross = random((*mother).size());
+  int father_cross = random((*father).size());
   int index = 0;
   for(int i=0; i<mother_cross; ++i) {
-    if (mother.representation[i] == '\0') break;
-    child.representation[index] = mother.representation[i];
+    if ((*mother).representation[i] == '\0') break;
+    child.representation[index] = (*mother).representation[i];
     ++index;
   }
-  for(int i=father_cross; i<father.size(); ++i) {
-    if ((i >= (IND_SIZE - 1)) || (father.representation[i] == '\0')) break;
-    child.representation[index] = father.representation[i];
+  for(int i=father_cross; i<(*father).size(); ++i) {
+    if ((i >= (IND_SIZE - 1)) || ((*father).representation[i] == '\0')) break;
+    child.representation[index] = (*father).representation[i];
     ++index;
   }
   child.representation[index] = '\0';
@@ -153,10 +153,10 @@ individual crossover(individual mother, individual father) {
   return child;
 }
 
-void share(individual candidate) {
+void share(individual * candidate) {
   pprintf("i ");
-  for(int i=0; i<candidate.size(); ++i)
-    pprintf("%c", candidate.representation[i]);
+  for(int i=0; i<(*candidate).size(); ++i)
+    pprintf("%c", (*candidate).representation[i]);
   pprintf("\n");
 }
 
@@ -171,11 +171,13 @@ struct population {
       pop[i] = new_ind();
   }
   void       incorporate(individual ind);
-  individual tournament();
+  individual * tournament();
   individual breed();
-  individual best() {
-    individual best = pop[0];
-    for(int i=0; i<POP_SIZE; ++i) if (pop[i].fitness < best.fitness) best = pop[i];
+  individual * best() {
+    individual * best = &pop[0];
+    for(int i=0; i<POP_SIZE; ++i)
+      if(pop[i].fitness < (*best).fitness)
+        best = &pop[i];
     return best;
   }
   int best_fitness() {
@@ -200,15 +202,15 @@ void population::incorporate(individual ind) { // add a new individual, evicting
       worst_ind = i;
   pop[worst_ind] = ind;
 }
-individual population::tournament() {          // select individual with tournament of size SIZE
-  individual fighters[POP_SIZE];
-  for(int i=0; i<tournament_size; ++i)
-    fighters[i] = pop[random(POP_SIZE)];
-  individual winner = fighters[0];
-  for(int i=0; i<tournament_size; ++i)
-    if(fighters[i].fitness < winner.fitness)
-      winner = fighters[i];
-  return winner;
+individual * population::tournament() {          // select individual with tournament of size SIZE
+  int winner = 0;
+  int challenger = 0;
+  for(int i=0; i<tournament_size; ++i) {
+    challenger = random(POP_SIZE);
+    if(pop[challenger].fitness < pop[winner].fitness)
+      winner = challenger;
+  }
+  return & pop[winner];
 }
 individual population::breed() {               // breed two members returning a new individual
   return crossover(tournament(), tournament());
@@ -219,7 +221,7 @@ population pop;
  * Alarms (Mutation and Breeding) eventually (Sharing and Data collection)
  */
 static void do_mutate(u32 when) {
-  individual new_guy = pop.tournament().copy();
+  individual new_guy = (*pop.tournament()).copy();
   new_guy.mutate();
   pop.incorporate(new_guy);
   if(mutation_tick > 0) {                      // don't reschedule if tick is 0
@@ -381,7 +383,7 @@ void loop() {
   pprintf("L best fitness is %d\n", pop.best_fitness());
   pprintf("L mean fitness is "); print(pop.mean_fitness()); pprintf("\n");
   pprintf("L best individual is %d long and is %s\n",
-          pop.best().size(), pop.best().representation);
+          (* pop.best()).size(), (* pop.best()).representation);
   report_double(pop.mean_fitness());
   if (buttonDown()) pop.reset();
 }
