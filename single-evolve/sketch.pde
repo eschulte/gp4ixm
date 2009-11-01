@@ -312,6 +312,14 @@ void acceptIndividual(u8 * packet) {
   pop.incorporate(ind);
 }
 
+void populationReset(u8 * packet) {
+  if (packetScanf(packet, "r ") != 2) {
+    pprintf("L bad reset: '%#p'\n",packet);
+    return;
+  }
+  pop.reset();
+}
+
 void setup() {
   goal[0] = 'x';
   goal[1] = 'x';
@@ -320,6 +328,7 @@ void setup() {
   collector_init();                            // initialize the collector
   Body.reflex('g', newGoal);                   // reset the goal function.
   Body.reflex('i', acceptIndividual);          // incorporate a neighbor's individual
+  Body.reflex('r', populationReset);           // reset the population (and settings)
   pop.reset();                                 // randomly generate a population
   int alarm_index;
   alarm_index = Alarms.create(do_mutate);      // begin the mutation alarm
