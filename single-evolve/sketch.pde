@@ -15,9 +15,9 @@
 #define MAX_GOAL_SIZE 64
 
 char goal[MAX_GOAL_SIZE];
-int mutation_tick   = 10;                      // ms per mutation
-int breeding_tick   = 10;                      // ms per breeding
-int injection_tick  = 10;                      // ms per breeding
+int mutation_tick   = 100;                     // ms per mutation
+int breeding_tick   = 100;                     // ms per breeding
+int injection_tick  = 100;                     // ms per breeding
 int sharing_tick    = 500;                     // ms per sharing
 int tournament_size = 4;
 int mutation_prob   = 4;                       // PROB/SIZE = chance_mut of each spot
