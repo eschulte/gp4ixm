@@ -93,6 +93,24 @@ struct individual {
     my_copy.fitness = fitness;
     return my_copy;
   };
+  bool check() {
+    bool ok = true;
+    char val;
+    for(int i=0; i<size(); i++) {
+      val = representation[i];
+      if(not (val == '0' || val == '1' || val == '2' || val == '3' || val == '4' ||
+              val == '5' || val == '6' || val == '7' || val == '8' || val == '9' ||
+              val == '-' || val == '+' || val == '/' || val == '*' || val == 'x')) {
+        ok = false;
+        pprintf("L bad value %c at [%d]\n", val, i);
+      }
+    }
+    if(size() > IND_SIZE) {
+      ok = false;
+      pprintf("L bad size %d\n", size());
+    }
+    return ok;
+  }
 };
 int individual::score() {
   // int values[CHECK_SIZE];
@@ -114,6 +132,7 @@ void individual::mutate() {                    // mutate an individual (each pla
     if(random(size()) == mutation_prob)
       representation[i] = possibilities[random(15)];
   score();
+  if(not check()) pprintf("L from mutate\n");
 }
 
 /*
@@ -130,6 +149,7 @@ individual new_ind() {                         // randomly generate a new indivi
   }
   ind.representation[index+1] = '\0';
   ind.score();                                 // evaluate the fitness of the new individual
+  if(not ind.check()) pprintf("L from new_ind\n");
   return ind;
 }
 
@@ -150,6 +170,7 @@ individual crossover(individual * mother, individual * father) {
   }
   child.representation[index] = '\0';
   child.score();
+  if(not child.check()) pprintf("L from crossover\n");
   return child;
 }
 
@@ -196,11 +217,13 @@ void population::rescore() {                   // re-evaluate the fitness of eve
     pop[i].score();
 }
 void population::incorporate(individual ind) { // add a new individual, evicting the worst
-  int worst_ind = 0;
-  for(int i=0; i<POP_SIZE; ++i)
-    if (pop[i].fitness > pop[worst_ind].fitness)
-      worst_ind = i;
-  pop[worst_ind] = ind;
+  if(ind.check()) {
+    int worst_ind = 0;
+    for(int i=0; i<POP_SIZE; ++i)
+      if (pop[i].fitness > pop[worst_ind].fitness)
+        worst_ind = i;
+    pop[worst_ind] = ind;
+  }
 }
 individual * population::tournament() {          // select individual with tournament of size SIZE
   int winner = 0;
