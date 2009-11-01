@@ -20,7 +20,7 @@ int breeding_tick   = 10;                      // ms per breeding
 int injection_tick  = 10;                      // ms per breeding
 int sharing_tick    = 500;                     // ms per sharing
 int tournament_size = 4;
-int mutation_prob   = 4;                       // PROB/SIZE = chance_mut of each spot in rep.
+int mutation_prob   = 4;                       // PROB/SIZE = chance_mut of each spot
 
 /*
  * Reverse Polish Notation Calculator
@@ -135,15 +135,15 @@ individual new_ind() {                         // randomly generate a new indivi
 
 individual crossover(individual mother, individual father) {
   individual child;
-  int mother_cross = random(mother.size()-1);
-  int father_cross = random(father.size()-1);
+  int mother_cross = random(mother.size());
+  int father_cross = random(father.size());
   int index = 0;
   for(int i=0; i<mother_cross; ++i) {
     if (mother.representation[i] == '\0') break;
     child.representation[index] = mother.representation[i];
     ++index;
   }
-  for(int i=father_cross; i<(father.size() - 1); ++i) {
+  for(int i=father_cross; i<father.size(); ++i) {
     if ((i >= (IND_SIZE - 1)) || (father.representation[i] == '\0')) break;
     child.representation[index] = father.representation[i];
     ++index;
@@ -155,7 +155,7 @@ individual crossover(individual mother, individual father) {
 
 void share(individual candidate) {
   pprintf("i ");
-  for(int i=0; i<(candidate.size()-1); ++i)
+  for(int i=0; i<candidate.size(); ++i)
     pprintf("%c", candidate.representation[i]);
   pprintf("\n");
 }
@@ -222,37 +222,45 @@ static void do_mutate(u32 when) {
   individual new_guy = pop.tournament().copy();
   new_guy.mutate();
   pop.incorporate(new_guy);
-  if (when+mutation_tick < millis()){
-    pprintf("L mutating too fast\n");
-    Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
-  } else
-    Alarms.set(Alarms.currentAlarmNumber(), when+mutation_tick);
+  if(mutation_tick > 0) {                      // don't reschedule if tick is 0
+    if (when+mutation_tick < millis()){
+      pprintf("L mutating too fast\n");
+      Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
+    } else
+      Alarms.set(Alarms.currentAlarmNumber(), when+mutation_tick);
+  }
 }
 static void do_breed(u32 when) {
   pop.incorporate(pop.breed());
-  if (when+breeding_tick < millis()) {
-    pprintf("L breeding too fast\n");
-    Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
-  } else
-    Alarms.set(Alarms.currentAlarmNumber(), when+breeding_tick);
+  if(breeding_tick > 0) {                      // don't reschedule if tick is 0
+    if (when+breeding_tick < millis()) {
+      pprintf("L breeding too fast\n");
+      Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
+    } else
+      Alarms.set(Alarms.currentAlarmNumber(), when+breeding_tick);
+  }
 }
 static void do_inject(u32 when) {
   pop.incorporate(new_ind());
-  if (when+injection_tick < millis()) {
-    pprintf("L injecting too fast\n");
-    Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
+  if(mutation_tick > 0) {                      // don't reschedule if tick is 0
+    if (when+injection_tick < millis()) {
+      pprintf("L injecting too fast\n");
+      Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
+    }
+    else
+      Alarms.set(Alarms.currentAlarmNumber(), when+injection_tick);
   }
-  else
-    Alarms.set(Alarms.currentAlarmNumber(), when+injection_tick);
 }
 static void do_share(u32 when) {
   share(pop.tournament());
-  if (when+injection_tick < millis()) {
-    pprintf("L sharing too fast\n");
-    Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
+  if(mutation_tick > 0) {                      // don't reschedule if tick is 0
+    if (when+injection_tick < millis()) {
+      pprintf("L sharing too fast\n");
+      Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
+    }
+    else
+      Alarms.set(Alarms.currentAlarmNumber(), when+sharing_tick);
   }
-  else
-    Alarms.set(Alarms.currentAlarmNumber(), when+sharing_tick);
 }
 
 /*
