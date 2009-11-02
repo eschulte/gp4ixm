@@ -41,8 +41,7 @@ puts "starting #{r_strings.size} runs"
 # set up the reflex
 ixm.attach_reflex(/^c/) do |packet|
   if packet.match(/^c([\.\d]+) (.*)/)
-    # print "."; STDOUT.flush;
-    puts "\t\t#{packet}"
+    print "."; STDOUT.flush;
     $current_file << "#{$1}\t#{$2}\n"
     $current_file.flush
   end
@@ -50,7 +49,7 @@ end
 
 count = 44
 r_strings.each do |r_s|
-  puts "\t#{r_s}"
+  puts "\n\t#{r_s}"
   $current_file =
     File.open("/tmp/experimenter/#{r_s.gsub(":",".").gsub(" ","_")}.log", "w")
   
