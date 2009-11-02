@@ -49,18 +49,21 @@ end
 
 count = 44
 r_strings.each do |r_s|
-  puts "\n\t#{r_s}"
-  $current_file =
-    File.open("/tmp/experimenter/#{r_s.gsub(":",".").gsub(" ","_")}.log", "w")
-  
-  # start up the ixm boards running with these settings
-  ixm << "c#{count} "
-  ixm << "g xxx**"
-  count += 1
-  start_time = Time.now
-  ixm << r_s
-  # let it run for a while
-  sleep 120
-  
-  $current_file.close
+  ["9", "xx*", "7xx*+", "987xxx*-+*+"].each_with_index do |goal, index|
+    puts "\n\t#{r_s}_#{index}"
+    $current_file =
+      File.open("/tmp/experimenter/#{r_s.gsub(":",".").gsub(" ","_")}_#{index}.log",
+                "w")
+    
+    # start up the ixm boards running with these settings
+    ixm << "c#{count} "
+    ixm << "g #{goal}"
+    count += 1
+    start_time = Time.now
+    ixm << r_s
+    # let it run for a while
+    sleep 120
+    
+    $current_file.close
+  end
 end
