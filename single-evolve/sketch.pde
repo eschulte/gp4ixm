@@ -143,7 +143,7 @@ individual new_ind() {                         // randomly generate a new indivi
   int index = 0;
   ind.fitness = -1;
   char possibilities[16] = BUILDING_BLOCKS;
-  for(int i = 0; i < random(IND_SIZE); ++i) {
+  for(int i = 0; i < random(IND_SIZE - 1); ++i) {
     ind.representation[i] = possibilities[random(15)];
     index = i;
   }
@@ -155,20 +155,19 @@ individual new_ind() {                         // randomly generate a new indivi
 
 individual crossover(individual * mother, individual * father) {
   individual child;
-  int mother_cross = random((*mother).size());
-  int father_cross = random((*father).size());
   int index = 0;
-  for(int i=0; i<mother_cross; ++i) {
-    if ((*mother).representation[i] == '\0') break;
-    child.representation[index] = (*mother).representation[i];
-    ++index;
+  int smaller = (*mother).size();
+  if((*father).size() < smaller) smaller = (*father).size();
+  if(IND_SIZE < smaller) smaller = IND_SIZE;
+  int crossover_point = random(smaller);
+  for(int i=0; i<smaller; ++i){
+    index = i;
+    if(i < crossover_point)
+      child.representation[index] = (*mother).representation[index];
+    else
+      child.representation[index] = (*father).representation[index];
   }
-  for(int i=father_cross; i<(*father).size(); ++i) {
-    if ((i >= (IND_SIZE - 1)) || ((*father).representation[i] == '\0')) break;
-    child.representation[index] = (*father).representation[i];
-    ++index;
-  }
-  child.representation[index] = '\0';
+  child.representation[index+1] = '\0';
   child.score();
   if(not child.check()) pprintf("L from crossover\n");
   return child;
