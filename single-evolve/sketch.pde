@@ -377,30 +377,12 @@ void populationReset(u8 * packet) {
     int val;
     while (packetScanf(packet, " %c:%d", &key, &val)) {
       switch(key) {
-      case 'm':
-        mutation_tick = val;
-        pprintf("L new value for mutation %d\n", mutation_tick);
-        break;
-      case 'b':
-        breeding_tick = val;
-        pprintf("L new value for breeding %d\n", breeding_tick);
-        break;
-      case 'i':
-        injection_tick = val;
-        pprintf("L new value for injection %d\n", injection_tick);
-        break;
-      case 's':
-        sharing_tick = val;
-        pprintf("L new value for sharing %d\n", sharing_tick);
-        break;
-      case 't':
-        tournament_size = val;
-        pprintf("L new value for tournament %d\n", tournament_size);
-        break;
-      case 'p':
-        mutation_prob = val;
-        pprintf("L new value for mutation %d\n", mutation_prob);
-        break;
+      case 'm': mutation_tick = val;   break;
+      case 'b': breeding_tick = val;   break;
+      case 'i': injection_tick = val;  break;
+      case 's': sharing_tick = val;    break;
+      case 't': tournament_size = val; break;
+      case 'p': mutation_prob = val;   break;
       default: pprintf("L hork on key: %c\n", key);
       }
     }
