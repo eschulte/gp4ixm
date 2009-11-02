@@ -2,6 +2,7 @@
 #+TITLE: Distributed GP for IXM
 #+OPTIONS: num:nil ^:t toc:2
 #+LaTeX_CLASS: normal
+#+STARTUP: hideblocks
 
 * Introduction
 
