@@ -36,12 +36,26 @@ r_strings.shift
 # start up 
 puts "starting #{r_strings.size} runs"
 %x{mkdir -p /tmp/experimenter}
+%x{rm /tmp/experimenter/*}
+
+# set up the reflex
+ixm.attach_reflex(/^c/) do |packet|
+  if packet.match(/^c([\.\d]+) (.*)/)
+    # print "."; STDOUT.flush;
+    puts "\t\t#{packet}"
+    $current_file << "#{$1}\t#{$2}\n"
+    $current_file.flush
+    if (Float($1) < 1)
+      puts "finished"; raise "finished"
+    end
+  end
+end
 
 count = 44
 r_strings.each do |r_s|
   puts "\t#{r_s}"
-  f = File.open("/tmp/experimenter/#{r_s.gsub(":",".").gsub(" ","_")}.log","w")
-
+  $current_file = File.open("/tmp/experimenter/#{r_s.gsub(":",".").gsub(" ","_")}.log", "w")
+  
   # start up the ixm boards running with these settings
   begin
     ixm << "c#{count} "
@@ -49,21 +63,11 @@ r_strings.each do |r_s|
     count += 1
     start_time = Time.now
     ixm << r_s
-    ixm.attach_reflex(/^c/) do |packet|
-      if packet.match(/^c([\.\d]+) (.+)/)
-        puts "\t\t#{(Time.now - start_time).round}\t#{$1}\t#{$2}"
-        f << "#{(Time.now - start_time).round}\t#{$1}\t#{$2}\n"
-        f.flush
-        if Integer($1) == 0
-          raise "finished"
-        end
-      end
-    end
-    5.times do
-      sleep 30
-      puts "\t30..."
-    end
+    # let it run for a while
+    sleep 30
   rescue
-    puts "\tcompleted in #{(Time.now - start_time).round} seconds"
+    puts "\n\tcompleted in #{(Time.now - start_time).round} seconds"
   end
+
+  $current_file.close
 end
