@@ -345,8 +345,20 @@ It seems that with crossover commented out, there is no possibility of
 segfault.
 
 <span class="org-level-1">* Experiments</span>
-<span class="org-level-2">** first set</span>
-solving x^3 with a variety of different GP parameters
+<span class="org-level-2">** first suite</span>
+5 runs each of the following goals
+<span class="org-code">: ["xx*", "xxx**", "7xx*+", "987xxx*-+*+"]
+</span>
+over all combinations of the following parameters
+<span class="org-table">| GP parameter    | different values (normally milliseconds per execution) |</span>
+<span class="org-table">|-----------------+--------------------------------------------------------|</span>
+<span class="org-table">| mutation        | (0 10)                                                 |</span>
+<span class="org-table">| breeding        | (0 10)                                                 |</span>
+<span class="org-table">| injection       | (0 10)                                                 |</span>
+<span class="org-table">| tournament size | (100 4 1)                                              |</span>
+
+resulting in 420 total runs -- after removing those runs where mutation,
+breeding and injection are all 0
 
 
 </pre>

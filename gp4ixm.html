@@ -8,7 +8,7 @@ lang="en" xml:lang="en">
 <title>Distributed GP for IXM</title>
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2009-11-01 21:42:17 MST"/>
+<meta name="generated" content="2009-11-01 22:19:35 MST"/>
 <meta name="author" content="Eric Schulte"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -99,7 +99,7 @@ lang="en" xml:lang="en">
 </li>
 <li><a href="#sec-5">Experiments </a>
 <ul>
-<li><a href="#sec-5.1">first set </a></li>
+<li><a href="#sec-5.1">first suite </a></li>
 </ul>
 </li>
 </ul>
@@ -587,10 +587,36 @@ segfault.
 </div>
 
 <div id="outline-container-5.1" class="outline-3">
-<h3 id="sec-5.1">first set </h3>
+<h3 id="sec-5.1">first suite </h3>
 <div class="outline-text-3" id="text-5.1">
 
-<p>solving x<sup>3</sup> with a variety of different GP parameters
+<p>5 runs each of the following goals
+</p><pre class="example">
+["xx*", "xxx**", "7xx*+", "987xxx*-+*+"]
+</pre>
+
+
+<p>
+over all combinations of the following parameters
+</p><table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="left" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">GP parameter</th><th scope="col">different values (normally milliseconds per execution)</th></tr>
+</thead>
+<tbody>
+<tr><td>mutation</td><td>(0 10)</td></tr>
+<tr><td>breeding</td><td>(0 10)</td></tr>
+<tr><td>injection</td><td>(0 10)</td></tr>
+<tr><td>tournament size</td><td>(100 4 1)</td></tr>
+</tbody>
+</table>
+
+
+<p>
+resulting in 420 total runs &ndash; after removing those runs where mutation,
+breeding and injection are all 0
 </p>
 
 </div>
