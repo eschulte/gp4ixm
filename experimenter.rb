@@ -17,7 +17,7 @@ puts "running some experiments..."
 
 r_strings = ["r"]
 
-[["m", [0, 10]],
+[["m", [10]],
  ["b", [0, 10]],
  ["i", [0, 10]],
  ["t", [100, 4, 1]]].each do |key, values|
@@ -29,9 +29,7 @@ r_strings = ["r"]
   end
   r_strings = new_strings
 end
-r_strings.shift
-r_strings.shift
-r_strings.shift
+4.times{ r_strings.shift }
 
 # start up
 puts "starting #{(r_strings.size) * 5 * 4} runs"
