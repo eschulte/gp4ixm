@@ -416,7 +416,7 @@ void loop() {
   pprintf("L mean fitness is "); print(pop.mean_fitness()); pprintf("\n");
   pprintf("L best individual is %d long and is %s\n",
           (* pop.best()).size(), (* pop.best()).representation);
-  report_double(pop.mean_fitness());
+  report_double(pop.best_fitness());
   if (buttonDown()) pop.reset();
 }
 
