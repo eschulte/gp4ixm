@@ -369,7 +369,8 @@ breeding and injection are all 0
 <span class="org-level-4">**** setup</span>
 <span class="org-meta-line">#+srcname: first_suite_results_setup</span>
 <span class="org-meta-line">#+begin_src ruby :results output raw :exports code
-</span><span class="org-block">  class Result
+</span><span class="org-block">  # each instance holds the information from one run
+  class Result
     attr_accessor :m, :b, :i, :t, :g, :raw
     def initialize(m, b, i, t, g)
       self.m = m; self.b = b; self.i = i; self.t = t; self.g = g
@@ -401,7 +402,7 @@ breeding and injection are all 0
 <span class="org-level-4">**** grouped by goal</span>
 <span class="org-meta-line">#+srcname: first_suite_results_by_goal</span>
 <span class="org-meta-line">#+begin_src ruby :results raw output :exports code :noweb
-</span><span class="org-block">  &lt;&lt;first_suite_results_setup&gt;&gt;
+</span><span class="org-block">  # &lt;&lt;first_suite_results_setup&gt;&gt;
   # print out averaged over 5 goal runs
   puts "|mutation|breeding|injection|tournament|goal|runtime|average|"
   puts "|--------"
@@ -461,8 +462,7 @@ breeding and injection are all 0
 <span class="org-level-4">**** full results</span>
 <span class="org-meta-line">#+srcname: first_suite_full_results</span>
 <span class="org-meta-line">#+begin_src ruby :results raw output :exports code :noweb
-</span><span class="org-block">  &lt;&lt;first_suite_results_setup&gt;&gt;
-  
+</span><span class="org-block">  # &lt;&lt;first_suite_results_setup&gt;&gt;
   # print out everything
   puts "|mutation|breeding|injection|tournament|goal|runtime|average|"
   puts "|--------"

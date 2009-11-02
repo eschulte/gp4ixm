@@ -8,7 +8,7 @@ lang="en" xml:lang="en">
 <title>Distributed GP for IXM</title>
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2009-11-02 10:11:47 MST"/>
+<meta name="generated" content="2009-11-02 10:16:24 MST"/>
 <meta name="author" content="Eric Schulte"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -635,7 +635,8 @@ breeding and injection are all 0
 
 
 
-<pre class="src src-ruby"><span style="color: #CC7833;">class</span> <span style="color: #ffffff;">Result</span>
+<pre class="src src-ruby"><span style="color: #BC9458; font-style: italic;"># </span><span style="color: #BC9458; font-style: italic;">each instance holds the information from one run
+</span><span style="color: #CC7833;">class</span> <span style="color: #ffffff;">Result</span>
   attr_accessor <span style="color: #6D9CBE;">:m</span>, <span style="color: #6D9CBE;">:b</span>, <span style="color: #6D9CBE;">:i</span>, <span style="color: #6D9CBE;">:t</span>, <span style="color: #6D9CBE;">:g</span>, <span style="color: #6D9CBE;">:raw</span>
   <span style="color: #CC7833;">def</span> <span style="color: #FFC66D;">initialize</span>(m, b, i, t, g)
     <span style="color: #b0c4de;">self</span>.m = m; <span style="color: #b0c4de;">self</span>.b = b; <span style="color: #b0c4de;">self</span>.i = i; <span style="color: #b0c4de;">self</span>.t = t; <span style="color: #b0c4de;">self</span>.g = g
@@ -672,26 +673,26 @@ results = <span style="color: #ffffff;">Dir</span>.entries(base).map <span style
 
 
 
-<pre class="src src-ruby"><span style="color: #A5C261;">&lt;&lt;first_suite_results_setup</span>&gt;&gt;<span style="color: #A5C261;">
-# print out averaged over 5 goal runs
-puts "|mutation|breeding|injection|tournament|goal|runtime|average|"
-puts "|--------"
+<pre class="src src-ruby"><span style="color: #BC9458; font-style: italic;"># </span><span style="color: #BC9458; font-style: italic;">&lt;&lt;first_suite_results_setup&gt;&gt;
+</span><span style="color: #BC9458; font-style: italic;"># </span><span style="color: #BC9458; font-style: italic;">print out averaged over 5 goal runs
+</span>puts <span style="color: #A5C261;">"|mutation|breeding|injection|tournament|goal|runtime|average|"</span>
+puts <span style="color: #A5C261;">"|--------"</span>
 runtime = 0; average = 0
-results.each do |r|
-  goal_num  = r.g.to_s.split(".")[0]
-  goal_time = r.g.to_s.split(".")[1]
+results.each <span style="color: #CC7833;">do</span> |r|
+  goal_num  = r.g.to_s.split(<span style="color: #A5C261;">"."</span>)[0]
+  goal_time = r.g.to_s.split(<span style="color: #A5C261;">"."</span>)[1]
   runtime  += r.runtime
   average  += r.average
-  if goal_time == "4"
+  <span style="color: #CC7833;">if</span> goal_time == <span style="color: #A5C261;">"4"</span>
     runtime = runtime / 5
     average = average / 5
-    puts "|"+[:m, :b, :i, :t].map{ |meth| r.send(meth).to_s}.join("|")+
-      "|</span><span style="color: #b0c4de;">#{goal_num}</span><span style="color: #A5C261;">|</span><span style="color: #b0c4de;">#{runtime}</span><span style="color: #A5C261;">|</span><span style="color: #b0c4de;">#{average}</span><span style="color: #A5C261;">|"
+    puts <span style="color: #A5C261;">"|"</span>+[<span style="color: #6D9CBE;">:m</span>, <span style="color: #6D9CBE;">:b</span>, <span style="color: #6D9CBE;">:i</span>, <span style="color: #6D9CBE;">:t</span>].map{ |meth| r.send(meth).to_s}.join(<span style="color: #A5C261;">"|"</span>)+
+      <span style="color: #A5C261;">"|</span><span style="color: #b0c4de;">#{goal_num}</span><span style="color: #A5C261;">|</span><span style="color: #b0c4de;">#{runtime}</span><span style="color: #A5C261;">|</span><span style="color: #b0c4de;">#{average}</span><span style="color: #A5C261;">|"</span>
     runtime = 0
     average = 0
-  end
-end
-</span></pre>
+  <span style="color: #CC7833;">end</span>
+<span style="color: #CC7833;">end</span>
+</pre>
 
 
 
@@ -745,16 +746,15 @@ end
 
 
 
-<pre class="src src-ruby"><span style="color: #A5C261;">&lt;&lt;first_suite_results_setup</span>&gt;&gt;<span style="color: #A5C261;">
-
-# print out everything
-puts "|mutation|breeding|injection|tournament|goal|runtime|average|"
-puts "|--------"
-results.each do |r|
-  puts "|"+[:m, :b, :i, :t, :g, :runtime, :average].
-    map{ |meth| r.send(meth).to_s}.join("|")+"|"
-end
-</span></pre>
+<pre class="src src-ruby"><span style="color: #BC9458; font-style: italic;"># </span><span style="color: #BC9458; font-style: italic;">&lt;&lt;first_suite_results_setup&gt;&gt;
+</span><span style="color: #BC9458; font-style: italic;"># </span><span style="color: #BC9458; font-style: italic;">print out everything
+</span>puts <span style="color: #A5C261;">"|mutation|breeding|injection|tournament|goal|runtime|average|"</span>
+puts <span style="color: #A5C261;">"|--------"</span>
+results.each <span style="color: #CC7833;">do</span> |r|
+  puts <span style="color: #A5C261;">"|"</span>+[<span style="color: #6D9CBE;">:m</span>, <span style="color: #6D9CBE;">:b</span>, <span style="color: #6D9CBE;">:i</span>, <span style="color: #6D9CBE;">:t</span>, <span style="color: #6D9CBE;">:g</span>, <span style="color: #6D9CBE;">:runtime</span>, <span style="color: #6D9CBE;">:average</span>].
+    map{ |meth| r.send(meth).to_s}.join(<span style="color: #A5C261;">"|"</span>)+<span style="color: #A5C261;">"|"</span>
+<span style="color: #CC7833;">end</span>
+</pre>
 
 
 
