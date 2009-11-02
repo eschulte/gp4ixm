@@ -1,6 +1,6 @@
 # -*- mode: org -*-
 #+TITLE: Distributed GP for IXM
-#+OPTIONS: num:nil ^:nil toc:2
+#+OPTIONS: num:nil ^:t toc:2
 #+LaTeX_CLASS: normal
 
 * Introduction
@@ -267,6 +267,10 @@ $
 *** does it segfault w/crossover commented out?
 It seems that with crossover commented out, there is no possibility of
 segfault.
+
+* Experiments
+** first set
+solving x^3 with a variety of different GP parameters
 
 * COMMENT publishing
 #+begin_src emacs-lisp :results silent
