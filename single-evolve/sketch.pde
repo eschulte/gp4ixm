@@ -359,7 +359,7 @@ void reset() {
     alarm_index = Alarms.create(do_inject);    // begin the injection alarm
     Alarms.set(alarm_index,millis() + 1500);
   }
-  if(sharing_tick) {
+  if(sharing_tick > 0) {
     alarm_index = Alarms.create(do_share);     // begin the share alarm
     Alarms.set(alarm_index,millis() + 1750);
   }
@@ -373,24 +373,40 @@ void populationReset(u8 * packet) {
   // only allow population resets every 5 seconds
   if(goal_seconds > 5){
     goal_seconds = 0;
-    char key = '\0';
-    int val = 0;
-    while (packetScanf(packet, " %c:%d", key, val)) {
+    char key;
+    int val;
+    while (packetScanf(packet, " %c:%d", &key, &val)) {
       switch(key) {
-      case 'm': mutation_tick = val;
-      case 'b': breeding_tick = val;
-      case 'i': injection_tick = val;
-      case 's': sharing_tick = val;
-      case 't': tournament_size = val;
-      case 'p': mutation_prob = val;
+      case 'm':
+        mutation_tick = val;
+        pprintf("L new value for mutation %d\n", mutation_tick);
+        break;
+      case 'b':
+        breeding_tick = val;
+        pprintf("L new value for breeding %d\n", breeding_tick);
+        break;
+      case 'i':
+        injection_tick = val;
+        pprintf("L new value for injection %d\n", injection_tick);
+        break;
+      case 's':
+        sharing_tick = val;
+        pprintf("L new value for sharing %d\n", sharing_tick);
+        break;
+      case 't':
+        tournament_size = val;
+        pprintf("L new value for tournament %d\n", tournament_size);
+        break;
+      case 'p':
+        mutation_prob = val;
+        pprintf("L new value for mutation %d\n", mutation_prob);
+        break;
       default: pprintf("L hork on key: %c\n", key);
       }
     }
     ledToggle(BODY_RGB_BLUE_PIN);
     ledToggle(BODY_RGB_RED_PIN);
-    pprintf("L about to reset()\n");
     reset();
-    pprintf("L done w/reset()\n");
     pprintf("%#p\n", packet);
     delay(250);
     ledToggle(BODY_RGB_BLUE_PIN);
@@ -418,6 +434,9 @@ void loop() {
   pprintf("L mean fitness is "); print(pop.mean_fitness()); pprintf("\n");
   pprintf("L best individual is %d long and is %s\n",
           (* pop.best()).size(), (* pop.best()).representation);
+  pprintf("L settings are m:%d b:%d i:%d s:%d t:%d p:%d\n",
+          mutation_tick, breeding_tick, injection_tick,
+          sharing_tick, tournament_size, mutation_prob);
   report_double(pop.best_fitness());
   if (buttonDown()) pop.reset();
 }
