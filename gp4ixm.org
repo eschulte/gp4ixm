@@ -284,4 +284,97 @@ over all combinations of the following parameters
 resulting in 420 total runs -- after removing those runs where mutation,
 breeding and injection are all 0
 
+*** results
+#+srcname: first_suite_results
+#+begin_src ruby :results output raw :exports code
+  class Result
+    attr_accessor :m, :b, :i, :t, :g, :raw
+    def initialize(m, b, i, t, g)
+      self.m = m; self.b = b; self.i = i; self.t = t; self.g = g
+    end
+    def counts
+      self.raw.split("\n").
+        map{|l| [Float($1), Float($2)] if l.match(/([\.\d]+)[ \t]([\.\d]+)/)}.compact
+    end
+    def runtime() self.counts.size end
+    def average
+      if self.runtime > 0
+        self.counts.inject(0){ |sum, n| sum + n[1] } / self.runtime
+      else
+        -1
+      end
+    end
+  end
+  
+  puts "|mutation|breeding|injection|tournament|goal|runtime|average|"
+  puts "|--------"
+  base = './results/first_suite'
+  results = Dir.entries(base).map do |e|
+    if e.match(/r_m.(\d+)_b.(\d+)_i.(\d+)_t.(\d+)_g.(\d+).(\d+)/)
+      r = Result.new($1, $2, $3, $4, Float("#{$5}.#{$6}"))
+      r.raw = File.read(File.join(base, e))
+      r
+    end
+  end.compact
+  
+  # print out averaged over 5 goal runs
+  runtime = 0; average = 0
+  results.each do |r|
+    goal_num  = r.g.to_s.split(".")[0]
+    goal_time = r.g.to_s.split(".")[1]
+    runtime  += r.runtime
+    average  += r.average
+    if goal_time == "4"
+      runtime = runtime / 5
+      average = average / 5
+      puts "|"+[:m, :b, :i, :t].map{ |meth| r.send(meth).to_s}.join("|")+
+        "|#{goal_num}|#{runtime}|#{average}|"
+      runtime = 0
+      average = 0
+    end
+  end
+  
+  # # print out everything
+  # results.each do |r|
+  #   puts "|"+[:m, :b, :i, :t, :g, :runtime, :average].
+  #     map{ |meth| r.send(meth).to_s}.join("|")+"|"
+  # end
+#+end_src
+
+#+resname: first_suite_results
+| mutation | breeding | injection | tournament | goal | runtime |          average |
+|----------+----------+-----------+------------+------+---------+------------------|
+|        0 |        0 |        10 |        100 |    0 |      26 | 70.0272463768116 |
+|        0 |        0 |        10 |        100 |    1 |     241 | 1186.74561468878 |
+|        0 |        0 |        10 |        100 |    2 |     298 | 63.6574308096339 |
+|        0 |        0 |        10 |        100 |    3 |     298 | 1208.53379946578 |
+|        0 |        0 |        10 |          1 |    0 |      56 | 56.9613333333333 |
+|        0 |        0 |        10 |          1 |    1 |     298 | 1049.84108998676 |
+|        0 |        0 |        10 |          1 |    2 |     298 | 54.0689367242037 |
+|        0 |        0 |        10 |          1 |    3 |     298 |  1193.1140176427 |
+|        0 |        0 |        10 |          4 |    0 |      32 | 77.1133333333333 |
+|        0 |        0 |        10 |          4 |    1 |     298 | 807.578534713026 |
+|        0 |        0 |        10 |          4 |    2 |     298 | 49.0695674620098 |
+|        0 |        0 |        10 |          4 |    3 |     298 | 1105.78706875267 |
+|        0 |       10 |         0 |        100 |    0 |     248 | 139.505618729097 |
+|        0 |       10 |         0 |        100 |    1 |     298 | 1803.38260869565 |
+|        0 |       10 |         0 |        100 |    2 |     298 |            210.8 |
+|        0 |       10 |         0 |        100 |    3 |     298 | 1682.60535117057 |
+|        0 |       10 |         0 |          1 |    0 |     298 | 208.910367892977 |
+|        0 |       10 |         0 |          1 |    1 |     298 | 1750.41875603241 |
+|        0 |       10 |         0 |          1 |    2 |     298 | 132.654180602007 |
+|        0 |       10 |         0 |          1 |    3 |     293 | 1658.96708133243 |
+|        0 |       10 |         0 |          4 |    0 |     298 | 215.686803887679 |
+|        0 |       10 |         0 |          4 |    1 |     298 | 1685.21269780701 |
+|        0 |       10 |         0 |          4 |    2 |     298 | 197.752021278984 |
+|        0 |       10 |         0 |          4 |    3 |     298 | 1652.64349621782 |
+|       10 |        0 |         0 |        100 |    0 |      10 | 52.2254545454545 |
+|       10 |        0 |         0 |        100 |    1 |      67 |           891.12 |
+|       10 |        0 |         0 |        100 |    2 |     241 | 140.541672240803 |
+|       10 |        0 |         0 |        100 |    3 |     251 | 845.916264505847 |
+|       10 |        0 |         0 |          4 |    0 |     164 |       213.919375 |
+|       10 |        0 |         0 |          4 |    1 |      16 |            645.5 |
+|       10 |        0 |         0 |          4 |    2 |     298 | 45.6393369396871 |
+|       10 |        0 |         0 |          4 |    3 |     298 | 929.366606810173 |
+
 

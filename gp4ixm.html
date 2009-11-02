@@ -8,7 +8,7 @@ lang="en" xml:lang="en">
 <title>Distributed GP for IXM</title>
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2009-11-01 22:22:00 MST"/>
+<meta name="generated" content="2009-11-02 09:52:27 MST"/>
 <meta name="author" content="Eric Schulte"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -45,7 +45,7 @@ lang="en" xml:lang="en">
   .org-info-js_search-highlight {background-color:#ffff00; color:#000000;
                                  font-weight:bold; }
   /*]]>*/-->
-</style>
+</style><link rel="stylesheet"href="data/stylesheet.css"type="text/css">
 <script type="text/javascript">
 <!--/*--><![CDATA[/*><!--*/
  function CodeHighlightOn(elem, id)
@@ -624,6 +624,119 @@ resulting in 420 total runs &ndash; after removing those runs where mutation,
 breeding and injection are all 0
 </p>
 
+</div>
+
+<div id="outline-container-5.1.1" class="outline-4">
+<h4 id="sec-5.1.1">results </h4>
+<div class="outline-text-4" id="text-5.1.1">
+
+
+
+
+<pre class="src src-ruby"><span style="color: #CC7833;">class</span> <span style="color: #ffffff;">Result</span>
+  attr_accessor <span style="color: #6D9CBE;">:m</span>, <span style="color: #6D9CBE;">:b</span>, <span style="color: #6D9CBE;">:i</span>, <span style="color: #6D9CBE;">:t</span>, <span style="color: #6D9CBE;">:g</span>, <span style="color: #6D9CBE;">:raw</span>
+  <span style="color: #CC7833;">def</span> <span style="color: #FFC66D;">initialize</span>(m, b, i, t, g)
+    <span style="color: #b0c4de;">self</span>.m = m; <span style="color: #b0c4de;">self</span>.b = b; <span style="color: #b0c4de;">self</span>.i = i; <span style="color: #b0c4de;">self</span>.t = t; <span style="color: #b0c4de;">self</span>.g = g
+  <span style="color: #CC7833;">end</span>
+  <span style="color: #CC7833;">def</span> <span style="color: #FFC66D;">counts</span>
+    <span style="color: #b0c4de;">self</span>.raw.split(<span style="color: #A5C261;">"\n"</span>).
+      map{|l| [<span style="color: #ffffff;">Float</span>(<span style="color: #b0c4de;">$1</span>), <span style="color: #ffffff;">Float</span>(<span style="color: #b0c4de;">$2</span>)] <span style="color: #CC7833;">if</span> l.match(<span style="color: #A5C261;">/([\.\d]+)[ \t]([\.\d]+)/</span>)}.compact
+  <span style="color: #CC7833;">end</span>
+  <span style="color: #CC7833;">def</span> <span style="color: #FFC66D;">runtime</span>() <span style="color: #b0c4de;">self</span>.counts.size <span style="color: #CC7833;">end</span>
+  <span style="color: #CC7833;">def</span> <span style="color: #FFC66D;">average</span>
+    <span style="color: #CC7833;">if</span> <span style="color: #b0c4de;">self</span>.runtime &gt; 0
+      <span style="color: #b0c4de;">self</span>.counts.inject(0){ |sum, n| sum + n[1] } / <span style="color: #b0c4de;">self</span>.runtime
+    <span style="color: #CC7833;">else</span>
+      -1
+    <span style="color: #CC7833;">end</span>
+  <span style="color: #CC7833;">end</span>
+<span style="color: #CC7833;">end</span>
+
+puts <span style="color: #A5C261;">"|mutation|breeding|injection|tournament|goal|runtime|average|"</span>
+puts <span style="color: #A5C261;">"|--------"</span>
+base = <span style="color: #A5C261;">'./results/first_suite'</span>
+results = <span style="color: #ffffff;">Dir</span>.entries(base).map <span style="color: #CC7833;">do</span> |e|
+  <span style="color: #CC7833;">if</span> e.match(<span style="color: #A5C261;">/r_m.(\d+)_b.(\d+)_i.(\d+)_t.(\d+)_g.(\d+).(\d+)/</span>)
+    r = <span style="color: #ffffff;">Result</span>.new(<span style="color: #b0c4de;">$1</span>, <span style="color: #b0c4de;">$2</span>, <span style="color: #b0c4de;">$3</span>, <span style="color: #b0c4de;">$4</span>, <span style="color: #ffffff;">Float</span>(<span style="color: #A5C261;">"</span><span style="color: #b0c4de;">#{$5}</span><span style="color: #A5C261;">.</span><span style="color: #b0c4de;">#{$6}</span><span style="color: #A5C261;">"</span>))
+    r.raw = <span style="color: #ffffff;">File</span>.read(<span style="color: #ffffff;">File</span>.join(base, e))
+    r
+  <span style="color: #CC7833;">end</span>
+<span style="color: #CC7833;">end</span>.compact
+
+<span style="color: #BC9458; font-style: italic;"># </span><span style="color: #BC9458; font-style: italic;">print out averaged over 5 goal runs
+</span>runtime = 0; average = 0
+results.each <span style="color: #CC7833;">do</span> |r|
+  goal_num  = r.g.to_s.split(<span style="color: #A5C261;">"."</span>)[0]
+  goal_time = r.g.to_s.split(<span style="color: #A5C261;">"."</span>)[1]
+  runtime  += r.runtime
+  average  += r.average
+  <span style="color: #CC7833;">if</span> goal_time == <span style="color: #A5C261;">"4"</span>
+    runtime = runtime / 5
+    average = average / 5
+    puts <span style="color: #A5C261;">"|"</span>+[<span style="color: #6D9CBE;">:m</span>, <span style="color: #6D9CBE;">:b</span>, <span style="color: #6D9CBE;">:i</span>, <span style="color: #6D9CBE;">:t</span>].map{ |meth| r.send(meth).to_s}.join(<span style="color: #A5C261;">"|"</span>)+
+      <span style="color: #A5C261;">"|</span><span style="color: #b0c4de;">#{goal_num}</span><span style="color: #A5C261;">|</span><span style="color: #b0c4de;">#{runtime}</span><span style="color: #A5C261;">|</span><span style="color: #b0c4de;">#{average}</span><span style="color: #A5C261;">|"</span>
+    runtime = 0
+    average = 0
+  <span style="color: #CC7833;">end</span>
+<span style="color: #CC7833;">end</span>
+
+<span style="color: #BC9458; font-style: italic;"># </span><span style="color: #BC9458; font-style: italic;"># print out everything
+</span><span style="color: #BC9458; font-style: italic;"># </span><span style="color: #BC9458; font-style: italic;">results.each do |r|
+</span><span style="color: #BC9458; font-style: italic;">#   </span><span style="color: #BC9458; font-style: italic;">puts "|"+[:m, :b, :i, :t, :g, :runtime, :average].
+</span><span style="color: #BC9458; font-style: italic;">#     </span><span style="color: #BC9458; font-style: italic;">map{ |meth| r.send(meth).to_s}.join("|")+"|"
+</span><span style="color: #BC9458; font-style: italic;"># </span><span style="color: #BC9458; font-style: italic;">end
+</span></pre>
+
+
+
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="right" /><col align="right" /><col align="right" /><col align="right" /><col align="right" /><col align="right" /><col align="right" />
+</colgroup>
+<thead>
+<tr><th scope="col">mutation</th><th scope="col">breeding</th><th scope="col">injection</th><th scope="col">tournament</th><th scope="col">goal</th><th scope="col">runtime</th><th scope="col">average</th></tr>
+</thead>
+<tbody>
+<tr><td>0</td><td>0</td><td>10</td><td>100</td><td>0</td><td>26</td><td>70.0272463768116</td></tr>
+<tr><td>0</td><td>0</td><td>10</td><td>100</td><td>1</td><td>241</td><td>1186.74561468878</td></tr>
+<tr><td>0</td><td>0</td><td>10</td><td>100</td><td>2</td><td>298</td><td>63.6574308096339</td></tr>
+<tr><td>0</td><td>0</td><td>10</td><td>100</td><td>3</td><td>298</td><td>1208.53379946578</td></tr>
+<tr><td>0</td><td>0</td><td>10</td><td>1</td><td>0</td><td>56</td><td>56.9613333333333</td></tr>
+<tr><td>0</td><td>0</td><td>10</td><td>1</td><td>1</td><td>298</td><td>1049.84108998676</td></tr>
+<tr><td>0</td><td>0</td><td>10</td><td>1</td><td>2</td><td>298</td><td>54.0689367242037</td></tr>
+<tr><td>0</td><td>0</td><td>10</td><td>1</td><td>3</td><td>298</td><td>1193.1140176427</td></tr>
+<tr><td>0</td><td>0</td><td>10</td><td>4</td><td>0</td><td>32</td><td>77.1133333333333</td></tr>
+<tr><td>0</td><td>0</td><td>10</td><td>4</td><td>1</td><td>298</td><td>807.578534713026</td></tr>
+<tr><td>0</td><td>0</td><td>10</td><td>4</td><td>2</td><td>298</td><td>49.0695674620098</td></tr>
+<tr><td>0</td><td>0</td><td>10</td><td>4</td><td>3</td><td>298</td><td>1105.78706875267</td></tr>
+<tr><td>0</td><td>10</td><td>0</td><td>100</td><td>0</td><td>248</td><td>139.505618729097</td></tr>
+<tr><td>0</td><td>10</td><td>0</td><td>100</td><td>1</td><td>298</td><td>1803.38260869565</td></tr>
+<tr><td>0</td><td>10</td><td>0</td><td>100</td><td>2</td><td>298</td><td>210.8</td></tr>
+<tr><td>0</td><td>10</td><td>0</td><td>100</td><td>3</td><td>298</td><td>1682.60535117057</td></tr>
+<tr><td>0</td><td>10</td><td>0</td><td>1</td><td>0</td><td>298</td><td>208.910367892977</td></tr>
+<tr><td>0</td><td>10</td><td>0</td><td>1</td><td>1</td><td>298</td><td>1750.41875603241</td></tr>
+<tr><td>0</td><td>10</td><td>0</td><td>1</td><td>2</td><td>298</td><td>132.654180602007</td></tr>
+<tr><td>0</td><td>10</td><td>0</td><td>1</td><td>3</td><td>293</td><td>1658.96708133243</td></tr>
+<tr><td>0</td><td>10</td><td>0</td><td>4</td><td>0</td><td>298</td><td>215.686803887679</td></tr>
+<tr><td>0</td><td>10</td><td>0</td><td>4</td><td>1</td><td>298</td><td>1685.21269780701</td></tr>
+<tr><td>0</td><td>10</td><td>0</td><td>4</td><td>2</td><td>298</td><td>197.752021278984</td></tr>
+<tr><td>0</td><td>10</td><td>0</td><td>4</td><td>3</td><td>298</td><td>1652.64349621782</td></tr>
+<tr><td>10</td><td>0</td><td>0</td><td>100</td><td>0</td><td>10</td><td>52.2254545454545</td></tr>
+<tr><td>10</td><td>0</td><td>0</td><td>100</td><td>1</td><td>67</td><td>891.12</td></tr>
+<tr><td>10</td><td>0</td><td>0</td><td>100</td><td>2</td><td>241</td><td>140.541672240803</td></tr>
+<tr><td>10</td><td>0</td><td>0</td><td>100</td><td>3</td><td>251</td><td>845.916264505847</td></tr>
+<tr><td>10</td><td>0</td><td>0</td><td>4</td><td>0</td><td>164</td><td>213.919375</td></tr>
+<tr><td>10</td><td>0</td><td>0</td><td>4</td><td>1</td><td>16</td><td>645.5</td></tr>
+<tr><td>10</td><td>0</td><td>0</td><td>4</td><td>2</td><td>298</td><td>45.6393369396871</td></tr>
+<tr><td>10</td><td>0</td><td>0</td><td>4</td><td>3</td><td>298</td><td>929.366606810173</td></tr>
+</tbody>
+</table>
+
+
+
+
+</div>
 </div>
 </div>
 </div>
