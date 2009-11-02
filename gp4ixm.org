@@ -271,7 +271,7 @@ segfault.
 * Experiments
 ** first suite
 5 runs each of the following goals
-: ["xx*", "xxx**", "7xx*+", "987xxx*-+*+"]
+| "xx*" | "xxx**" | "7xx*+" | "987xxx*-+*+" |
 
 over all combinations of the following parameters
 | GP parameter    | different values (normally milliseconds per execution) |
