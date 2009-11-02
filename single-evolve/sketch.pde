@@ -399,8 +399,8 @@ void populationReset(u8 * packet) {
     ledToggle(BODY_RGB_BLUE_PIN);
     ledToggle(BODY_RGB_RED_PIN);
     reset();
-    pprintf("%#p\n", packet);
     delay(250);
+    pprintf("%#p\n", packet);
     ledToggle(BODY_RGB_BLUE_PIN);
     ledToggle(BODY_RGB_RED_PIN);
   }
