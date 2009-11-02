@@ -18,7 +18,7 @@ char goal[MAX_GOAL_SIZE];
 int mutation_tick   = 100;                     // ms per mutation
 int breeding_tick   = 100;                     // ms per breeding
 int injection_tick  = 100;                     // ms per breeding
-int sharing_tick    = 500;                     // ms per sharing
+int sharing_tick    = 1000;                    // ms per sharing
 int tournament_size = 4;
 int mutation_prob   = 4;                       // PROB/SIZE = chance_mut of each spot
 
@@ -174,10 +174,7 @@ individual crossover(individual * mother, individual * father) {
 }
 
 void share(individual * candidate) {
-  pprintf("i ");
-  for(int i=0; i<(*candidate).size(); ++i)
-    pprintf("%c", (*candidate).representation[i]);
-  pprintf("\n");
+  pprintf("i %s\n", (*candidate).representation);
 }
 
 /*
