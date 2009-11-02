@@ -34,7 +34,7 @@ r_strings.shift
 r_strings.shift
 
 # start up
-puts "starting #{r_strings.size} runs"
+puts "starting #{(r_strings.size) * 5 * 4} runs"
 %x{mkdir -p /tmp/experimenter}
 %x{rm /tmp/experimenter/*}
 
@@ -42,28 +42,35 @@ puts "starting #{r_strings.size} runs"
 ixm.attach_reflex(/^c/) do |packet|
   if packet.match(/^c([\.\d]+) (.*)/)
     print "."; STDOUT.flush;
-    $current_file << "#{$1}\t#{$2}\n"
+    $current_file << "#{Time.now - $start_time}\t#{$1}\t#{$2}\n"
     $current_file.flush
+    $finished = true if Float($1) < 1
   end
 end
 
-count = 44
+count = 4
 r_strings.each do |r_s|
-  ["9", "xx*", "7xx*+", "987xxx*-+*+"].each_with_index do |goal, index|
-    puts "\n\t#{r_s}_#{index}"
-    $current_file =
-      File.open("/tmp/experimenter/#{r_s.gsub(":",".").gsub(" ","_")}_#{index}.log",
-                "w")
-    
-    # start up the ixm boards running with these settings
-    ixm << "c#{count} "
-    ixm << "g #{goal}"
-    count += 1
-    start_time = Time.now
-    ixm << r_s
-    # let it run for a while
-    sleep 120
-    
-    $current_file.close
+  ["xx*", "xxx**", "7xx*+", "987xxx*-+*+"].each_with_index do |goal, i|
+    5.times do |c|
+      print "\n\t#{r_s} run #{c} on #{goal}\n\t"; STDOUT.flush
+      $current_file =
+        File.open("/tmp/experimenter/"+
+                  "#{r_s.gsub(":",".").gsub(" ","_")}_g.#{i}.#{c}.log", "w")
+      $finished = false
+      $start_time = Time.now
+      
+      # start up the ixm boards running with these settings
+      ixm << "c#{count} "
+      ixm << "g #{goal}"
+      count += 1
+      ixm << r_s
+      # let it run for a while
+      sleep_counter = 0
+      while((not $finished) and (sleep_counter < 30))
+        sleep 10
+      end
+      
+      $current_file.close
+    end
   end
 end
