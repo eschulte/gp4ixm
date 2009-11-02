@@ -143,7 +143,7 @@ individual new_ind() {                         // randomly generate a new indivi
   int index = 0;
   ind.fitness = -1;
   char possibilities[16] = BUILDING_BLOCKS;
-  for(int i = 0; i < random(IND_SIZE - 1); ++i) {
+  for(int i = 0; i < random(IND_SIZE); ++i) {
     ind.representation[i] = possibilities[random(15)];
     index = i;
   }
@@ -337,9 +337,9 @@ void acceptIndividual(u8 * packet) {
   ind.representation[index] = '\0';
   ind.score();
   if(ind.fitness < pop.best_fitness()) {
-      ledToggle(BODY_RGB_BLUE_PIN);
-      delay(250);
-      ledToggle(BODY_RGB_BLUE_PIN);
+    ledToggle(BODY_RGB_BLUE_PIN);
+    delay(250);
+    ledToggle(BODY_RGB_BLUE_PIN);
   }
   pop.incorporate(ind);
 }
@@ -370,20 +370,30 @@ void populationReset(u8 * packet) {
     pprintf("L bad reset: '%#p'\n",packet);
     return;
   }
-  char key = '\0';
-  int val = 0;
-  while (packetScanf(packet, "%c:%d", key, val)) {
-    switch(key) {
-    case 'm': mutation_tick = val;
-    case 'b': breeding_tick = val;
-    case 'i': injection_tick = val;
-    case 's': sharing_tick = val;
-    case 't': tournament_size = val;
-    case 'p': mutation_prob = val;
-    default: pprintf("L hork on key: %c\n", key);
+  // only allow population resets every 5 seconds
+  if(goal_seconds > 5){
+    goal_seconds = 0;
+    char key = '\0';
+    int val = 0;
+    while (packetScanf(packet, "%c:%d", key, val)) {
+      switch(key) {
+      case 'm': mutation_tick = val;
+      case 'b': breeding_tick = val;
+      case 'i': injection_tick = val;
+      case 's': sharing_tick = val;
+      case 't': tournament_size = val;
+      case 'p': mutation_prob = val;
+      default: pprintf("L hork on key: %c\n", key);
+      }
     }
+    ledToggle(BODY_RGB_BLUE_PIN);
+    ledToggle(BODY_RGB_RED_PIN);
+    reset();
+    pprintf("%#p\n", packet);
+    delay(250);
+    ledToggle(BODY_RGB_BLUE_PIN);
+    ledToggle(BODY_RGB_RED_PIN);
   }
-  reset();
 }
 
 void setup() {
