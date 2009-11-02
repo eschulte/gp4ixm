@@ -33,6 +33,10 @@ class Board
        )
   end
 
+  def x() self.x_y[0] end
+
+  def y() self.x_y[1] end
+
   # return a line suitable for inclusion into a data file for gnuplot
   def data_line
     (self.x_y + [value, "\n"]).map{ |v| v.to_s }.join("\t")

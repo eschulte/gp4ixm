@@ -11,7 +11,6 @@
 #     g.fill_boards.size
 #     g.plot
 #     
-require 'tempfile'
 require 'libixm/libixm.rb'
 require 'board.rb'
 require 'group.rb'

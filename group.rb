@@ -49,7 +49,7 @@ class Group
   end
 
   def value_at(x, y)
-    board = boards.select{|b| b.cords == [x, y]}.first
+    board = boards.select{|b| b.x_y == [x, y]}.first
     board ? board.value : nil
   end
   
@@ -101,18 +101,13 @@ class Group
   #    (insert front-edge) (insert "\n") ;; front edge
   #    (setf back-edge "") (setf front-edge ""))
   def data()
-    # boards.sort_by{ |b| b.x_y[0] }.sort_by{ |b| b.x_y[1] }.map do |b|
     self.cols.map do |col|
-      value = nil
       back_edge = ""; front_edge = ""
-      self.rows.each do |row|
-        if value = value_at(col, row)
-          puts "#{value}(#{col},#{row})"
-          back_edge += gnuplot_row((col - 1), row, value)
-          front_edge += gnuplot_row(col, row, value)
-        end
+      self.boards.select{|b| b.y == col}.sort_by{ |b| b.x }.each do |b|
+        back_edge += gnuplot_row((b.y - 1), b.x, b.value)
+        front_edge += gnuplot_row(b.y, b.x, b.value)
       end
-      back_edge + "\n" + front_edge if value
+      back_edge + "\n" + front_edge
     end.join("\n")
   end
 
