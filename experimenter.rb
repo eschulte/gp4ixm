@@ -33,7 +33,7 @@ r_strings.shift
 r_strings.shift
 r_strings.shift
 
-# start up 
+# start up
 puts "starting #{r_strings.size} runs"
 %x{mkdir -p /tmp/experimenter}
 %x{rm /tmp/experimenter/*}
@@ -45,29 +45,23 @@ ixm.attach_reflex(/^c/) do |packet|
     puts "\t\t#{packet}"
     $current_file << "#{$1}\t#{$2}\n"
     $current_file.flush
-    if (Float($1) < 1)
-      puts "finished"; raise "finished"
-    end
   end
 end
 
 count = 44
 r_strings.each do |r_s|
   puts "\t#{r_s}"
-  $current_file = File.open("/tmp/experimenter/#{r_s.gsub(":",".").gsub(" ","_")}.log", "w")
+  $current_file =
+    File.open("/tmp/experimenter/#{r_s.gsub(":",".").gsub(" ","_")}.log", "w")
   
   # start up the ixm boards running with these settings
-  begin
-    ixm << "c#{count} "
-    ixm << "g xxx**"
-    count += 1
-    start_time = Time.now
-    ixm << r_s
-    # let it run for a while
-    sleep 30
-  rescue
-    puts "\n\tcompleted in #{(Time.now - start_time).round} seconds"
-  end
-
+  ixm << "c#{count} "
+  ixm << "g xxx**"
+  count += 1
+  start_time = Time.now
+  ixm << r_s
+  # let it run for a while
+  sleep 120
+  
   $current_file.close
 end
