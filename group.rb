@@ -1,4 +1,12 @@
 # a Group represents a connected set of boards
+#
+#  to exercise the graphing library...
+#
+#     g = Group.new
+#     g.boards = [["frffff", 7], ["frfrfff", 4], ["lfffff", 3], ["f", 9]].map{|l, v| Board.new(l, v) }
+#     g.fill_boards.size
+#     g.plot
+#     
 require 'tempfile'
 require 'board.rb'
 
