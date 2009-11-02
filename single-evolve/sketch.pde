@@ -22,6 +22,12 @@ int sharing_tick    = 1000;                    // ms per sharing
 int tournament_size = 4;
 int mutation_prob   = 4;                       // PROB/SIZE = chance_mut of each spot
 
+// alarm variables
+int mutation_alarm_index  = -1;
+int breeding_alarm_index  = -1;
+int injection_alarm_index = -1;
+int sharing_alarm_index   = -1;
+
 /*
  * Reverse Polish Notation Calculator
  */
@@ -343,22 +349,29 @@ void acceptIndividual(u8 * packet) {
 
 void reset() {
   pop.reset();                                 // randomly generate a population
-  int alarm_index;
   if(mutation_tick > 0) {
-    alarm_index = Alarms.create(do_mutate);    // begin the mutation alarm
-    Alarms.set(alarm_index,millis() + 1000);
+    if(mutation_alarm_index < 0) {             // maybe begin the mutation alarm
+      mutation_alarm_index = Alarms.create(do_mutate);
+    }
+    Alarms.set(mutation_alarm_index,millis() + 1000);
   }
   if(breeding_tick > 0) {
-    alarm_index = Alarms.create(do_breed);     // begin the breeding alarm
-    Alarms.set(alarm_index,millis() + 1250);
+    if(breeding_alarm_index < 0) {             // maybe begin the breeding alarm
+      breeding_alarm_index = Alarms.create(do_breed);
+    }
+    Alarms.set(breeding_alarm_index,millis() + 1250);
   }
   if(injection_tick > 0) {
-    alarm_index = Alarms.create(do_inject);    // begin the injection alarm
-    Alarms.set(alarm_index,millis() + 1500);
+    if(injection_alarm_index < 0) {             // maybe begin the injection alarm
+      injection_alarm_index = Alarms.create(do_inject);
+    }
+    Alarms.set(injection_alarm_index,millis() + 1000);
   }
   if(sharing_tick > 0) {
-    alarm_index = Alarms.create(do_share);     // begin the share alarm
-    Alarms.set(alarm_index,millis() + 1750);
+    if(sharing_alarm_index < 0) {             // maybe begin the sharing alarm
+      sharing_alarm_index = Alarms.create(do_share);
+    }
+    Alarms.set(sharing_alarm_index,millis() + 1000);
   }
 }
 
