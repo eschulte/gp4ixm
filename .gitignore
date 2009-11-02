@@ -8,5 +8,8 @@ sketch-wrapper.cpp
 ## exported documentation
 doc
 
+## experimental data
+results
+
 ## Mac cruft
 .DS_Store
