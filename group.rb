@@ -1,4 +1,5 @@
 # a Group represents a connected set of boards
+require 'tempfile'
 require 'board.rb'
 
 class Group
@@ -12,7 +13,6 @@ class Group
     self.base = "/tmp/scrutinizer/group"
   end
 
-  # fill in empty spots between boards w/0s
   def fill_boards
     # find the corners of the square bounding the points
     xmin = 0; xmax = 0; ymin = 0; ymax = 0
@@ -29,7 +29,30 @@ class Group
         self.boards << Board.new("", 0, [x, y]) unless by_cords.include?([x, y]) }  }
     self.boards
   end
+  
+  def rows
+    # find the corners of the square bounding the points
+    xmin = 0; xmax = 0
+    by_cords = boards.map{ |b| b.x_y }
+    by_cords.each{ |x, y| xmin = x if x < xmin; xmax = x if x > xmax }
+    # fill in every point in the square
+    (xmin..xmax)
+  end
 
+  def cols
+    # find the corners of the square bounding the points
+    ymin = 0; ymax = 0
+    by_cords = boards.map{ |b| b.x_y }
+    by_cords.each{ |x, y| ymin = y if y < ymin; ymax = y if y > ymax }
+    # fill in every point in the square
+    (ymin..ymax)
+  end
+
+  def value_at(x, y)
+    board = boards.select{|b| b.cords == [x, y]}.first
+    board ? board.value : nil
+  end
+  
   # send an initialization message through the boards letting them
   # know that there is a data collector and where to send their
   # packets.
@@ -49,9 +72,48 @@ class Group
     end
   end
 
+  # fancier gnuplot graphs
+  #
+  # (gnuplot-row (col row value)
+  # 	    (setf col (+ 1 col)) (setf row (+ 1 row))
+  # 	    (format "%f  %f  %f\n%f  %f  %f\n"
+  # 		    col (- row 0.5) value ;; lower edge
+  # 		    col (+ row 0.5) value))) ;; upper edge
+  def gnuplot_row(col, row, value)
+    col += 1; row += 1
+    "#{col} #{row - 0.5} #{value}\n#{col} #{row + 0.5} #{value}\n"
+  end
+
   # output data in a manner ingestible by gnuplot
+  #
+  # (dotimes (col num-cols)
+  #    (dotimes (row num-rows)
+  #      (setf back-edge
+  #	    (concat back-edge
+  #		    (gnuplot-row (- col 1) row (string-to-number
+  #						(nth col (nth row table))))))
+  #      (setf front-edge
+  #	    (concat front-edge
+  #		    (gnuplot-row col row (string-to-number
+  #					  (nth col (nth row table)))))))
+  #    ;; only insert once per row
+  #    (insert back-edge) (insert "\n") ;; back edge
+  #    (insert front-edge) (insert "\n") ;; front edge
+  #    (setf back-edge "") (setf front-edge ""))
   def data()
-    boards.sort_by{ |b| b.x_y[0] }.sort_by{ |b| b.x_y[1] }.map{ |b| b.data_line }.join("\n")
+    # boards.sort_by{ |b| b.x_y[0] }.sort_by{ |b| b.x_y[1] }.map do |b|
+    self.cols.map do |col|
+      value = nil
+      back_edge = ""; front_edge = ""
+      self.rows.each do |row|
+        if value = value_at(col, row)
+          puts "#{value}(#{col},#{row})"
+          back_edge += gnuplot_row((col - 1), row, value)
+          front_edge += gnuplot_row(col, row, value)
+        end
+      end
+      back_edge + "\n" + front_edge if value
+    end.join("\n")
   end
 
   # dump my data to a temporary file
@@ -72,9 +134,8 @@ class Group
       else
         "set output \"#{base}.png\""
       end),
-     "set dgrid3d 30, 30",
-     "set hidden3d",
-     "splot \"#{self.data_file}\" with lines title 'fitness' "].join("\n")
+     "set pm3d",
+     "splot \"#{self.data_file}\" with pm3d title 'fitness' "].join("\n")
   end
 
   def plot(counter = false)
@@ -87,5 +148,5 @@ class Group
 
   # create an animated gif of the visualizations (require imagemagick)
   def animate() %x{convert -delay 20 -loop 1 #{base}*.png #{base}.gif} end
-  
+
 end
