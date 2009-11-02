@@ -266,7 +266,7 @@ static void do_breed(u32 when) {
 }
 static void do_inject(u32 when) {
   pop.incorporate(new_ind());
-  if(mutation_tick > 0) {                      // don't reschedule if tick is 0
+  if(injection_tick > 0) {                     // don't reschedule if tick is 0
     if (when+injection_tick < millis()) {
       pprintf("L injecting too fast\n");
       Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
@@ -277,8 +277,8 @@ static void do_inject(u32 when) {
 }
 static void do_share(u32 when) {
   share(pop.tournament());
-  if(mutation_tick > 0) {                      // don't reschedule if tick is 0
-    if (when+injection_tick < millis()) {
+  if(sharing_tick > 0) {                      // don't reschedule if tick is 0
+    if (when+sharing_tick < millis()) {
       pprintf("L sharing too fast\n");
       Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
     }
@@ -375,7 +375,7 @@ void populationReset(u8 * packet) {
     goal_seconds = 0;
     char key = '\0';
     int val = 0;
-    while (packetScanf(packet, "%c:%d", key, val)) {
+    while (packetScanf(packet, " %c:%d", key, val)) {
       switch(key) {
       case 'm': mutation_tick = val;
       case 'b': breeding_tick = val;
@@ -388,7 +388,9 @@ void populationReset(u8 * packet) {
     }
     ledToggle(BODY_RGB_BLUE_PIN);
     ledToggle(BODY_RGB_RED_PIN);
+    pprintf("L about to reset()\n");
     reset();
+    pprintf("L done w/reset()\n");
     pprintf("%#p\n", packet);
     delay(250);
     ledToggle(BODY_RGB_BLUE_PIN);
