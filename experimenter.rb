@@ -68,6 +68,7 @@ r_strings.each do |r_s|
       sleep_counter = 0
       while((not $finished) and (sleep_counter < 30))
         sleep 10
+        sleep_counter += 1
       end
       
       $current_file.close
