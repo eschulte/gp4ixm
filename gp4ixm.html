@@ -8,7 +8,7 @@ lang="en" xml:lang="en">
 <title>Distributed GP for IXM</title>
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2009-10-22 16:37:29 MDT"/>
+<meta name="generated" content="2009-11-01 21:42:17 MST"/>
 <meta name="author" content="Eric Schulte"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -87,6 +87,21 @@ lang="en" xml:lang="en">
 <li><a href="#evaluator">evaluator </a></li>
 </ul>
 </li>
+<li><a href="#sec-4">Issues / Notes </a>
+<ul>
+<li><a href="#sec-4.1">new error code </a></li>
+<li><a href="#sec-4.2">new segfaults&hellip; </a></li>
+<li><a href="#sec-4.3">size overflow </a></li>
+<li><a href="#sec-4.4">hard goals </a></li>
+<li><a href="#sec-4.5">possibility of over-clocking the ixm w/alarms </a></li>
+<li><a href="#sec-4.6">segfault (possibly crossover) </a></li>
+</ul>
+</li>
+<li><a href="#sec-5">Experiments </a>
+<ul>
+<li><a href="#sec-5.1">first set </a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -130,7 +145,6 @@ links
 <span style="color: #D0D0FF;">cd</span> gp4ixm
 git submodule init
 git submodule update
-
 </pre>
 
 
@@ -224,7 +238,6 @@ boards in the group.  Each board holds the following information
 <pre class="src src-ruby"><span style="color: #BC9458; font-style: italic;"># </span><span style="color: #BC9458; font-style: italic;">An ixm board with location and value
 </span><span style="color: #CC7833;">class</span> <span style="color: #ffffff;">Board</span>
   attr_accessor <span style="color: #6D9CBE;">:location</span>, <span style="color: #6D9CBE;">:value</span>, <span style="color: #6D9CBE;">:cords</span>
-
 </pre>
 
 
@@ -331,6 +344,253 @@ the resulting <code>group.gif</code>, should look something like the following
 
 <p>This sketch allows boards to evaluate strings of integers and
 operators (<code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>) on board using reverse polish notation.
+</p>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-4" class="outline-2">
+<h2 id="sec-4">Issues / Notes </h2>
+<div class="outline-text-2" id="text-4">
+
+
+</div>
+
+<div id="outline-container-4.1" class="outline-3">
+<h3 id="sec-4.1">new error code </h3>
+<div class="outline-text-3" id="text-4.1">
+
+<p>after running multiple experiments with libixm, I've managed to
+uncover a new error code&hellip;
+</p>
+<pre class="example">
+1 red, 5 green, 6 blue
+</pre>
+
+
+<p>
+which means&hellip;
+</p>
+<pre class="example">
+/**&lt; Failed to create an alarm when needed */
+</pre>
+
+
+<p>
+this should hopefully be fixed now&hellip;
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-4.2" class="outline-3">
+<h3 id="sec-4.2">new segfaults&hellip; </h3>
+<div class="outline-text-3" id="text-4.2">
+
+<p>this is the pre-fault output
+</p>
+
+
+<pre class="example">L 
+L 6 second on xxxx***
+L best fitness is 9965
+L mean fitness is 14188.25
+L best individual is 10 long and is 9x9+x92+**
+i 9x9+x9x99x*x*
+i 9x*x9+x+x92+**
+i 9x9+x*2++x*
+i 9x9+x9x99x*x*
+i 9x9x9+x*2++x*
+i 9x9+x9xx992+**
+L 
+L 7 second on xxxx***
+L best fitness is 2892
+L mean fitness is 12357.34
+L best individual is 13 long and is 9x7+x9x9*x*x*
+i 9x9x9+x*2++x*
+i 9x9+x9x99x9+x+x92+**
+i 9x9+x9x99x9+x+x92+**
+i 9x9x9+x+xx9*x*x*
+i 9x7+*9499**x*
+i 9x9+x9x99x98x*2++x9*x*x*L
+L 
+L 8 second on xxxx***
+L best fitness is 2892
+L mean fitness is 9667.04
+L best individual is 26 long and is 9x9+x9x99x9+x*2++x9*x*x*L
+i 9x9+x9x99x9+x*2++x9*x*x*L
+i 9x9+x9x99x9+x*2++x9*x*x*L
+i 9x9+x9x99x9+x*2++x9*x*x*L
+Ln Sun Nov  1 16:00:10 2009 [North baud rate set to 9600]
+</pre>
+
+
+
+
+<p>
+more careful maintenance of individuals seems to have fixed this issue
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-4.3" class="outline-3">
+<h3 id="sec-4.3">size overflow </h3>
+<div class="outline-text-3" id="text-4.3">
+
+<p>It looks like passing individuals by value rather than by reference is
+overflowing the chips.  begin to change to passing by reference.
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-4.4" class="outline-3">
+<h3 id="sec-4.4">hard goals </h3>
+<div class="outline-text-3" id="text-4.4">
+
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="left" /><col align="right" /><col align="left" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">goal</th><th scope="col">best fitness</th><th scope="col">after</th><th scope="col">meaning</th></tr>
+</thead>
+<tbody>
+<tr><td>g 9x8x7x6x5**++*-*</td><td>474</td><td></td><td>x(x(30x + x + 7) - 8)</td></tr>
+<tr><td>g 999xxx*****</td><td>0</td><td>19 seconds</td><td>729x<sup>3</sup></td></tr>
+</tbody>
+</table>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-4.5" class="outline-3">
+<h3 id="sec-4.5">possibility of over-clocking the ixm w/alarms </h3>
+<div class="outline-text-3" id="text-4.5">
+
+<p>this is currently handled by checking before every alarm is set and
+when trying to set an alarm in the past, it instead sets it for a
+second in the future.
+</p>
+<p>
+currently this only happens when a new goal is being processed (which
+makes sense, because that triggers a re-evaluation of every individual
+in the population)
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-4.6" class="outline-3">
+<h3 id="sec-4.6"><span class="done DONE"> DONE</span> segfault (possibly crossover) </h3>
+<div class="outline-text-3" id="text-4.6">
+
+
+<p>
+problem is in segfault, but it may not be noticed unless there are
+large goals
+</p>
+<p>
+we're copying past the end of our strings&hellip;
+</p>
+<p>
+checking for end-of-string characters seems to help.
+</p>
+
+</div>
+
+<div id="outline-container-4.6.1" class="outline-4">
+<h4 id="sec-4.6.1">initial </h4>
+<div class="outline-text-4" id="text-4.6.1">
+
+<p>at commit 36b2f62205e6b1564987d819aee282319664543a
+</p>
+<p>
+still segfaulting, but seems to be caused by large goals, as show in
+this example output
+</p>
+
+
+<pre class="example">34 second on xxxx***
+best fitness is 0
+mean fitness is 153.19
+best individual is 14 long and is 8+**8xx*x1/x**
+g 9x8x7x6x5**++*-*
+new goal is 9x8x7x6x5**++*-*
+ 
+1 second on 9x8x7x6x5**++*-*
+best fitness is 64410
+mean fitness is 74313.37
+best individual is 14 long and is 81**8xx*-1/x**
+ 
+2 second on 9x8x7x6x5**++*-*
+best fitness is 64125
+mean fitness is 64353.00
+best individual is 8 long and is xx*-1/1*
+ 
+3 second on 9x8x7x6x5**++*-*
+best fitness is 61966
+mean fitness is 64070.36
+best individual is 17 long and is 311*88**8-x*-1/1*
+ 
+4 second on 9x8x7x6x5**++*-*
+best fitness is 61641
+mean fitness is 63532.51
+best individual is 17 long and is 811*8-23xx8*-1/9*
+ 
+5 second on 9x8x7x6x5**++*-*
+best fitness is 47562
+mean fitness is 61740.08
+best individual is 17 long and is 311788**8-x*-1/1*
+ 
+6 second on 9x8x7x6x5**++*-*
+best fitness is 41028
+mean fitness is 57034.68
+best individual is 17 long and is 315788**8-x*-1/5*
+ 
+7 second on 9x8x7x6x5**++*-*
+Ln Mon Oct 26 18:02:06 2009 [North baud rate set to 9600]
+  C-c C-c%                                                                                                          
+$
+</pre>
+
+
+
+
+</div>
+
+</div>
+
+<div id="outline-container-4.6.2" class="outline-4">
+<h4 id="sec-4.6.2">does it segfault w/crossover commented out? </h4>
+<div class="outline-text-4" id="text-4.6.2">
+
+<p>It seems that with crossover commented out, there is no possibility of
+segfault.
+</p>
+</div>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-5" class="outline-2">
+<h2 id="sec-5">Experiments </h2>
+<div class="outline-text-2" id="text-5">
+
+
+</div>
+
+<div id="outline-container-5.1" class="outline-3">
+<h3 id="sec-5.1">first set </h3>
+<div class="outline-text-3" id="text-5.1">
+
+<p>solving x<sup>3</sup> with a variety of different GP parameters
 </p>
 
 </div>

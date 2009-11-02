@@ -22,6 +22,11 @@
         /* org-code */
         color: #b3b3b3;
       }
+      .org-done {
+        /* org-done */
+        color: #98fb98;
+        font-weight: bold;
+      }
       .org-level-1 {
         /* org-level-1 */
         color: #FFC66D;
@@ -50,6 +55,10 @@
         /* org-special-keyword */
         color: #ffa07a;
       }
+      .org-table {
+        /* org-table */
+        color: #87cefa;
+      }
 
       a {
         color: inherit;
@@ -67,7 +76,7 @@
     <pre>
 <span class="comment"># -*- mode: org -*-</span>
 <span class="org-meta-line">#+TITLE: Distributed GP for IXM</span>
-<span class="org-meta-line">#+OPTIONS: num:nil ^:nil toc:2</span>
+<span class="org-meta-line">#+OPTIONS: num:nil ^:t toc:2</span>
 <span class="org-meta-line">#+LaTeX_CLASS: normal</span>
 
 <span class="org-level-1">* Introduction</span>
@@ -200,6 +209,144 @@ to run the scrutinizer
 <span class="org-special-keyword">  :END:</span>
 This sketch allows boards to evaluate strings of integers and
 operators (<span class="org-code">=+=</span>, <span class="org-code">=-=</span>, <span class="org-code">=*=</span>, <span class="org-code">=/=</span>) on board using reverse polish notation.
+
+<span class="org-level-1">* Issues / Notes</span>
+<span class="org-level-2">** new error code</span>
+after running multiple experiments with libixm, I've managed to
+uncover a new error code...
+
+<span class="org-code">: 1 red, 5 green, 6 blue
+</span>
+which means...
+
+<span class="org-code">: /**&lt; Failed to create an alarm when needed */
+</span>
+this should hopefully be fixed now...
+
+<span class="org-level-2">** new segfaults...</span>
+this is the pre-fault output
+<span class="org-meta-line">#+begin_example 
+</span><span class="org-block">  L 
+  L 6 second on xxxx***
+  L best fitness is 9965
+  L mean fitness is 14188.25
+  L best individual is 10 long and is 9x9+x92+**
+  i 9x9+x9x99x*x*
+  i 9x*x9+x+x92+**
+  i 9x9+x*2++x*
+  i 9x9+x9x99x*x*
+  i 9x9x9+x*2++x*
+  i 9x9+x9xx992+**
+  L 
+  L 7 second on xxxx***
+  L best fitness is 2892
+  L mean fitness is 12357.34
+  L best individual is 13 long and is 9x7+x9x9*x*x*
+  i 9x9x9+x*2++x*
+  i 9x9+x9x99x9+x+x92+**
+  i 9x9+x9x99x9+x+x92+**
+  i 9x9x9+x+xx9*x*x*
+  i 9x7+*9499**x*
+  i 9x9+x9x99x98x*2++x9*x*x*L&#11;
+  L 
+  L 8 second on xxxx***
+  L best fitness is 2892
+  L mean fitness is 9667.04
+  L best individual is 26 long and is 9x9+x9x99x9+x*2++x9*x*x*L&#11;
+  i 9x9+x9x99x9+x*2++x9*x*x*L&#11;
+  i 9x9+x9x99x9+x*2++x9*x*x*L&#11;
+  i 9x9+x9x99x9+x*2++x9*x*x*L&#11;
+  Ln Sun Nov  1 16:00:10 2009 [North baud rate set to 9600]</span><span class="org-meta-line">
+#+end_example</span>
+
+more careful maintenance of individuals seems to have fixed this issue
+
+<span class="org-level-2">** size overflow</span>
+It looks like passing individuals by value rather than by reference is
+overflowing the chips.  begin to change to passing by reference.
+
+<span class="org-level-2">** hard goals</span>
+
+<span class="org-table">| goal               | best fitness | after      | meaning               |</span>
+<span class="org-table">|--------------------+--------------+------------+-----------------------|</span>
+<span class="org-table">| g 9x8x7x6x5**++*-* |          474 |            | x(x(30x + x + 7) - 8) |</span>
+<span class="org-table">| g 999xxx*****      |            0 | 19 seconds | 729x^3                |</span>
+<span class="org-table">|                    |              |            |                       |</span>
+
+<span class="org-level-2">** possibility of over-clocking the ixm w/alarms</span>
+this is currently handled by checking before every alarm is set and
+when trying to set an alarm in the past, it instead sets it for a
+second in the future.
+
+currently this only happens when a new goal is being processed (which
+makes sense, because that triggers a re-evaluation of every individual
+in the population)
+  
+<span class="org-level-2">** </span><span class="org-done">DONE</span><span class="org-level-2"> segfault (possibly crossover)</span>
+
+problem is in segfault, but it may not be noticed unless there are
+large goals
+
+we're copying past the end of our strings...
+
+checking for end-of-string characters seems to help.
+
+<span class="org-level-3">*** initial</span>
+at commit 36b2f62205e6b1564987d819aee282319664543a
+
+still segfaulting, but seems to be caused by large goals, as show in
+this example output
+<span class="org-meta-line">#+begin_example 
+</span><span class="org-block">34 second on xxxx***
+best fitness is 0
+mean fitness is 153.19
+best individual is 14 long and is 8+**8xx*x1/x**
+g 9x8x7x6x5**++*-*
+new goal is 9x8x7x6x5**++*-*
+ 
+1 second on 9x8x7x6x5**++*-*
+best fitness is 64410
+mean fitness is 74313.37
+best individual is 14 long and is 81**8xx*-1/x**
+ 
+2 second on 9x8x7x6x5**++*-*
+best fitness is 64125
+mean fitness is 64353.00
+best individual is 8 long and is xx*-1/1*
+ 
+3 second on 9x8x7x6x5**++*-*
+best fitness is 61966
+mean fitness is 64070.36
+best individual is 17 long and is 311*88**8-x*-1/1*
+ 
+4 second on 9x8x7x6x5**++*-*
+best fitness is 61641
+mean fitness is 63532.51
+best individual is 17 long and is 811*8-23xx8*-1/9*
+ 
+5 second on 9x8x7x6x5**++*-*
+best fitness is 47562
+mean fitness is 61740.08
+best individual is 17 long and is 311788**8-x*-1/1*
+ 
+6 second on 9x8x7x6x5**++*-*
+best fitness is 41028
+mean fitness is 57034.68
+best individual is 17 long and is 315788**8-x*-1/5*
+ 
+7 second on 9x8x7x6x5**++*-*
+Ln Mon Oct 26 18:02:06 2009 [North baud rate set to 9600]
+  C-c C-c%                                                                                                          
+$</span><span class="org-meta-line">
+#+end_example</span>
+
+<span class="org-level-3">*** does it segfault w/crossover commented out?</span>
+It seems that with crossover commented out, there is no possibility of
+segfault.
+
+<span class="org-level-1">* Experiments</span>
+<span class="org-level-2">** first set</span>
+solving x^3 with a variety of different GP parameters
 
 
 </pre>
