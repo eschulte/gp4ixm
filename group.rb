@@ -11,12 +11,13 @@ require 'tempfile'
 require 'board.rb'
 
 class Group
-  attr_accessor :count, :boards, :base
+  attr_accessor :count, :boards, :base, :maxvalue
 
   # create a new empty group
   def initialize()
     self.count = 0
     self.boards = []
+    self.maxvalue = 0
     # base directory/path where images are stored
     self.base = "/tmp/scrutinizer/group"
   end
@@ -54,11 +55,6 @@ class Group
     by_cords.each{ |x, y| ymin = y if y < ymin; ymax = y if y > ymax }
     # fill in every point in the square
     (ymin..ymax)
-  end
-
-  def value_at(x, y)
-    board = boards.select{|b| b.x_y == [x, y]}.first
-    board ? board.value : nil
   end
   
   # send an initialization message through the boards letting them
@@ -112,6 +108,7 @@ class Group
     self.cols.map do |col|
       back_edge = ""; front_edge = ""
       self.boards.select{|b| b.y == col}.sort_by{ |b| b.x }.each do |b|
+        self.maxvalue = b.value if b.value > self.maxvalue
         back_edge += gnuplot_row((b.y - 1), b.x, b.value)
         front_edge += gnuplot_row(b.y, b.x, b.value)
       end
@@ -137,6 +134,7 @@ class Group
       else
         "set output \"#{base}.png\""
       end),
+     "set zrange [0:#{self.maxvalue}]",
      "set pm3d",
      "splot \"#{self.data_file}\" with pm3d title 'fitness' "].join("\n")
   end
@@ -145,7 +143,7 @@ class Group
     g = Tempfile.new("scrutinizer-gnuplot-plot")
     g << self.plot_script(counter)
     g.flush
-    %x{gnuplot #{g.path}}
+    %x{gnuplot #{g.path} 2> /dev/null}
     g.path
   end
 

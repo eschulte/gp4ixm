@@ -33,10 +33,14 @@ ixm.attach_reflex(/^c/) do |packet|
   g.plot(update_counter)
 end
 
-count = 24
+count = 228
 while true
   puts "telling boards I am here [#{count}]"
   ixm << "c#{count} f"
+  puts "putting in a new goal"
+  ixm << "g 4xxx**+"
+  puts "resetting the boards"
+  ixm << "r "
   count += 1
   sleep 60
 end
