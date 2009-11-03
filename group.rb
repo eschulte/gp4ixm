@@ -32,6 +32,10 @@ class Group
       ymin = y if y < ymin
       ymax = y if y > ymax
     end
+    xmin -= 1
+    xmax += 1
+    ymin -= 1
+    ymax += 1
     # fill in every point in the square
     (xmin..xmax).each{ |x|
       (ymin..ymax).each{ |y|
