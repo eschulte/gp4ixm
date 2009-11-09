@@ -8,7 +8,7 @@ lang="en" xml:lang="en">
 <title>Distributed GP for IXM</title>
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2009-11-09 08:57:54 MST"/>
+<meta name="generated" content="2009-11-09 11:53:31 MST"/>
 <meta name="author" content="Eric Schulte"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -424,74 +424,6 @@ sketch
 <h4 id="sec-4.1.4">experimental results (and playing with the big group) </h4>
 <div class="outline-text-4" id="text-4.1.4">
 
-<p>5 runs each of the following goals
-</p><ol>
-<li>
-"xx*" $x<sup>2</sup>$
-</li>
-<li>
-"xxx**" $x<sup>3</sup>$
-</li>
-<li>
-"7xx*+" $x<sup>2</sup>+7$
-</li>
-<li>
-"987xxx*-+*+" $8((x<sup>2</sup>-x)+7)+9$ 
-
-</li>
-</ol>
-
-<p>over all combinations of the following parameters
-</p><table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-<caption></caption>
-<colgroup><col align="left" /><col align="left" />
-</colgroup>
-<thead>
-<tr><th scope="col">GP parameter</th><th scope="col">different values (normally milliseconds per execution)</th></tr>
-</thead>
-<tbody>
-<tr><td>mutation</td><td>(0 10)</td></tr>
-<tr><td>breeding</td><td>(0 10)</td></tr>
-<tr><td>injection</td><td>(0 10)</td></tr>
-<tr><td>tournament size</td><td>(100 4 1)</td></tr>
-</tbody>
-</table>
-
-
-<p>
-resulting in 420 total runs &ndash; after removing those runs where mutation,
-breeding and injection are all 0
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-<caption></caption>
-<colgroup><col align="right" /><col align="right" /><col align="right" /><col align="left" /><col align="left" /><col align="left" />
-</colgroup>
-<thead>
-<tr><th scope="col">goal</th><th scope="col">&ndash;i</th><th scope="col">-b-</th><th scope="col">m&ndash;</th><th scope="col">m-i</th><th scope="col">mbi</th></tr>
-</thead>
-<tbody>
-<tr><td>0</td><td>77.1133333333333</td><td>215.686803887679</td><td>127.66</td><td>184.17858974359</td><td></td></tr>
-<tr><td>1</td><td>807.578534713026</td><td>1685.21269780701</td><td>645.5</td><td>805.65</td><td></td></tr>
-<tr><td>2</td><td>49.0695674620098</td><td>197.752021278984</td><td>45.6393369396871</td><td>52.4849094202899</td><td></td></tr>
-<tr><td>3</td><td>1105.78706875267</td><td>1652.64349621782</td><td>929.366606810173</td><td>344.271612309488</td><td></td></tr>
-</tbody>
-</table>
-
-
-
-
-
-<pre class="src src-gnuplot"><span style="color: #6D9CBE;">set</span> boxwidth 0.9 relative
-<span style="color: #6D9CBE;">set</span> <span style="color: #ffffff;">title</span> <span style="color: #A5C261;">'run times by GP params'</span>
-<span style="color: #6D9CBE;">set</span> xlabel <span style="color: #A5C261;">'problems'</span>
-<span style="color: #6D9CBE;">set</span> ylabel <span style="color: #A5C261;">'runtimes (seconds)'</span>
-<span style="color: #6D9CBE;">set</span> style data histograms
-<span style="color: #6D9CBE;">set</span> style fill solid 1.0 border -1
-<span style="color: #CC7833;">plot</span> <span style="color: #b0c4de;">data</span> <span style="color: #ffffff;">using</span> 2 <span style="color: #ffffff;">title</span> <span style="color: #A5C261;">'--i'</span>, <span style="color: #A5C261;">''</span> <span style="color: #ffffff;">using</span> 3 <span style="color: #ffffff;">title</span> <span style="color: #A5C261;">'-b-'</span>, <span style="color: #A5C261;">''</span> <span style="color: #ffffff;">using</span> 4 <span style="color: #ffffff;">title</span> <span style="color: #A5C261;">'m--'</span>, <span style="color: #A5C261;">''</span> <span style="color: #ffffff;">using</span> 5 <span style="color: #ffffff;">title</span> <span style="color: #A5C261;">'m-i'</span>
-</pre>
-
-
-
 
 </div>
 
@@ -596,31 +528,18 @@ breeding and injection are all 0
 </p>
 <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
 <caption></caption>
-<colgroup><col align="right" /><col align="right" /><col align="right" /><col align="left" /><col align="left" /><col align="left" />
+<colgroup><col align="right" /><col align="right" /><col align="right" /><col align="left" /><col align="left" /><col align="left" /><col align="left" />
 </colgroup>
 <thead>
-<tr><th scope="col">goal</th><th scope="col">&ndash;i</th><th scope="col">-b-</th><th scope="col">m&ndash;</th><th scope="col">m-i</th><th scope="col">mbi</th></tr>
+<tr><th scope="col">goal</th><th scope="col">&ndash;i</th><th scope="col">-b-</th><th scope="col">m&ndash;</th><th scope="col">m-i</th><th scope="col">-bi</th><th scope="col">mbi</th></tr>
 </thead>
 <tbody>
-<tr><td>0</td><td>77.1133333333333</td><td>215.686803887679</td><td>127.66</td><td>184.17858974359</td><td></td></tr>
-<tr><td>1</td><td>807.578534713026</td><td>1685.21269780701</td><td>645.5</td><td>805.65</td><td></td></tr>
-<tr><td>2</td><td>49.0695674620098</td><td>197.752021278984</td><td>45.6393369396871</td><td>52.4849094202899</td><td></td></tr>
-<tr><td>3</td><td>1105.78706875267</td><td>1652.64349621782</td><td>929.366606810173</td><td>344.271612309488</td><td></td></tr>
+<tr><td>0</td><td>77.1133333333333</td><td>215.686803887679</td><td>127.66</td><td>184.17858974359</td><td>60.4121739130435</td><td>115.98</td></tr>
+<tr><td>1</td><td>807.578534713026</td><td>1685.21269780701</td><td>645.5</td><td>805.65</td><td>835.367035532311</td><td>724.266666666667</td></tr>
+<tr><td>2</td><td>49.0695674620098</td><td>197.752021278984</td><td>45.6393369396871</td><td>52.4849094202899</td><td>58.9185876860228</td><td>66.7578861683425</td></tr>
+<tr><td>3</td><td>1105.78706875267</td><td>1652.64349621782</td><td>929.366606810173</td><td>344.271612309488</td><td>1204.55192700501</td><td>382.323249758704</td></tr>
 </tbody>
 </table>
-
-
-
-
-
-<pre class="src src-gnuplot"><span style="color: #6D9CBE;">set</span> boxwidth 0.9 relative
-<span style="color: #6D9CBE;">set</span> <span style="color: #ffffff;">title</span> <span style="color: #A5C261;">'run times by GP params'</span>
-<span style="color: #6D9CBE;">set</span> xlabel <span style="color: #A5C261;">'problems'</span>
-<span style="color: #6D9CBE;">set</span> ylabel <span style="color: #A5C261;">'runtimes (seconds)'</span>
-<span style="color: #6D9CBE;">set</span> style data histograms
-<span style="color: #6D9CBE;">set</span> style fill solid 1.0 border -1
-<span style="color: #CC7833;">plot</span> <span style="color: #b0c4de;">data</span> <span style="color: #ffffff;">using</span> 2 <span style="color: #ffffff;">title</span> <span style="color: #A5C261;">'--i'</span>, <span style="color: #A5C261;">''</span> <span style="color: #ffffff;">using</span> 3 <span style="color: #ffffff;">title</span> <span style="color: #A5C261;">'-b-'</span>, <span style="color: #A5C261;">''</span> <span style="color: #ffffff;">using</span> 4 <span style="color: #ffffff;">title</span> <span style="color: #A5C261;">'m--'</span>, <span style="color: #A5C261;">''</span> <span style="color: #ffffff;">using</span> 5 <span style="color: #ffffff;">title</span> <span style="color: #A5C261;">'m-i'</span>
-</pre>
 
 
 
@@ -628,6 +547,41 @@ breeding and injection are all 0
 <p>
 <img src="data/first-suite-hist.png"  alt="data/first-suite-hist.png" />
 </p>
+
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="right" /><col align="right" /><col align="right" /><col align="right" /><col align="right" /><col align="right" /><col align="right" />
+</colgroup>
+<tbody>
+<tr><td>0</td><td>0</td><td>10</td><td>4</td><td>0</td><td>32</td><td>77.1133333333333</td></tr>
+<tr><td>0</td><td>0</td><td>10</td><td>4</td><td>1</td><td>298</td><td>807.578534713026</td></tr>
+<tr><td>0</td><td>0</td><td>10</td><td>4</td><td>2</td><td>298</td><td>49.0695674620098</td></tr>
+<tr><td>0</td><td>0</td><td>10</td><td>4</td><td>3</td><td>298</td><td>1105.78706875267</td></tr>
+<tr><td>0</td><td>10</td><td>0</td><td>4</td><td>0</td><td>298</td><td>215.686803887679</td></tr>
+<tr><td>0</td><td>10</td><td>0</td><td>4</td><td>1</td><td>298</td><td>1685.21269780701</td></tr>
+<tr><td>0</td><td>10</td><td>0</td><td>4</td><td>2</td><td>298</td><td>197.752021278984</td></tr>
+<tr><td>0</td><td>10</td><td>0</td><td>4</td><td>3</td><td>298</td><td>1652.64349621782</td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>0</td><td>22</td><td></td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>1</td><td>298</td><td></td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>2</td><td>298</td><td></td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>3</td><td>298</td><td></td></tr>
+<tr><td>10</td><td>0</td><td>0</td><td>4</td><td>0</td><td>125</td><td>127.66</td></tr>
+<tr><td>10</td><td>0</td><td>0</td><td>4</td><td>1</td><td>16</td><td>645.5</td></tr>
+<tr><td>10</td><td>0</td><td>0</td><td>4</td><td>2</td><td>298</td><td>45.6393369396871</td></tr>
+<tr><td>10</td><td>0</td><td>0</td><td>4</td><td>3</td><td>298</td><td>929.366606810173</td></tr>
+<tr><td>10</td><td>0</td><td>10</td><td>4</td><td>0</td><td>29</td><td>184.17858974359</td></tr>
+<tr><td>10</td><td>0</td><td>10</td><td>4</td><td>1</td><td>14</td><td>805.65</td></tr>
+<tr><td>10</td><td>0</td><td>10</td><td>4</td><td>2</td><td>189</td><td>52.4849094202899</td></tr>
+<tr><td>10</td><td>0</td><td>10</td><td>4</td><td>3</td><td>239</td><td>344.271612309488</td></tr>
+<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>0</td><td>11</td><td>69.6933333333333</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>0</td><td>17</td><td>115.98</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>1</td><td>14</td><td>724.266666666667</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>2</td><td>135</td><td>66.7578861683425</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>3</td><td>298</td><td>382.323249758704</td></tr>
+</tbody>
+</table>
+
 
 
 
@@ -736,6 +690,10 @@ results.each <span style="color: #CC7833;">do</span> |r|
 <tr><td>0</td><td>10</td><td>0</td><td>4</td><td>1</td><td>298</td><td>1685.21269780701</td></tr>
 <tr><td>0</td><td>10</td><td>0</td><td>4</td><td>2</td><td>298</td><td>197.752021278984</td></tr>
 <tr><td>0</td><td>10</td><td>0</td><td>4</td><td>3</td><td>298</td><td>1652.64349621782</td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>0</td><td>22</td><td>60.4121739130435</td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>1</td><td>298</td><td>835.367035532311</td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>2</td><td>298</td><td>58.9185876860228</td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>3</td><td>298</td><td>1204.55192700501</td></tr>
 <tr><td>10</td><td>0</td><td>0</td><td>100</td><td>0</td><td>10</td><td>52.2254545454545</td></tr>
 <tr><td>10</td><td>0</td><td>0</td><td>100</td><td>1</td><td>67</td><td>891.12</td></tr>
 <tr><td>10</td><td>0</td><td>0</td><td>100</td><td>2</td><td>241</td><td>140.541672240803</td></tr>
@@ -759,6 +717,15 @@ results.each <span style="color: #CC7833;">do</span> |r|
 <tr><td>10</td><td>0</td><td>10</td><td>4</td><td>1</td><td>14</td><td>805.65</td></tr>
 <tr><td>10</td><td>0</td><td>10</td><td>4</td><td>2</td><td>189</td><td>52.4849094202899</td></tr>
 <tr><td>10</td><td>0</td><td>10</td><td>4</td><td>3</td><td>239</td><td>344.271612309488</td></tr>
+<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>0</td><td>11</td><td>69.6933333333333</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>100</td><td>0</td><td>10</td><td>41.5</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>100</td><td>1</td><td>16</td><td>579.166666666667</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>100</td><td>2</td><td>155</td><td>58.3026855294288</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>100</td><td>3</td><td>298</td><td>436.408668716752</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>0</td><td>17</td><td>115.98</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>1</td><td>14</td><td>724.266666666667</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>2</td><td>135</td><td>66.7578861683425</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>3</td><td>298</td><td>382.323249758704</td></tr>
 </tbody>
 </table>
 
@@ -909,6 +876,26 @@ results.each <span style="color: #CC7833;">do</span> |r|
 <tr><td>0</td><td>10</td><td>0</td><td>4</td><td>3.2</td><td>299</td><td>1648.0</td></tr>
 <tr><td>0</td><td>10</td><td>0</td><td>4</td><td>3.3</td><td>298</td><td>1654.02684563758</td></tr>
 <tr><td>0</td><td>10</td><td>0</td><td>4</td><td>3.4</td><td>299</td><td>1607.15719063545</td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>0.0</td><td>21</td><td>85.0</td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>0.1</td><td>69</td><td>69.2608695652174</td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>0.2</td><td>10</td><td>108.4</td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>0.3</td><td>10</td><td>39.4</td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>0.4</td><td>1</td><td>0.0</td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>1.0</td><td>298</td><td>746.963087248322</td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>1.1</td><td>299</td><td>425.107023411371</td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>1.2</td><td>298</td><td>906.755033557047</td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>1.3</td><td>299</td><td>1155.76588628763</td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>1.4</td><td>299</td><td>942.244147157191</td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>2.0</td><td>299</td><td>59.5150501672241</td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>2.1</td><td>298</td><td>63.2885906040268</td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>2.2</td><td>299</td><td>67.1036789297659</td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>2.3</td><td>299</td><td>37.933110367893</td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>2.4</td><td>299</td><td>66.752508361204</td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>3.0</td><td>298</td><td>1158.14765100671</td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>3.1</td><td>299</td><td>1362.872909699</td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>3.2</td><td>299</td><td>959.311036789298</td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>3.3</td><td>298</td><td>1262.98322147651</td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>3.4</td><td>299</td><td>1279.44481605351</td></tr>
 <tr><td>10</td><td>0</td><td>0</td><td>100</td><td>0.0</td><td>11</td><td>44.7272727272727</td></tr>
 <tr><td>10</td><td>0</td><td>0</td><td>100</td><td>0.1</td><td>10</td><td>45.0</td></tr>
 <tr><td>10</td><td>0</td><td>0</td><td>100</td><td>0.2</td><td>10</td><td>91.4</td></tr>
@@ -1025,6 +1012,53 @@ results.each <span style="color: #CC7833;">do</span> |r|
 <tr><td>10</td><td>0</td><td>10</td><td>4</td><td>3.2</td><td>299</td><td>137.538461538462</td></tr>
 <tr><td>10</td><td>0</td><td>10</td><td>4</td><td>3.3</td><td>299</td><td>806.759197324415</td></tr>
 <tr><td>10</td><td>0</td><td>10</td><td>4</td><td>3.4</td><td>298</td><td>319.295302013423</td></tr>
+<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>0.0</td><td>10</td><td>98.1</td></tr>
+<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>0.1</td><td>10</td><td>37.7</td></tr>
+<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>0.2</td><td>10</td><td>41.5</td></tr>
+<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>0.3</td><td>20</td><td>74.5</td></tr>
+<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>0.4</td><td>6</td><td>96.6666666666667</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>100</td><td>0.0</td><td>10</td><td>38.5</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>100</td><td>0.1</td><td>10</td><td>31.7</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>100</td><td>0.2</td><td>10</td><td>51.7</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>100</td><td>0.3</td><td>10</td><td>45.0</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>100</td><td>0.4</td><td>10</td><td>40.6</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>100</td><td>1.0</td><td>10</td><td>511.2</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>100</td><td>1.1</td><td>30</td><td>905.033333333333</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>100</td><td>1.2</td><td>20</td><td>731.9</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>100</td><td>1.3</td><td>10</td><td>377.8</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>100</td><td>1.4</td><td>10</td><td>369.9</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>100</td><td>2.0</td><td>10</td><td>54.7</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>100</td><td>2.1</td><td>298</td><td>65.3691275167785</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>100</td><td>2.2</td><td>298</td><td>65.6342281879195</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>100</td><td>2.3</td><td>30</td><td>51.4</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>100</td><td>2.4</td><td>139</td><td>54.410071942446</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>100</td><td>3.0</td><td>298</td><td>429.030201342282</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>100</td><td>3.1</td><td>299</td><td>401.083612040134</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>100</td><td>3.2</td><td>298</td><td>570.926174496644</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>100</td><td>3.3</td><td>298</td><td>278.687919463087</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>100</td><td>3.4</td><td>298</td><td>502.315436241611</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>1</td><td>0.0</td><td>10</td><td>237.9</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>1</td><td>0.1</td><td>28</td><td>83.5</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>0.0</td><td>10</td><td>65.5</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>0.1</td><td>10</td><td>50.3</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>0.2</td><td>10</td><td>24.6</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>0.3</td><td>10</td><td>64.1</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>0.4</td><td>10</td><td>54.0</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>1.0</td><td>10</td><td>844.2</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>1.1</td><td>30</td><td>942.633333333333</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>1.2</td><td>10</td><td>381.6</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>1.3</td><td>10</td><td>605.1</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>1.4</td><td>10</td><td>847.8</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>2.0</td><td>299</td><td>32.6655518394649</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>2.1</td><td>10</td><td>96.7</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>2.2</td><td>249</td><td>62.2449799196787</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>2.3</td><td>109</td><td>66.6788990825688</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>2.4</td><td>10</td><td>75.5</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>3.0</td><td>299</td><td>517.943143812709</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>3.1</td><td>299</td><td>398.605351170569</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>3.2</td><td>298</td><td>384.791946308725</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>3.3</td><td>299</td><td>509.809364548495</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>3.4</td><td>298</td><td>100.46644295302</td></tr>
 </tbody>
 </table>
 
