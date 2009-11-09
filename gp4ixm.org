@@ -136,6 +136,10 @@ This sketch allows boards to evaluate strings of integers and
 operators (=+=, =-=, =*=, =/=) on board using reverse polish notation.
 * Milestones
 ** Milestone 3
+   :PROPERTIES:
+   :CUSTOM_ID: milestone3
+   :END:
+
 *** fixed many bugs
 
 | Problems             | Solutions                                  |
@@ -153,36 +157,45 @@ sketch
 - [[file:single-evolve/sketch.pde::void%20populationReset%20u8%20packet][population_reset]]
 
 *** experimental results (and playing with the big group)
+review the initial [[first_suite][initial experimental results]]
+
+look at the speedup gained through using the big group (with
+[[file:scrutinizer.rb][scrutinizer.rb]])
 
 *** next steps
+1) Evaluate the effect of multiple boards on run times
 
-Let see if it's worthwhile to /meta-evolve/ GP parameters
-- central parameter tweaking :: using the ruby script which collects
-     results and has a central view of the state of the group to
-     deterministically reset the worst individual in the group at some
-     rate
-- distributed parameter tweaking :: allowing the boards to reset their
-     neighbors when they feel that they are not up to snuff
+2) Let see if it's worthwhile to /meta-evolve/ GP parameters
+  - central parameter tweaking :: using the ruby script which collects
+       results and has a central view of the state of the group to
+       deterministically reset the worst individual in the group at some
+       rate
+  - distributed parameter tweaking :: allowing the boards to reset their
+       neighbors when they feel that they are not up to snuff
 
-Harder problems (in more sophisticated execution environments than RPN)
-- object code :: once generated, would it be possible to burn a .hex
-     file to a board and execute it in some safe manner?
-- simple ant language :: another simple on-board-evaluable language
-     like RPN with the differences of
-     - environment :: small 2d grid instead of a number stack
-     - individual representation :: instead of a string of numbers, a
-          set of rules which relate states of individual to actions
+3) Harder problems (in more sophisticated execution environments than RPN)
+  - object code :: once generated, would it be possible to burn a .hex
+       file to a board and execute it in some safe manner?
+  - simple ant language :: another simple on-board-evaluable language
+       like RPN with the differences of
+       - environment :: small 2d grid instead of a number stack
+       - individual representation :: instead of a string of numbers, a
+            set of rules which relate states of individual to actions
 
 * Experiments
   :PROPERTIES:
   :CUSTOM_ID: experiments
   :END:
 ** first suite
+   :PROPERTIES:
+   :CUSTOM_ID: first_suite
+   :END:
+
 5 runs each of the following goals
-0) "xx*" $x^2$
-1) "xxx**" $x^3$
-2) "7xx*+" $x^2+7$
-3) "987xxx*-+*+" $8((x^2-x)+7)+9$ 
+1) "xx*" $x^2$
+2) "xxx**" $x^3$
+3) "7xx*+" $x^2+7$
+4) "987xxx*-+*+" $8((x^2-x)+7)+9$ 
 
 over all combinations of the following parameters
 | GP parameter    | different values (normally milliseconds per execution) |
@@ -198,10 +211,10 @@ breeding and injection are all 0
 #+tblname: condensed-results-tournament-4
 | goal |              --i |              -b- |              m-- |              m-i |              -bi |              mbi |
 |------+------------------+------------------+------------------+------------------+------------------+------------------|
-|    0 | 77.1133333333333 | 215.686803887679 |           127.66 |  184.17858974359 | 60.4121739130435 |           115.98 |
-|    1 | 807.578534713026 | 1685.21269780701 |            645.5 |           805.65 | 835.367035532311 | 724.266666666667 |
-|    2 | 49.0695674620098 | 197.752021278984 | 45.6393369396871 | 52.4849094202899 | 58.9185876860228 | 66.7578861683425 |
-|    3 | 1105.78706875267 | 1652.64349621782 | 929.366606810173 | 344.271612309488 | 1204.55192700501 | 382.323249758704 |
+|    1 | 77.1133333333333 | 215.686803887679 |           127.66 |  184.17858974359 | 60.4121739130435 |           115.98 |
+|    2 | 807.578534713026 | 1685.21269780701 |            645.5 |           805.65 | 835.367035532311 | 724.266666666667 |
+|    3 | 49.0695674620098 | 197.752021278984 | 45.6393369396871 | 52.4849094202899 | 58.9185876860228 | 66.7578861683425 |
+|    4 | 1105.78706875267 | 1652.64349621782 | 929.366606810173 | 344.271612309488 | 1204.55192700501 | 382.323249758704 |
 
 #+begin_src gnuplot :var data=condensed-results-tournament-4 :exports code :file data/first-suite-hist.png
   set boxwidth 0.9 relative
