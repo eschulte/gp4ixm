@@ -157,31 +157,40 @@ sketch
 - [[file:single-evolve/sketch.pde::void%20populationReset%20u8%20packet][population_reset]]
 
 *** experimental results (and playing with the big group)
+review the initial [[first_suite][initial experimental results]]
+
+look at the speedup gained through using the big group (with
+[[file:scrutinizer.rb][scrutinizer.rb]])
 
 *** next steps
+1) Evaluate the effect of multiple boards on run times
 
-Let see if it's worthwhile to /meta-evolve/ GP parameters
-- central parameter tweaking :: using the ruby script which collects
-     results and has a central view of the state of the group to
-     deterministically reset the worst individual in the group at some
-     rate
-- distributed parameter tweaking :: allowing the boards to reset their
-     neighbors when they feel that they are not up to snuff
+2) Let see if it's worthwhile to /meta-evolve/ GP parameters
+  - central parameter tweaking :: using the ruby script which collects
+       results and has a central view of the state of the group to
+       deterministically reset the worst individual in the group at some
+       rate
+  - distributed parameter tweaking :: allowing the boards to reset their
+       neighbors when they feel that they are not up to snuff
 
-Harder problems (in more sophisticated execution environments than RPN)
-- object code :: once generated, would it be possible to burn a .hex
-     file to a board and execute it in some safe manner?
-- simple ant language :: another simple on-board-evaluable language
-     like RPN with the differences of
-     - environment :: small 2d grid instead of a number stack
-     - individual representation :: instead of a string of numbers, a
-          set of rules which relate states of individual to actions
+3) Harder problems (in more sophisticated execution environments than RPN)
+  - object code :: once generated, would it be possible to burn a .hex
+       file to a board and execute it in some safe manner?
+  - simple ant language :: another simple on-board-evaluable language
+       like RPN with the differences of
+       - environment :: small 2d grid instead of a number stack
+       - individual representation :: instead of a string of numbers, a
+            set of rules which relate states of individual to actions
 
 * Experiments
   :PROPERTIES:
   :CUSTOM_ID: experiments
   :END:
 ** first suite
+   :PROPERTIES:
+   :CUSTOM_ID: first_suite
+   :END:
+
 5 runs each of the following goals
 1) "xx*" $x^2$
 2) "xxx**" $x^3$
@@ -223,6 +232,34 @@ breeding and injection are all 0
 #+begin_src ruby :var raw=first_suite_results_by_goal :exports none
   raw.select{|r| r[3] == 4}
 #+end_src
+
+#+resname:
+|  0 |  0 | 10 | 4 | 0 |  32 | 77.1133333333333 |
+|  0 |  0 | 10 | 4 | 1 | 298 | 807.578534713026 |
+|  0 |  0 | 10 | 4 | 2 | 298 | 49.0695674620098 |
+|  0 |  0 | 10 | 4 | 3 | 298 | 1105.78706875267 |
+|  0 | 10 |  0 | 4 | 0 | 298 | 215.686803887679 |
+|  0 | 10 |  0 | 4 | 1 | 298 | 1685.21269780701 |
+|  0 | 10 |  0 | 4 | 2 | 298 | 197.752021278984 |
+|  0 | 10 |  0 | 4 | 3 | 298 | 1652.64349621782 |
+|  0 | 10 | 10 | 4 | 0 |  22 |  |
+|  0 | 10 | 10 | 4 | 1 | 298 |  |
+|  0 | 10 | 10 | 4 | 2 | 298 |  |
+|  0 | 10 | 10 | 4 | 3 | 298 |  |
+| 10 |  0 |  0 | 4 | 0 | 125 |           127.66 |
+| 10 |  0 |  0 | 4 | 1 |  16 |            645.5 |
+| 10 |  0 |  0 | 4 | 2 | 298 | 45.6393369396871 |
+| 10 |  0 |  0 | 4 | 3 | 298 | 929.366606810173 |
+| 10 |  0 | 10 | 4 | 0 |  29 |  184.17858974359 |
+| 10 |  0 | 10 | 4 | 1 |  14 |           805.65 |
+| 10 |  0 | 10 | 4 | 2 | 189 | 52.4849094202899 |
+| 10 |  0 | 10 | 4 | 3 | 239 | 344.271612309488 |
+| 10 | 10 |  0 | 4 | 0 |  11 | 69.6933333333333 |
+| 10 | 10 | 10 | 4 | 0 |  17 |           115.98 |
+| 10 | 10 | 10 | 4 | 1 |  14 | 724.266666666667 |
+| 10 | 10 | 10 | 4 | 2 | 135 | 66.7578861683425 |
+| 10 | 10 | 10 | 4 | 3 | 298 | 382.323249758704 |
+
 
 *** results
 **** setup

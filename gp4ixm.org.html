@@ -246,31 +246,40 @@ sketch
 - <span class="org-link">population_reset</span>
 
 <span class="org-level-3">*** experimental results (and playing with the big group)</span>
+review the initial <span class="org-link">initial experimental results</span>
+
+look at the speedup gained through using the big group (with
+<span class="org-link">scrutinizer.rb</span>)
 
 <span class="org-level-3">*** next steps</span>
+1) Evaluate the effect of multiple boards on run times
 
-Let see if it's worthwhile to <span class="italic">/meta-evolve/</span> GP parameters
-- <span class="bold">central parameter tweaking ::</span> using the ruby script which collects
-     results and has a central view of the state of the group to
-     deterministically reset the worst individual in the group at some
-     rate
-- <span class="bold">distributed parameter tweaking ::</span> allowing the boards to reset their
-     neighbors when they feel that they are not up to snuff
+2) Let see if it's worthwhile to <span class="italic">/meta-evolve/</span> GP parameters
+  - <span class="bold">central parameter tweaking ::</span> using the ruby script which collects
+       results and has a central view of the state of the group to
+       deterministically reset the worst individual in the group at some
+       rate
+  - <span class="bold">distributed parameter tweaking ::</span> allowing the boards to reset their
+       neighbors when they feel that they are not up to snuff
 
-Harder problems (in more sophisticated execution environments than RPN)
-- <span class="bold">object code ::</span> once generated, would it be possible to burn a .hex
-     file to a board and execute it in some safe manner?
-- <span class="bold">simple ant language ::</span> another simple on-board-evaluable language
-     like RPN with the differences of
-     - <span class="bold">environment ::</span> small 2d grid instead of a number stack
-     - <span class="bold">individual representation ::</span> instead of a string of numbers, a
-          set of rules which relate states of individual to actions
+3) Harder problems (in more sophisticated execution environments than RPN)
+  - <span class="bold">object code ::</span> once generated, would it be possible to burn a .hex
+       file to a board and execute it in some safe manner?
+  - <span class="bold">simple ant language ::</span> another simple on-board-evaluable language
+       like RPN with the differences of
+       - <span class="bold">environment ::</span> small 2d grid instead of a number stack
+       - <span class="bold">individual representation ::</span> instead of a string of numbers, a
+            set of rules which relate states of individual to actions
 
 <span class="org-level-1">* Experiments</span>
 <span class="org-special-keyword">  :PROPERTIES:</span>
   <span class="org-special-keyword">:CUSTOM_ID:</span> <span class="org-property-value">experiments</span>
 <span class="org-special-keyword">  :END:</span>
 <span class="org-level-2">** first suite</span>
+<span class="org-special-keyword">   :PROPERTIES:</span>
+   <span class="org-special-keyword">:CUSTOM_ID:</span> <span class="org-property-value">first_suite</span>
+<span class="org-special-keyword">   :END:</span>
+
 5 runs each of the following goals
 1) "xx*" $x^2$
 2) "xxx**" $x^3$
@@ -312,6 +321,34 @@ breeding and injection are all 0
 <span class="org-meta-line">#+begin_src ruby :var raw=first_suite_results_by_goal :exports none
 </span><span class="org-block">  raw.select{|r| r[3] == 4}</span><span class="org-meta-line">
 #+end_src</span>
+
+<span class="org-meta-line">#+resname:</span>
+<span class="org-table">|  0 |  0 | 10 | 4 | 0 |  32 | 77.1133333333333 |</span>
+<span class="org-table">|  0 |  0 | 10 | 4 | 1 | 298 | 807.578534713026 |</span>
+<span class="org-table">|  0 |  0 | 10 | 4 | 2 | 298 | 49.0695674620098 |</span>
+<span class="org-table">|  0 |  0 | 10 | 4 | 3 | 298 | 1105.78706875267 |</span>
+<span class="org-table">|  0 | 10 |  0 | 4 | 0 | 298 | 215.686803887679 |</span>
+<span class="org-table">|  0 | 10 |  0 | 4 | 1 | 298 | 1685.21269780701 |</span>
+<span class="org-table">|  0 | 10 |  0 | 4 | 2 | 298 | 197.752021278984 |</span>
+<span class="org-table">|  0 | 10 |  0 | 4 | 3 | 298 | 1652.64349621782 |</span>
+<span class="org-table">|  0 | 10 | 10 | 4 | 0 |  22 |  |</span>
+<span class="org-table">|  0 | 10 | 10 | 4 | 1 | 298 |  |</span>
+<span class="org-table">|  0 | 10 | 10 | 4 | 2 | 298 |  |</span>
+<span class="org-table">|  0 | 10 | 10 | 4 | 3 | 298 |  |</span>
+<span class="org-table">| 10 |  0 |  0 | 4 | 0 | 125 |           127.66 |</span>
+<span class="org-table">| 10 |  0 |  0 | 4 | 1 |  16 |            645.5 |</span>
+<span class="org-table">| 10 |  0 |  0 | 4 | 2 | 298 | 45.6393369396871 |</span>
+<span class="org-table">| 10 |  0 |  0 | 4 | 3 | 298 | 929.366606810173 |</span>
+<span class="org-table">| 10 |  0 | 10 | 4 | 0 |  29 |  184.17858974359 |</span>
+<span class="org-table">| 10 |  0 | 10 | 4 | 1 |  14 |           805.65 |</span>
+<span class="org-table">| 10 |  0 | 10 | 4 | 2 | 189 | 52.4849094202899 |</span>
+<span class="org-table">| 10 |  0 | 10 | 4 | 3 | 239 | 344.271612309488 |</span>
+<span class="org-table">| 10 | 10 |  0 | 4 | 0 |  11 | 69.6933333333333 |</span>
+<span class="org-table">| 10 | 10 | 10 | 4 | 0 |  17 |           115.98 |</span>
+<span class="org-table">| 10 | 10 | 10 | 4 | 1 |  14 | 724.266666666667 |</span>
+<span class="org-table">| 10 | 10 | 10 | 4 | 2 | 135 | 66.7578861683425 |</span>
+<span class="org-table">| 10 | 10 | 10 | 4 | 3 | 298 | 382.323249758704 |</span>
+
 
 <span class="org-level-3">*** results</span>
 <span class="org-level-4">**** setup</span>

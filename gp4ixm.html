@@ -8,7 +8,7 @@ lang="en" xml:lang="en">
 <title>Distributed GP for IXM</title>
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2009-11-09 12:03:53 MST"/>
+<meta name="generated" content="2009-11-09 12:12:31 MST"/>
 <meta name="author" content="Eric Schulte"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -94,7 +94,7 @@ lang="en" xml:lang="en">
 </li>
 <li><a href="#experiments">Experiments </a>
 <ul>
-<li><a href="#sec-5.1">first suite </a></li>
+<li><a href="#first_suite">first suite </a></li>
 </ul>
 </li>
 <li><a href="#sec-6">Issues / Notes </a>
@@ -425,7 +425,12 @@ sketch
 <h4 id="sec-4.1.4">experimental results (and playing with the big group) </h4>
 <div class="outline-text-4" id="text-4.1.4">
 
-
+<p>review the initial <a href="#sec-5.1">initial experimental results</a>
+</p>
+<p>
+look at the speedup gained through using the big group (with
+<a href="scrutinizer.rb">scrutinizer.rb</a>)
+</p>
 </div>
 
 </div>
@@ -434,10 +439,14 @@ sketch
 <h4 id="sec-4.1.5">next steps </h4>
 <div class="outline-text-4" id="text-4.1.5">
 
+<ol>
+<li>
+Evaluate the effect of multiple boards on run times
 
-<p>
+</li>
+<li>
 Let see if it's worthwhile to <i>meta-evolve</i> GP parameters
-</p><dl>
+<dl>
 <dt>central parameter tweaking</dt><dd>
 using the ruby script which collects
 results and has a central view of the state of the group to
@@ -450,9 +459,10 @@ neighbors when they feel that they are not up to snuff
 
 </dd>
 </dl>
-
-<p>Harder problems (in more sophisticated execution environments than RPN)
-</p><dl>
+</li>
+<li>
+Harder problems (in more sophisticated execution environments than RPN)
+<dl>
 <dt>object code</dt><dd>
 once generated, would it be possible to burn a .hex
 file to a board and execute it in some safe manner?
@@ -472,6 +482,8 @@ set of rules which relate states of individual to actions
 </dl>
 </dd>
 </dl>
+</li>
+</ol>
 </div>
 </div>
 </div>
@@ -485,11 +497,13 @@ set of rules which relate states of individual to actions
 
 </div>
 
-<div id="outline-container-5.1" class="outline-3">
-<h3 id="sec-5.1">first suite </h3>
-<div class="outline-text-3" id="text-5.1">
+<div id="outline-container-first_suite" class="outline-3">
+<h3 id="first_suite"><a name="sec-5.1" id="sec-5.1"></a>first suite </h3>
+<div class="outline-text-3" id="text-first_suite">
 
-<p>5 runs each of the following goals
+
+<p>
+5 runs each of the following goals
 </p><ol>
 <li>
 "xx*" $x<sup>2</sup>$
@@ -548,6 +562,41 @@ breeding and injection are all 0
 <p>
 <img src="data/first-suite-hist.png"  alt="data/first-suite-hist.png" />
 </p>
+
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="right" /><col align="right" /><col align="right" /><col align="right" /><col align="right" /><col align="right" /><col align="right" />
+</colgroup>
+<tbody>
+<tr><td>0</td><td>0</td><td>10</td><td>4</td><td>0</td><td>32</td><td>77.1133333333333</td></tr>
+<tr><td>0</td><td>0</td><td>10</td><td>4</td><td>1</td><td>298</td><td>807.578534713026</td></tr>
+<tr><td>0</td><td>0</td><td>10</td><td>4</td><td>2</td><td>298</td><td>49.0695674620098</td></tr>
+<tr><td>0</td><td>0</td><td>10</td><td>4</td><td>3</td><td>298</td><td>1105.78706875267</td></tr>
+<tr><td>0</td><td>10</td><td>0</td><td>4</td><td>0</td><td>298</td><td>215.686803887679</td></tr>
+<tr><td>0</td><td>10</td><td>0</td><td>4</td><td>1</td><td>298</td><td>1685.21269780701</td></tr>
+<tr><td>0</td><td>10</td><td>0</td><td>4</td><td>2</td><td>298</td><td>197.752021278984</td></tr>
+<tr><td>0</td><td>10</td><td>0</td><td>4</td><td>3</td><td>298</td><td>1652.64349621782</td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>0</td><td>22</td><td></td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>1</td><td>298</td><td></td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>2</td><td>298</td><td></td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>3</td><td>298</td><td></td></tr>
+<tr><td>10</td><td>0</td><td>0</td><td>4</td><td>0</td><td>125</td><td>127.66</td></tr>
+<tr><td>10</td><td>0</td><td>0</td><td>4</td><td>1</td><td>16</td><td>645.5</td></tr>
+<tr><td>10</td><td>0</td><td>0</td><td>4</td><td>2</td><td>298</td><td>45.6393369396871</td></tr>
+<tr><td>10</td><td>0</td><td>0</td><td>4</td><td>3</td><td>298</td><td>929.366606810173</td></tr>
+<tr><td>10</td><td>0</td><td>10</td><td>4</td><td>0</td><td>29</td><td>184.17858974359</td></tr>
+<tr><td>10</td><td>0</td><td>10</td><td>4</td><td>1</td><td>14</td><td>805.65</td></tr>
+<tr><td>10</td><td>0</td><td>10</td><td>4</td><td>2</td><td>189</td><td>52.4849094202899</td></tr>
+<tr><td>10</td><td>0</td><td>10</td><td>4</td><td>3</td><td>239</td><td>344.271612309488</td></tr>
+<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>0</td><td>11</td><td>69.6933333333333</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>0</td><td>17</td><td>115.98</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>1</td><td>14</td><td>724.266666666667</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>2</td><td>135</td><td>66.7578861683425</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>3</td><td>298</td><td>382.323249758704</td></tr>
+</tbody>
+</table>
+
 
 
 
