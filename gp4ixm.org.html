@@ -9,9 +9,17 @@
         color: #E6E1DC;
         background-color: #232323;
       }
+      .bold {
+        /* bold */
+        font-weight: bold;
+      }
       .comment {
         /* font-lock-comment-face */
         color: #BC9458;
+        font-style: italic;
+      }
+      .italic {
+        /* italic */
         font-style: italic;
       }
       .org-block {
@@ -83,6 +91,7 @@
 <span class="org-meta-line">#+TITLE: Distributed GP for IXM</span>
 <span class="org-meta-line">#+OPTIONS: num:nil ^:t toc:2</span>
 <span class="org-meta-line">#+LaTeX_CLASS: normal</span>
+<span class="org-meta-line">#+STARTUP: hideblocks</span>
 
 <span class="org-level-1">* Introduction</span>
 
@@ -214,145 +223,30 @@ to run the scrutinizer
 <span class="org-special-keyword">  :END:</span>
 This sketch allows boards to evaluate strings of integers and
 operators (<span class="org-code">=+=</span>, <span class="org-code">=-=</span>, <span class="org-code">=*=</span>, <span class="org-code">=/=</span>) on board using reverse polish notation.
+<span class="org-level-1">* Milestones</span>
+<span class="org-level-2">** Milestone 3</span>
+<span class="org-level-3">*** fixed many bugs</span>
 
-<span class="org-level-1">* Issues / Notes</span>
-<span class="org-level-2">** new error code</span>
-after running multiple experiments with libixm, I've managed to
-uncover a new error code...
+<span class="org-table">| Problems             | Solutions                                  |</span>
+<span class="org-table">|----------------------+--------------------------------------------|</span>
+<span class="org-table">| segfaults            | </span><span class="org-link">check</span><span class="org-table"> individuals to isolate problem areas |</span>
+<span class="org-table">| too many alarms      | </span><span class="org-link">safer-alarm-scheduling</span><span class="org-table">                     |</span>
+<span class="org-table">| running out of space | pass by reference (throughout the code)    |</span>
+<span class="org-level-3">*** extracted data collector</span>
+<span class="org-link">collector/sketch.pde</span>
 
-<span class="org-code">: 1 red, 5 green, 6 blue
-</span>
-which means...
+<span class="org-level-3">*** adjustable GP parameters</span>
+it is now possible to change GP parameters without re-burning the
+sketch
+- <span class="org-link">variable-parameters</span>
+- <span class="org-link">population_reset</span>
 
-<span class="org-code">: /**&lt; Failed to create an alarm when needed */
-</span>
-this should hopefully be fixed now...
-
-<span class="org-level-2">** new segfaults...</span>
-this is the pre-fault output
-<span class="org-meta-line">#+begin_example 
-</span><span class="org-block">  L 
-  L 6 second on xxxx***
-  L best fitness is 9965
-  L mean fitness is 14188.25
-  L best individual is 10 long and is 9x9+x92+**
-  i 9x9+x9x99x*x*
-  i 9x*x9+x+x92+**
-  i 9x9+x*2++x*
-  i 9x9+x9x99x*x*
-  i 9x9x9+x*2++x*
-  i 9x9+x9xx992+**
-  L 
-  L 7 second on xxxx***
-  L best fitness is 2892
-  L mean fitness is 12357.34
-  L best individual is 13 long and is 9x7+x9x9*x*x*
-  i 9x9x9+x*2++x*
-  i 9x9+x9x99x9+x+x92+**
-  i 9x9+x9x99x9+x+x92+**
-  i 9x9x9+x+xx9*x*x*
-  i 9x7+*9499**x*
-  i 9x9+x9x99x98x*2++x9*x*x*L&#11;
-  L 
-  L 8 second on xxxx***
-  L best fitness is 2892
-  L mean fitness is 9667.04
-  L best individual is 26 long and is 9x9+x9x99x9+x*2++x9*x*x*L&#11;
-  i 9x9+x9x99x9+x*2++x9*x*x*L&#11;
-  i 9x9+x9x99x9+x*2++x9*x*x*L&#11;
-  i 9x9+x9x99x9+x*2++x9*x*x*L&#11;
-  Ln Sun Nov  1 16:00:10 2009 [North baud rate set to 9600]</span><span class="org-meta-line">
-#+end_example</span>
-
-more careful maintenance of individuals seems to have fixed this issue
-
-<span class="org-level-2">** size overflow</span>
-It looks like passing individuals by value rather than by reference is
-overflowing the chips.  begin to change to passing by reference.
-
-<span class="org-level-2">** hard goals</span>
-
-<span class="org-table">| goal               | best fitness | after      | meaning               |</span>
-<span class="org-table">|--------------------+--------------+------------+-----------------------|</span>
-<span class="org-table">| g 9x8x7x6x5**++*-* |          474 |            | x(x(30x + x + 7) - 8) |</span>
-<span class="org-table">| g 999xxx*****      |            0 | 19 seconds | 729x^3                |</span>
-<span class="org-table">|                    |              |            |                       |</span>
-
-<span class="org-level-2">** possibility of over-clocking the ixm w/alarms</span>
-this is currently handled by checking before every alarm is set and
-when trying to set an alarm in the past, it instead sets it for a
-second in the future.
-
-currently this only happens when a new goal is being processed (which
-makes sense, because that triggers a re-evaluation of every individual
-in the population)
-  
-<span class="org-level-2">** </span><span class="org-done">DONE</span><span class="org-level-2"> segfault (possibly crossover)</span>
-
-problem is in segfault, but it may not be noticed unless there are
-large goals
-
-we're copying past the end of our strings...
-
-checking for end-of-string characters seems to help.
-
-<span class="org-level-3">*** initial</span>
-at commit 36b2f62205e6b1564987d819aee282319664543a
-
-still segfaulting, but seems to be caused by large goals, as show in
-this example output
-<span class="org-meta-line">#+begin_example 
-</span><span class="org-block">34 second on xxxx***
-best fitness is 0
-mean fitness is 153.19
-best individual is 14 long and is 8+**8xx*x1/x**
-g 9x8x7x6x5**++*-*
-new goal is 9x8x7x6x5**++*-*
- 
-1 second on 9x8x7x6x5**++*-*
-best fitness is 64410
-mean fitness is 74313.37
-best individual is 14 long and is 81**8xx*-1/x**
- 
-2 second on 9x8x7x6x5**++*-*
-best fitness is 64125
-mean fitness is 64353.00
-best individual is 8 long and is xx*-1/1*
- 
-3 second on 9x8x7x6x5**++*-*
-best fitness is 61966
-mean fitness is 64070.36
-best individual is 17 long and is 311*88**8-x*-1/1*
- 
-4 second on 9x8x7x6x5**++*-*
-best fitness is 61641
-mean fitness is 63532.51
-best individual is 17 long and is 811*8-23xx8*-1/9*
- 
-5 second on 9x8x7x6x5**++*-*
-best fitness is 47562
-mean fitness is 61740.08
-best individual is 17 long and is 311788**8-x*-1/1*
- 
-6 second on 9x8x7x6x5**++*-*
-best fitness is 41028
-mean fitness is 57034.68
-best individual is 17 long and is 315788**8-x*-1/5*
- 
-7 second on 9x8x7x6x5**++*-*
-Ln Mon Oct 26 18:02:06 2009 [North baud rate set to 9600]
-  C-c C-c%                                                                                                          
-$</span><span class="org-meta-line">
-#+end_example</span>
-
-<span class="org-level-3">*** does it segfault w/crossover commented out?</span>
-It seems that with crossover commented out, there is no possibility of
-segfault.
-
-<span class="org-level-1">* Experiments</span>
-<span class="org-level-2">** first suite</span>
+<span class="org-level-3">*** experimental results (and playing with the big group)</span>
 5 runs each of the following goals
-<span class="org-table">| "xx*" | "xxx**" | "7xx*+" | "987xxx*-+*+" |</span>
+0) "xx*" $x^2$
+1) "xxx**" $x^3$
+2) "7xx*+" $x^2+7$
+3) "987xxx*-+*+" $8((x^2-x)+7)+9$ 
 
 over all combinations of the following parameters
 <span class="org-table">| GP parameter    | different values (normally milliseconds per execution) |</span>
@@ -364,6 +258,86 @@ over all combinations of the following parameters
 
 resulting in 420 total runs -- after removing those runs where mutation,
 breeding and injection are all 0
+
+<span class="org-meta-line">#+tblname: condensed-results-tournament-4</span>
+<span class="org-table">| goal |              --i |              -b- |              m-- |              m-i | mbi |</span>
+<span class="org-table">|------+------------------+------------------+------------------+------------------+-----|</span>
+<span class="org-table">|    0 | 77.1133333333333 | 215.686803887679 |           127.66 |  184.17858974359 |     |</span>
+<span class="org-table">|    1 | 807.578534713026 | 1685.21269780701 |            645.5 |           805.65 |     |</span>
+<span class="org-table">|    2 | 49.0695674620098 | 197.752021278984 | 45.6393369396871 | 52.4849094202899 |     |</span>
+<span class="org-table">|    3 | 1105.78706875267 | 1652.64349621782 | 929.366606810173 | 344.271612309488 |     |</span>
+
+<span class="org-meta-line">#+begin_src gnuplot :var data=condensed-results-tournament-4 :results silent :exports code
+</span><span class="org-block">  set boxwidth 0.9 relative
+  set title 'run times by GP params'
+  set xlabel 'problems'
+  set ylabel 'runtimes (seconds)'
+  set style data histograms
+  set style fill solid 1.0 border -1
+  plot data using 2 title '--i', '' using 3 title '-b-', '' using 4 title 'm--', '' using 5 title 'm-i'</span><span class="org-meta-line">
+#+end_src</span>
+
+<span class="org-level-3">*** next steps</span>
+
+Let see if it's worthwhile to <span class="italic">/meta-evolve/</span> GP parameters
+- <span class="bold">central parameter tweaking ::</span> using the ruby script which collects
+     results and has a central view of the state of the group to
+     deterministically reset the worst individual in the group at some
+     rate
+- <span class="bold">distributed parameter tweaking ::</span> allowing the boards to reset their
+     neighbors when they feel that they are not up to snuff
+
+Harder problems (in more sophisticated execution environments than RPN)
+- <span class="bold">object code ::</span> once generated, would it be possible to burn a .hex
+     file to a board and execute it in some safe manner?
+- <span class="bold">simple ant language ::</span> another simple on-board-evaluable language
+     like RPN with the differences of
+     - <span class="bold">environment ::</span> small 2d grid instead of a number stack
+     - <span class="bold">individual representation ::</span> instead of a string of numbers, a
+          set of rules which relate states of individual to actions
+
+<span class="org-level-1">* Experiments</span>
+<span class="org-level-2">** first suite</span>
+5 runs each of the following goals
+0) "xx*" $x^2$
+1) "xxx**" $x^3$
+2) "7xx*+" $x^2+7$
+3) "987xxx*-+*+" $8((x^2-x)+7)+9$ 
+
+over all combinations of the following parameters
+<span class="org-table">| GP parameter    | different values (normally milliseconds per execution) |</span>
+<span class="org-table">|-----------------+--------------------------------------------------------|</span>
+<span class="org-table">| mutation        | (0 10)                                                 |</span>
+<span class="org-table">| breeding        | (0 10)                                                 |</span>
+<span class="org-table">| injection       | (0 10)                                                 |</span>
+<span class="org-table">| tournament size | (100 4 1)                                              |</span>
+
+resulting in 420 total runs -- after removing those runs where mutation,
+breeding and injection are all 0
+
+<span class="org-meta-line">#+tblname: condensed-results-tournament-4</span>
+<span class="org-table">| goal |              --i |              -b- |              m-- |              m-i | mbi |</span>
+<span class="org-table">|------+------------------+------------------+------------------+------------------+-----|</span>
+<span class="org-table">|    0 | 77.1133333333333 | 215.686803887679 |           127.66 |  184.17858974359 |     |</span>
+<span class="org-table">|    1 | 807.578534713026 | 1685.21269780701 |            645.5 |           805.65 |     |</span>
+<span class="org-table">|    2 | 49.0695674620098 | 197.752021278984 | 45.6393369396871 | 52.4849094202899 |     |</span>
+<span class="org-table">|    3 | 1105.78706875267 | 1652.64349621782 | 929.366606810173 | 344.271612309488 |     |</span>
+
+<span class="org-meta-line">#+begin_src gnuplot :var data=condensed-results-tournament-4 :file data/first-suite-hist.png :exports code
+</span><span class="org-block">  set boxwidth 0.9 relative
+  set title 'run times by GP params'
+  set xlabel 'problems'
+  set ylabel 'runtimes (seconds)'
+  set style data histograms
+  set style fill solid 1.0 border -1
+  plot data using 2 title '--i', '' using 3 title '-b-', '' using 4 title 'm--', '' using 5 title 'm-i'</span><span class="org-meta-line">
+#+end_src</span>
+
+<span class="org-link">file:data/first-suite-hist.png</span>
+
+<span class="org-meta-line">#+begin_src ruby :var raw=first_suite_results_by_goal :exports none
+</span><span class="org-block">  raw.select{|r| r[3] == 4}</span><span class="org-meta-line">
+#+end_src</span>
 
 <span class="org-level-3">*** results</span>
 <span class="org-level-4">**** setup</span>
@@ -423,9 +397,9 @@ breeding and injection are all 0
   end</span><span class="org-meta-line">
 #+end_src</span>
 
-<span class="org-meta-line">#+resname: first_suite_results_by_goal</span>
 <span class="org-table">| mutation | breeding | injection | tournament | goal | runtime |          average |</span>
 <span class="org-table">|----------+----------+-----------+------------+------+---------+------------------|</span>
+<span class="org-meta-line">#+resname: first_suite_results_by_goal</span>
 <span class="org-table">|        0 |        0 |        10 |        100 |    0 |      26 | 70.0272463768116 |</span>
 <span class="org-table">|        0 |        0 |        10 |        100 |    1 |     241 | 1186.74561468878 |</span>
 <span class="org-table">|        0 |        0 |        10 |        100 |    2 |     298 | 63.6574308096339 |</span>
@@ -454,10 +428,25 @@ breeding and injection are all 0
 <span class="org-table">|       10 |        0 |         0 |        100 |    1 |      67 |           891.12 |</span>
 <span class="org-table">|       10 |        0 |         0 |        100 |    2 |     241 | 140.541672240803 |</span>
 <span class="org-table">|       10 |        0 |         0 |        100 |    3 |     251 | 845.916264505847 |</span>
-<span class="org-table">|       10 |        0 |         0 |          4 |    0 |     164 |       213.919375 |</span>
+<span class="org-table">|       10 |        0 |         0 |          1 |    0 |     127 | 162.918695652174 |</span>
+<span class="org-table">|       10 |        0 |         0 |          1 |    1 |      69 |           754.86 |</span>
+<span class="org-table">|       10 |        0 |         0 |          1 |    2 |     131 | 56.4623587199689 |</span>
+<span class="org-table">|       10 |        0 |         0 |          1 |    3 |     241 | 674.545607506004 |</span>
+<span class="org-table">|       10 |        0 |         0 |          4 |    0 |     125 |           127.66 |</span>
 <span class="org-table">|       10 |        0 |         0 |          4 |    1 |      16 |            645.5 |</span>
 <span class="org-table">|       10 |        0 |         0 |          4 |    2 |     298 | 45.6393369396871 |</span>
 <span class="org-table">|       10 |        0 |         0 |          4 |    3 |     298 | 929.366606810173 |</span>
+<span class="org-table">|       10 |        0 |        10 |        100 |    0 |      10 |             59.8 |</span>
+<span class="org-table">|       10 |        0 |        10 |        100 |    1 |      16 |           538.78 |</span>
+<span class="org-table">|       10 |        0 |        10 |        100 |    2 |     266 | 58.8332716954368 |</span>
+<span class="org-table">|       10 |        0 |        10 |        100 |    3 |     298 | 477.614408206325 |</span>
+<span class="org-table">|       10 |        0 |        10 |          1 |    0 |      10 |            84.08 |</span>
+<span class="org-table">|       10 |        0 |        10 |          1 |    1 |      22 |          859.166 |</span>
+<span class="org-table">|       10 |        0 |        10 |          1 |    2 |     219 | 41.0505743978811 |</span>
+<span class="org-table">|       10 |        0 |        10 |          4 |    0 |      29 |  184.17858974359 |</span>
+<span class="org-table">|       10 |        0 |        10 |          4 |    1 |      14 |           805.65 |</span>
+<span class="org-table">|       10 |        0 |        10 |          4 |    2 |     189 | 52.4849094202899 |</span>
+<span class="org-table">|       10 |        0 |        10 |          4 |    3 |     239 | 344.271612309488 |</span>
 
 <span class="org-level-4">**** full results</span>
 <span class="org-meta-line">#+srcname: first_suite_full_results</span>
@@ -615,7 +604,26 @@ breeding and injection are all 0
 <span class="org-table">|       10 |        0 |         0 |        100 |  3.2 |     154 |           1650.0 |</span>
 <span class="org-table">|       10 |        0 |         0 |        100 |  3.3 |     207 | 170.869565217391 |</span>
 <span class="org-table">|       10 |        0 |         0 |        100 |  3.4 |     299 | 1624.12040133779 |</span>
-<span class="org-table">|       10 |        0 |         0 |          1 |  0.0 |     192 |       431.296875 |</span>
+<span class="org-table">|       10 |        0 |         0 |          1 |  0.0 |     299 |  429.04347826087 |</span>
+<span class="org-table">|       10 |        0 |         0 |          1 |  0.1 |      10 |             45.7 |</span>
+<span class="org-table">|       10 |        0 |         0 |          1 |  0.2 |      10 |            146.8 |</span>
+<span class="org-table">|       10 |        0 |         0 |          1 |  0.3 |      20 |           100.05 |</span>
+<span class="org-table">|       10 |        0 |         0 |          1 |  0.4 |     299 |             93.0 |</span>
+<span class="org-table">|       10 |        0 |         0 |          1 |  1.0 |     298 |           1695.0 |</span>
+<span class="org-table">|       10 |        0 |         0 |          1 |  1.1 |      10 |            809.3 |</span>
+<span class="org-table">|       10 |        0 |         0 |          1 |  1.2 |       1 |              0.0 |</span>
+<span class="org-table">|       10 |        0 |         0 |          1 |  1.3 |      20 |           673.65 |</span>
+<span class="org-table">|       10 |        0 |         0 |          1 |  1.4 |      20 |           596.35 |</span>
+<span class="org-table">|       10 |        0 |         0 |          1 |  2.0 |     299 | 33.6521739130435 |</span>
+<span class="org-table">|       10 |        0 |         0 |          1 |  2.1 |     298 | 36.9429530201342 |</span>
+<span class="org-table">|       10 |        0 |         0 |          1 |  2.2 |      20 |            40.15 |</span>
+<span class="org-table">|       10 |        0 |         0 |          1 |  2.3 |      10 |            110.1 |</span>
+<span class="org-table">|       10 |        0 |         0 |          1 |  2.4 |      30 | 61.4666666666667 |</span>
+<span class="org-table">|       10 |        0 |         0 |          1 |  3.0 |      10 |           1486.8 |</span>
+<span class="org-table">|       10 |        0 |         0 |          1 |  3.1 |     299 | 491.090301003345 |</span>
+<span class="org-table">|       10 |        0 |         0 |          1 |  3.2 |     299 | 324.795986622074 |</span>
+<span class="org-table">|       10 |        0 |         0 |          1 |  3.3 |     299 | 504.558528428094 |</span>
+<span class="org-table">|       10 |        0 |         0 |          1 |  3.4 |     298 |  565.48322147651 |</span>
 <span class="org-table">|       10 |        0 |         0 |          4 |  0.0 |     299 |            330.0 |</span>
 <span class="org-table">|       10 |        0 |         0 |          4 |  0.1 |      10 |             97.3 |</span>
 <span class="org-table">|       10 |        0 |         0 |          4 |  0.2 |      10 |             63.6 |</span>
@@ -636,6 +644,196 @@ breeding and injection are all 0
 <span class="org-table">|       10 |        0 |         0 |          4 |  3.2 |     299 | 530.147157190635 |</span>
 <span class="org-table">|       10 |        0 |         0 |          4 |  3.3 |     299 | 318.508361204013 |</span>
 <span class="org-table">|       10 |        0 |         0 |          4 |  3.4 |     298 |           1634.0 |</span>
+<span class="org-table">|       10 |        0 |        10 |        100 |  0.0 |      10 |            102.1 |</span>
+<span class="org-table">|       10 |        0 |        10 |        100 |  0.1 |       1 |              0.0 |</span>
+<span class="org-table">|       10 |        0 |        10 |        100 |  0.2 |      10 |             76.6 |</span>
+<span class="org-table">|       10 |        0 |        10 |        100 |  0.3 |      10 |             63.0 |</span>
+<span class="org-table">|       10 |        0 |        10 |        100 |  0.4 |      20 |             57.3 |</span>
+<span class="org-table">|       10 |        0 |        10 |        100 |  1.0 |      10 |            273.9 |</span>
+<span class="org-table">|       10 |        0 |        10 |        100 |  1.1 |      10 |            640.1 |</span>
+<span class="org-table">|       10 |        0 |        10 |        100 |  1.2 |      10 |            268.3 |</span>
+<span class="org-table">|       10 |        0 |        10 |        100 |  1.3 |      10 |            626.8 |</span>
+<span class="org-table">|       10 |        0 |        10 |        100 |  1.4 |      40 |            884.8 |</span>
+<span class="org-table">|       10 |        0 |        10 |        100 |  2.0 |     298 | 65.9261744966443 |</span>
+<span class="org-table">|       10 |        0 |        10 |        100 |  2.1 |     299 | 67.2173913043478 |</span>
+<span class="org-table">|       10 |        0 |        10 |        100 |  2.2 |     169 | 64.6804733727811 |</span>
+<span class="org-table">|       10 |        0 |        10 |        100 |  2.3 |     298 | 36.4798657718121 |</span>
+<span class="org-table">|       10 |        0 |        10 |        100 |  2.4 |     269 | 59.8624535315985 |</span>
+<span class="org-table">|       10 |        0 |        10 |        100 |  3.0 |     299 | 539.137123745819 |</span>
+<span class="org-table">|       10 |        0 |        10 |        100 |  3.1 |     299 | 459.123745819398 |</span>
+<span class="org-table">|       10 |        0 |        10 |        100 |  3.2 |     298 |  549.46644295302 |</span>
+<span class="org-table">|       10 |        0 |        10 |        100 |  3.3 |     299 | 469.270903010033 |</span>
+<span class="org-table">|       10 |        0 |        10 |        100 |  3.4 |     298 | 371.073825503356 |</span>
+<span class="org-table">|       10 |        0 |        10 |          1 |  0.0 |      10 |             81.7 |</span>
+<span class="org-table">|       10 |        0 |        10 |          1 |  0.1 |      10 |             79.3 |</span>
+<span class="org-table">|       10 |        0 |        10 |          1 |  0.2 |      10 |            157.5 |</span>
+<span class="org-table">|       10 |        0 |        10 |          1 |  0.3 |      10 |             42.5 |</span>
+<span class="org-table">|       10 |        0 |        10 |          1 |  0.4 |      10 |             59.4 |</span>
+<span class="org-table">|       10 |        0 |        10 |          1 |  1.0 |      10 |            589.7 |</span>
+<span class="org-table">|       10 |        0 |        10 |          1 |  1.1 |      20 |            936.5 |</span>
+<span class="org-table">|       10 |        0 |        10 |          1 |  1.2 |      10 |            761.2 |</span>
+<span class="org-table">|       10 |        0 |        10 |          1 |  1.3 |      20 |           742.65 |</span>
+<span class="org-table">|       10 |        0 |        10 |          1 |  1.4 |      50 |          1265.78 |</span>
+<span class="org-table">|       10 |        0 |        10 |          1 |  2.0 |      40 |             52.8 |</span>
+<span class="org-table">|       10 |        0 |        10 |          1 |  2.1 |     299 | 45.8996655518395 |</span>
+<span class="org-table">|       10 |        0 |        10 |          1 |  2.2 |     298 | 40.8087248322148 |</span>
+<span class="org-table">|       10 |        0 |        10 |          1 |  2.3 |     160 |             25.4 |</span>
+<span class="org-table">|       10 |        0 |        10 |          1 |  2.4 |     299 | 40.3444816053512 |</span>
+<span class="org-table">|       10 |        0 |        10 |          1 |  3.0 |      65 | 590.784615384615 |</span>
+<span class="org-table">|       10 |        0 |        10 |          4 |  0.0 |      12 | 58.3333333333333 |</span>
+<span class="org-table">|       10 |        0 |        10 |          4 |  0.1 |      10 |            111.4 |</span>
+<span class="org-table">|       10 |        0 |        10 |          4 |  0.2 |      10 |             39.5 |</span>
+<span class="org-table">|       10 |        0 |        10 |          4 |  0.3 |      40 |           71.475 |</span>
+<span class="org-table">|       10 |        0 |        10 |          4 |  0.4 |      10 |             49.4 |</span>
+<span class="org-table">|       10 |        0 |        10 |          4 |  1.0 |      10 |            819.7 |</span>
+<span class="org-table">|       10 |        0 |        10 |          4 |  1.1 |      10 |            843.5 |</span>
+<span class="org-table">|       10 |        0 |        10 |          4 |  1.2 |      20 |           575.25 |</span>
+<span class="org-table">|       10 |        0 |        10 |          4 |  1.3 |      10 |            797.4 |</span>
+<span class="org-table">|       10 |        0 |        10 |          4 |  1.4 |      20 |            992.4 |</span>
+<span class="org-table">|       10 |        0 |        10 |          4 |  2.0 |     299 | 39.0367892976589 |</span>
+<span class="org-table">|       10 |        0 |        10 |          4 |  2.1 |      20 |            36.25 |</span>
+<span class="org-table">|       10 |        0 |        10 |          4 |  2.2 |      40 |             56.8 |</span>
+<span class="org-table">|       10 |        0 |        10 |          4 |  2.3 |     299 | 65.7023411371238 |</span>
+<span class="org-table">|       10 |        0 |        10 |          4 |  2.4 |     288 | 64.6354166666667 |</span>
+<span class="org-table">|       10 |        0 |        10 |          4 |  3.0 |       1 |              0.0 |</span>
+<span class="org-table">|       10 |        0 |        10 |          4 |  3.1 |     298 | 457.765100671141 |</span>
+<span class="org-table">|       10 |        0 |        10 |          4 |  3.2 |     299 | 137.538461538462 |</span>
+<span class="org-table">|       10 |        0 |        10 |          4 |  3.3 |     299 | 806.759197324415 |</span>
+<span class="org-table">|       10 |        0 |        10 |          4 |  3.4 |     298 | 319.295302013423 |</span>
+
+<span class="org-level-1">* Issues / Notes</span>
+<span class="org-level-2">** new error code</span>
+after running multiple experiments with libixm, I've managed to
+uncover a new error code...
+
+<span class="org-code">: 1 red, 5 green, 6 blue
+</span>
+which means...
+
+<span class="org-code">: /**&lt; Failed to create an alarm when needed */
+</span>
+this should hopefully be fixed now...
+
+<span class="org-level-2">** new segfaults...</span>
+this is the pre-fault output
+<span class="org-meta-line">#+begin_example 
+</span><span class="org-block">  L 
+  L 6 second on xxxx***
+  L best fitness is 9965
+  L mean fitness is 14188.25
+  L best individual is 10 long and is 9x9+x92+**
+  i 9x9+x9x99x*x*
+  i 9x*x9+x+x92+**
+  i 9x9+x*2++x*
+  i 9x9+x9x99x*x*
+  i 9x9x9+x*2++x*
+  i 9x9+x9xx992+**
+  L 
+  L 7 second on xxxx***
+  L best fitness is 2892
+  L mean fitness is 12357.34
+  L best individual is 13 long and is 9x7+x9x9*x*x*
+  i 9x9x9+x*2++x*
+  i 9x9+x9x99x9+x+x92+**
+  i 9x9+x9x99x9+x+x92+**
+  i 9x9x9+x+xx9*x*x*
+  i 9x7+*9499**x*
+  i 9x9+x9x99x98x*2++x9*x*x*L&#11;
+  L 
+  L 8 second on xxxx***
+  L best fitness is 2892
+  L mean fitness is 9667.04
+  L best individual is 26 long and is 9x9+x9x99x9+x*2++x9*x*x*L&#11;
+  i 9x9+x9x99x9+x*2++x9*x*x*L&#11;
+  i 9x9+x9x99x9+x*2++x9*x*x*L&#11;
+  i 9x9+x9x99x9+x*2++x9*x*x*L&#11;
+  Ln Sun Nov  1 16:00:10 2009 [North baud rate set to 9600]</span><span class="org-meta-line">
+#+end_example</span>
+
+more careful maintenance of individuals seems to have fixed this issue
+
+<span class="org-level-2">** size overflow</span>
+It looks like passing individuals by value rather than by reference is
+overflowing the chips.  begin to change to passing by reference.
+
+<span class="org-level-2">** hard goals</span>
+
+<span class="org-table">| goal               | best fitness | after      | meaning               |</span>
+<span class="org-table">|--------------------+--------------+------------+-----------------------|</span>
+<span class="org-table">| g 9x8x7x6x5**++*-* |          474 |            | x(x(30x + x + 7) - 8) |</span>
+<span class="org-table">| g 999xxx*****      |            0 | 19 seconds | 729x^3                |</span>
+<span class="org-table">|                    |              |            |                       |</span>
+
+<span class="org-level-2">** possibility of over-clocking the ixm w/alarms</span>
+this is currently handled by checking before every alarm is set and
+when trying to set an alarm in the past, it instead sets it for a
+second in the future.
+
+currently this only happens when a new goal is being processed (which
+makes sense, because that triggers a re-evaluation of every individual
+in the population)
+  
+<span class="org-level-2">** </span><span class="org-done">DONE</span><span class="org-level-2"> segfault (possibly crossover)</span>
+
+problem is in segfault, but it may not be noticed unless there are
+large goals
+
+we're copying past the end of our strings...
+
+checking for end-of-string characters seems to help.
+
+<span class="org-level-3">*** initial</span>
+at commit 36b2f62205e6b1564987d819aee282319664543a
+
+still segfaulting, but seems to be caused by large goals, as show in
+this example output
+<span class="org-meta-line">#+begin_example 
+</span><span class="org-block">34 second on xxxx***
+best fitness is 0
+mean fitness is 153.19
+best individual is 14 long and is 8+**8xx*x1/x**
+g 9x8x7x6x5**++*-*
+new goal is 9x8x7x6x5**++*-*
+ 
+1 second on 9x8x7x6x5**++*-*
+best fitness is 64410
+mean fitness is 74313.37
+best individual is 14 long and is 81**8xx*-1/x**
+ 
+2 second on 9x8x7x6x5**++*-*
+best fitness is 64125
+mean fitness is 64353.00
+best individual is 8 long and is xx*-1/1*
+ 
+3 second on 9x8x7x6x5**++*-*
+best fitness is 61966
+mean fitness is 64070.36
+best individual is 17 long and is 311*88**8-x*-1/1*
+ 
+4 second on 9x8x7x6x5**++*-*
+best fitness is 61641
+mean fitness is 63532.51
+best individual is 17 long and is 811*8-23xx8*-1/9*
+ 
+5 second on 9x8x7x6x5**++*-*
+best fitness is 47562
+mean fitness is 61740.08
+best individual is 17 long and is 311788**8-x*-1/1*
+ 
+6 second on 9x8x7x6x5**++*-*
+best fitness is 41028
+mean fitness is 57034.68
+best individual is 17 long and is 315788**8-x*-1/5*
+ 
+7 second on 9x8x7x6x5**++*-*
+Ln Mon Oct 26 18:02:06 2009 [North baud rate set to 9600]
+  C-c C-c%                                                                                                          
+$</span><span class="org-meta-line">
+#+end_example</span>
+
+<span class="org-level-3">*** does it segfault w/crossover commented out?</span>
+It seems that with crossover commented out, there is no possibility of
+segfault.
 
 
 </pre>
