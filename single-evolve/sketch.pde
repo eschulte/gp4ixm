@@ -375,6 +375,7 @@ void reset() {
   }
 }
 
+// reset packets look like "r m:10 b:0 ..."
 void populationReset(u8 * packet) {
   if (packetScanf(packet, "r") != 1) {
     pprintf("L bad reset: '%#p'\n",packet);
