@@ -136,6 +136,10 @@ This sketch allows boards to evaluate strings of integers and
 operators (=+=, =-=, =*=, =/=) on board using reverse polish notation.
 * Milestones
 ** Milestone 3
+   :PROPERTIES:
+   :CUSTOM_ID: milestone3
+   :END:
+
 *** fixed many bugs
 
 | Problems             | Solutions                                  |
