@@ -8,7 +8,7 @@ lang="en" xml:lang="en">
 <title>Distributed GP for IXM</title>
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2009-11-09 12:12:31 MST"/>
+<meta name="generated" content="2009-11-09 12:48:17 MST"/>
 <meta name="author" content="Eric Schulte"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -366,7 +366,6 @@ operators (<code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>) on bo
 <div class="outline-text-3" id="text-milestone3">
 
 
-
 </div>
 
 <div id="outline-container-4.1.1" class="outline-4">
@@ -387,6 +386,7 @@ operators (<code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>) on bo
 <tr><td>running out of space</td><td>pass by reference (throughout the code)</td></tr>
 </tbody>
 </table>
+
 
 </div>
 
@@ -541,20 +541,41 @@ set of rules which relate states of individual to actions
 resulting in 420 total runs &ndash; after removing those runs where mutation,
 breeding and injection are all 0
 </p>
+
+</div>
+
+<div id="outline-container-5.1.1" class="outline-4">
+<h4 id="sec-5.1.1">looking at mutation, breeding, and injection </h4>
+<div class="outline-text-4" id="text-5.1.1">
+
 <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
 <caption></caption>
-<colgroup><col align="right" /><col align="right" /><col align="right" /><col align="left" /><col align="left" /><col align="left" /><col align="left" />
+<colgroup><col align="right" /><col align="right" /><col align="right" /><col align="left" /><col align="left" /><col align="left" /><col align="left" /><col align="left" />
 </colgroup>
 <thead>
-<tr><th scope="col">goal</th><th scope="col">&ndash;i</th><th scope="col">-b-</th><th scope="col">m&ndash;</th><th scope="col">m-i</th><th scope="col">-bi</th><th scope="col">mbi</th></tr>
+<tr><th scope="col">goal</th><th scope="col">&ndash;i</th><th scope="col">-b-</th><th scope="col">m&ndash;</th><th scope="col">m-i</th><th scope="col">-bi</th><th scope="col">mb-</th><th scope="col">mbi</th></tr>
 </thead>
 <tbody>
-<tr><td>1</td><td>77.1133333333333</td><td>215.686803887679</td><td>127.66</td><td>184.17858974359</td><td>60.4121739130435</td><td>115.98</td></tr>
-<tr><td>2</td><td>807.578534713026</td><td>1685.21269780701</td><td>645.5</td><td>805.65</td><td>835.367035532311</td><td>724.266666666667</td></tr>
-<tr><td>3</td><td>49.0695674620098</td><td>197.752021278984</td><td>45.6393369396871</td><td>52.4849094202899</td><td>58.9185876860228</td><td>66.7578861683425</td></tr>
-<tr><td>4</td><td>1105.78706875267</td><td>1652.64349621782</td><td>929.366606810173</td><td>344.271612309488</td><td>1204.55192700501</td><td>382.323249758704</td></tr>
+<tr><td>1</td><td>77.1133333333333</td><td>215.686803887679</td><td>127.66</td><td>184.17858974359</td><td>60.4121739130435</td><td>89.6826755852843</td><td>115.98</td></tr>
+<tr><td>2</td><td>807.578534713026</td><td>1685.21269780701</td><td>645.5</td><td>805.65</td><td>835.367035532311</td><td>903.803076923077</td><td>724.266666666667</td></tr>
+<tr><td>3</td><td>49.0695674620098</td><td>197.752021278984</td><td>45.6393369396871</td><td>52.4849094202899</td><td>58.9185876860228</td><td>55.0341900294045</td><td>66.7578861683425</td></tr>
+<tr><td>4</td><td>1105.78706875267</td><td>1652.64349621782</td><td>929.366606810173</td><td>344.271612309488</td><td>1204.55192700501</td><td>729.240243765572</td><td>382.323249758704</td></tr>
 </tbody>
 </table>
+
+
+
+
+
+<pre class="src src-gnuplot"><span style="color: #6D9CBE;">set</span> boxwidth 0.9 relative
+<span style="color: #6D9CBE;">set</span> <span style="color: #ffffff;">title</span> <span style="color: #A5C261;">'run times by GP params'</span>
+<span style="color: #6D9CBE;">set</span> xlabel <span style="color: #A5C261;">'problems'</span>
+<span style="color: #6D9CBE;">set</span> xtics ("987xxx*-+*+" 3, "7xx*+" 2, "xxx**" 1, "xx*" 0)
+<span style="color: #6D9CBE;">set</span> ylabel <span style="color: #A5C261;">'runtimes (seconds)'</span>
+<span style="color: #6D9CBE;">set</span> style data histograms
+<span style="color: #6D9CBE;">set</span> style fill solid 1.0 border -1
+<span style="color: #CC7833;">plot</span> <span style="color: #b0c4de;">data</span> <span style="color: #ffffff;">using</span> 2 <span style="color: #ffffff;">title</span> <span style="color: #A5C261;">'--i'</span>, <span style="color: #A5C261;">''</span> <span style="color: #ffffff;">using</span> 3 <span style="color: #ffffff;">title</span> <span style="color: #A5C261;">'-b-'</span>, <span style="color: #A5C261;">''</span> <span style="color: #ffffff;">using</span> 4 <span style="color: #ffffff;">title</span> <span style="color: #A5C261;">'m--'</span>, <span style="color: #A5C261;">''</span> <span style="color: #ffffff;">using</span> 5 <span style="color: #ffffff;">title</span> <span style="color: #A5C261;">'m-i'</span>, <span style="color: #A5C261;">''</span> <span style="color: #ffffff;">using</span> 6 <span style="color: #ffffff;">title</span> <span style="color: #A5C261;">'-bi'</span>, <span style="color: #A5C261;">''</span> <span style="color: #ffffff;">using</span> 7 <span style="color: #ffffff;">title</span> <span style="color: #A5C261;">'mb-'</span>, <span style="color: #A5C261;">''</span> <span style="color: #ffffff;">using</span> 8 <span style="color: #ffffff;">title</span> <span style="color: #A5C261;">'mbi'</span>
+</pre>
 
 
 
@@ -564,50 +585,16 @@ breeding and injection are all 0
 </p>
 
 
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-<caption></caption>
-<colgroup><col align="right" /><col align="right" /><col align="right" /><col align="right" /><col align="right" /><col align="right" /><col align="right" />
-</colgroup>
-<tbody>
-<tr><td>0</td><td>0</td><td>10</td><td>4</td><td>0</td><td>32</td><td>77.1133333333333</td></tr>
-<tr><td>0</td><td>0</td><td>10</td><td>4</td><td>1</td><td>298</td><td>807.578534713026</td></tr>
-<tr><td>0</td><td>0</td><td>10</td><td>4</td><td>2</td><td>298</td><td>49.0695674620098</td></tr>
-<tr><td>0</td><td>0</td><td>10</td><td>4</td><td>3</td><td>298</td><td>1105.78706875267</td></tr>
-<tr><td>0</td><td>10</td><td>0</td><td>4</td><td>0</td><td>298</td><td>215.686803887679</td></tr>
-<tr><td>0</td><td>10</td><td>0</td><td>4</td><td>1</td><td>298</td><td>1685.21269780701</td></tr>
-<tr><td>0</td><td>10</td><td>0</td><td>4</td><td>2</td><td>298</td><td>197.752021278984</td></tr>
-<tr><td>0</td><td>10</td><td>0</td><td>4</td><td>3</td><td>298</td><td>1652.64349621782</td></tr>
-<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>0</td><td>22</td><td></td></tr>
-<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>1</td><td>298</td><td></td></tr>
-<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>2</td><td>298</td><td></td></tr>
-<tr><td>0</td><td>10</td><td>10</td><td>4</td><td>3</td><td>298</td><td></td></tr>
-<tr><td>10</td><td>0</td><td>0</td><td>4</td><td>0</td><td>125</td><td>127.66</td></tr>
-<tr><td>10</td><td>0</td><td>0</td><td>4</td><td>1</td><td>16</td><td>645.5</td></tr>
-<tr><td>10</td><td>0</td><td>0</td><td>4</td><td>2</td><td>298</td><td>45.6393369396871</td></tr>
-<tr><td>10</td><td>0</td><td>0</td><td>4</td><td>3</td><td>298</td><td>929.366606810173</td></tr>
-<tr><td>10</td><td>0</td><td>10</td><td>4</td><td>0</td><td>29</td><td>184.17858974359</td></tr>
-<tr><td>10</td><td>0</td><td>10</td><td>4</td><td>1</td><td>14</td><td>805.65</td></tr>
-<tr><td>10</td><td>0</td><td>10</td><td>4</td><td>2</td><td>189</td><td>52.4849094202899</td></tr>
-<tr><td>10</td><td>0</td><td>10</td><td>4</td><td>3</td><td>239</td><td>344.271612309488</td></tr>
-<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>0</td><td>11</td><td>69.6933333333333</td></tr>
-<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>0</td><td>17</td><td>115.98</td></tr>
-<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>1</td><td>14</td><td>724.266666666667</td></tr>
-<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>2</td><td>135</td><td>66.7578861683425</td></tr>
-<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>3</td><td>298</td><td>382.323249758704</td></tr>
-</tbody>
-</table>
-
-
-
+</div>
 
 </div>
 
-<div id="outline-container-5.1.1" class="outline-4">
-<h4 id="sec-5.1.1">results </h4>
-<div class="outline-text-4" id="text-5.1.1">
+<div id="outline-container-5.1.2" class="outline-4">
+<h4 id="sec-5.1.2">results </h4>
+<div class="outline-text-4" id="text-5.1.2">
 
 <ul>
-<li id="sec-5.1.1.1">setup <br/>
+<li id="sec-5.1.2.1">setup <br/>
 
 
 
@@ -645,7 +632,7 @@ results = <span style="color: #ffffff;">Dir</span>.entries(base).map <span style
 
 
 </li>
-<li id="sec-5.1.1.2">grouped by goal <br/>
+<li id="sec-5.1.2.2">grouped by goal <br/>
 
 
 
@@ -732,12 +719,15 @@ results.each <span style="color: #CC7833;">do</span> |r|
 <tr><td>10</td><td>0</td><td>10</td><td>4</td><td>1</td><td>14</td><td>805.65</td></tr>
 <tr><td>10</td><td>0</td><td>10</td><td>4</td><td>2</td><td>189</td><td>52.4849094202899</td></tr>
 <tr><td>10</td><td>0</td><td>10</td><td>4</td><td>3</td><td>239</td><td>344.271612309488</td></tr>
-<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>0</td><td>11</td><td>69.6933333333333</td></tr>
+<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>0</td><td>123</td><td>89.6826755852843</td></tr>
+<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>1</td><td>66</td><td>903.803076923077</td></tr>
+<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>2</td><td>298</td><td>55.0341900294045</td></tr>
+<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>3</td><td>298</td><td>729.240243765572</td></tr>
 <tr><td>10</td><td>10</td><td>10</td><td>100</td><td>0</td><td>10</td><td>41.5</td></tr>
 <tr><td>10</td><td>10</td><td>10</td><td>100</td><td>1</td><td>16</td><td>579.166666666667</td></tr>
 <tr><td>10</td><td>10</td><td>10</td><td>100</td><td>2</td><td>155</td><td>58.3026855294288</td></tr>
 <tr><td>10</td><td>10</td><td>10</td><td>100</td><td>3</td><td>298</td><td>436.408668716752</td></tr>
-<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>0</td><td>17</td><td>115.98</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>0</td><td>34</td><td>168.88</td></tr>
 <tr><td>10</td><td>10</td><td>10</td><td>4</td><td>1</td><td>14</td><td>724.266666666667</td></tr>
 <tr><td>10</td><td>10</td><td>10</td><td>4</td><td>2</td><td>135</td><td>66.7578861683425</td></tr>
 <tr><td>10</td><td>10</td><td>10</td><td>4</td><td>3</td><td>298</td><td>382.323249758704</td></tr>
@@ -746,7 +736,7 @@ results.each <span style="color: #CC7833;">do</span> |r|
 
 
 </li>
-<li id="sec-5.1.1.3">full results <br/>
+<li id="sec-5.1.2.3">full results <br/>
 
 
 
@@ -1027,11 +1017,26 @@ results.each <span style="color: #CC7833;">do</span> |r|
 <tr><td>10</td><td>0</td><td>10</td><td>4</td><td>3.2</td><td>299</td><td>137.538461538462</td></tr>
 <tr><td>10</td><td>0</td><td>10</td><td>4</td><td>3.3</td><td>299</td><td>806.759197324415</td></tr>
 <tr><td>10</td><td>0</td><td>10</td><td>4</td><td>3.4</td><td>298</td><td>319.295302013423</td></tr>
-<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>0.0</td><td>10</td><td>98.1</td></tr>
-<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>0.1</td><td>10</td><td>37.7</td></tr>
-<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>0.2</td><td>10</td><td>41.5</td></tr>
-<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>0.3</td><td>20</td><td>74.5</td></tr>
-<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>0.4</td><td>6</td><td>96.6666666666667</td></tr>
+<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>0.0</td><td>1</td><td>0.0</td></tr>
+<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>0.1</td><td>10</td><td>24.6</td></tr>
+<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>0.2</td><td>299</td><td>206.013377926421</td></tr>
+<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>0.3</td><td>298</td><td>100.0</td></tr>
+<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>0.4</td><td>10</td><td>117.8</td></tr>
+<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>1.0</td><td>1</td><td>0.0</td></tr>
+<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>1.1</td><td>10</td><td>1004.6</td></tr>
+<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>1.2</td><td>10</td><td>463.4</td></tr>
+<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>1.3</td><td>10</td><td>1277.4</td></tr>
+<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>1.4</td><td>299</td><td>1773.61538461538</td></tr>
+<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>2.0</td><td>299</td><td>93.0</td></tr>
+<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>2.1</td><td>299</td><td>32.6120401337793</td></tr>
+<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>2.2</td><td>298</td><td>47.1140939597315</td></tr>
+<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>2.3</td><td>299</td><td>64.9899665551839</td></tr>
+<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>2.4</td><td>299</td><td>37.4548494983278</td></tr>
+<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>3.0</td><td>299</td><td>292.775919732441</td></tr>
+<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>3.1</td><td>298</td><td>215.013422818792</td></tr>
+<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>3.2</td><td>298</td><td>1379.15100671141</td></tr>
+<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>3.3</td><td>299</td><td>130.260869565217</td></tr>
+<tr><td>10</td><td>10</td><td>0</td><td>4</td><td>3.4</td><td>299</td><td>1629.0</td></tr>
 <tr><td>10</td><td>10</td><td>10</td><td>100</td><td>0.0</td><td>10</td><td>38.5</td></tr>
 <tr><td>10</td><td>10</td><td>10</td><td>100</td><td>0.1</td><td>10</td><td>31.7</td></tr>
 <tr><td>10</td><td>10</td><td>10</td><td>100</td><td>0.2</td><td>10</td><td>51.7</td></tr>
@@ -1054,7 +1059,7 @@ results.each <span style="color: #CC7833;">do</span> |r|
 <tr><td>10</td><td>10</td><td>10</td><td>100</td><td>3.4</td><td>298</td><td>502.315436241611</td></tr>
 <tr><td>10</td><td>10</td><td>10</td><td>1</td><td>0.0</td><td>10</td><td>237.9</td></tr>
 <tr><td>10</td><td>10</td><td>10</td><td>1</td><td>0.1</td><td>28</td><td>83.5</td></tr>
-<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>0.0</td><td>10</td><td>65.5</td></tr>
+<tr><td>10</td><td>10</td><td>10</td><td>4</td><td>0.0</td><td>92</td><td>330.0</td></tr>
 <tr><td>10</td><td>10</td><td>10</td><td>4</td><td>0.1</td><td>10</td><td>50.3</td></tr>
 <tr><td>10</td><td>10</td><td>10</td><td>4</td><td>0.2</td><td>10</td><td>24.6</td></tr>
 <tr><td>10</td><td>10</td><td>10</td><td>4</td><td>0.3</td><td>10</td><td>64.1</td></tr>

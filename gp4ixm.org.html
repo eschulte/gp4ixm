@@ -228,7 +228,6 @@ operators (<span class="org-code">=+=</span>, <span class="org-code">=-=</span>,
 <span class="org-special-keyword">   :PROPERTIES:</span>
    <span class="org-special-keyword">:CUSTOM_ID:</span> <span class="org-property-value">milestone3</span>
 <span class="org-special-keyword">   :END:</span>
-
 <span class="org-level-3">*** fixed many bugs</span>
 
 <span class="org-table">| Problems             | Solutions                                  |</span>
@@ -236,6 +235,7 @@ operators (<span class="org-code">=+=</span>, <span class="org-code">=-=</span>,
 <span class="org-table">| segfaults            | </span><span class="org-link">check</span><span class="org-table"> individuals to isolate problem areas |</span>
 <span class="org-table">| too many alarms      | </span><span class="org-link">safer-alarm-scheduling</span><span class="org-table">                     |</span>
 <span class="org-table">| running out of space | pass by reference (throughout the code)    |</span>
+
 <span class="org-level-3">*** extracted data collector</span>
 <span class="org-link">collector/sketch.pde</span>
 
@@ -297,58 +297,31 @@ over all combinations of the following parameters
 resulting in 420 total runs -- after removing those runs where mutation,
 breeding and injection are all 0
 
+<span class="org-level-3">*** looking at mutation, breeding, and injection</span>
 <span class="org-meta-line">#+tblname: condensed-results-tournament-4</span>
-<span class="org-table">| goal |              --i |              -b- |              m-- |              m-i |              -bi |              mbi |</span>
-<span class="org-table">|------+------------------+------------------+------------------+------------------+------------------+------------------|</span>
-<span class="org-table">|    1 | 77.1133333333333 | 215.686803887679 |           127.66 |  184.17858974359 | 60.4121739130435 |           115.98 |</span>
-<span class="org-table">|    2 | 807.578534713026 | 1685.21269780701 |            645.5 |           805.65 | 835.367035532311 | 724.266666666667 |</span>
-<span class="org-table">|    3 | 49.0695674620098 | 197.752021278984 | 45.6393369396871 | 52.4849094202899 | 58.9185876860228 | 66.7578861683425 |</span>
-<span class="org-table">|    4 | 1105.78706875267 | 1652.64349621782 | 929.366606810173 | 344.271612309488 | 1204.55192700501 | 382.323249758704 |</span>
+<span class="org-table">| goal |              --i |              -b- |              m-- |              m-i |              -bi |              mb- |              mbi |</span>
+<span class="org-table">|------+------------------+------------------+------------------+------------------+------------------+------------------+------------------|</span>
+<span class="org-table">|    1 | 77.1133333333333 | 215.686803887679 |           127.66 |  184.17858974359 | 60.4121739130435 | 89.6826755852843 |           115.98 |</span>
+<span class="org-table">|    2 | 807.578534713026 | 1685.21269780701 |            645.5 |           805.65 | 835.367035532311 | 903.803076923077 | 724.266666666667 |</span>
+<span class="org-table">|    3 | 49.0695674620098 | 197.752021278984 | 45.6393369396871 | 52.4849094202899 | 58.9185876860228 | 55.0341900294045 | 66.7578861683425 |</span>
+<span class="org-table">|    4 | 1105.78706875267 | 1652.64349621782 | 929.366606810173 | 344.271612309488 | 1204.55192700501 | 729.240243765572 | 382.323249758704 |</span>
 
-<span class="org-meta-line">#+begin_src gnuplot :var data=condensed-results-tournament-4 :exports code :file data/first-suite-hist.png
+<span class="org-meta-line">#+begin_src gnuplot :var data=condensed-results-tournament-4 :exports code :results silent
 </span><span class="org-block">  set boxwidth 0.9 relative
   set title 'run times by GP params'
   set xlabel 'problems'
+  set xtics ("987xxx*-+*+" 3, "7xx*+" 2, "xxx**" 1, "xx*" 0)
   set ylabel 'runtimes (seconds)'
   set style data histograms
   set style fill solid 1.0 border -1
-  plot data using 2 title '--i', '' using 3 title '-b-', '' using 4 title 'm--', '' using 5 title 'm-i', '' using 6 title '-bi', '' using 7 title 'mbi'</span><span class="org-meta-line">
+  plot data using 2 title '--i', '' using 3 title '-b-', '' using 4 title 'm--', '' using 5 title 'm-i', '' using 6 title '-bi', '' using 7 title 'mb-', '' using 8 title 'mbi'</span><span class="org-meta-line">
 #+end_src</span>
 
-<span class="org-meta-line">#+resname:</span>
 <span class="org-link">file:data/first-suite-hist.png</span>
 
 <span class="org-meta-line">#+begin_src ruby :var raw=first_suite_results_by_goal :exports none
 </span><span class="org-block">  raw.select{|r| r[3] == 4}</span><span class="org-meta-line">
 #+end_src</span>
-
-<span class="org-meta-line">#+resname:</span>
-<span class="org-table">|  0 |  0 | 10 | 4 | 0 |  32 | 77.1133333333333 |</span>
-<span class="org-table">|  0 |  0 | 10 | 4 | 1 | 298 | 807.578534713026 |</span>
-<span class="org-table">|  0 |  0 | 10 | 4 | 2 | 298 | 49.0695674620098 |</span>
-<span class="org-table">|  0 |  0 | 10 | 4 | 3 | 298 | 1105.78706875267 |</span>
-<span class="org-table">|  0 | 10 |  0 | 4 | 0 | 298 | 215.686803887679 |</span>
-<span class="org-table">|  0 | 10 |  0 | 4 | 1 | 298 | 1685.21269780701 |</span>
-<span class="org-table">|  0 | 10 |  0 | 4 | 2 | 298 | 197.752021278984 |</span>
-<span class="org-table">|  0 | 10 |  0 | 4 | 3 | 298 | 1652.64349621782 |</span>
-<span class="org-table">|  0 | 10 | 10 | 4 | 0 |  22 |  |</span>
-<span class="org-table">|  0 | 10 | 10 | 4 | 1 | 298 |  |</span>
-<span class="org-table">|  0 | 10 | 10 | 4 | 2 | 298 |  |</span>
-<span class="org-table">|  0 | 10 | 10 | 4 | 3 | 298 |  |</span>
-<span class="org-table">| 10 |  0 |  0 | 4 | 0 | 125 |           127.66 |</span>
-<span class="org-table">| 10 |  0 |  0 | 4 | 1 |  16 |            645.5 |</span>
-<span class="org-table">| 10 |  0 |  0 | 4 | 2 | 298 | 45.6393369396871 |</span>
-<span class="org-table">| 10 |  0 |  0 | 4 | 3 | 298 | 929.366606810173 |</span>
-<span class="org-table">| 10 |  0 | 10 | 4 | 0 |  29 |  184.17858974359 |</span>
-<span class="org-table">| 10 |  0 | 10 | 4 | 1 |  14 |           805.65 |</span>
-<span class="org-table">| 10 |  0 | 10 | 4 | 2 | 189 | 52.4849094202899 |</span>
-<span class="org-table">| 10 |  0 | 10 | 4 | 3 | 239 | 344.271612309488 |</span>
-<span class="org-table">| 10 | 10 |  0 | 4 | 0 |  11 | 69.6933333333333 |</span>
-<span class="org-table">| 10 | 10 | 10 | 4 | 0 |  17 |           115.98 |</span>
-<span class="org-table">| 10 | 10 | 10 | 4 | 1 |  14 | 724.266666666667 |</span>
-<span class="org-table">| 10 | 10 | 10 | 4 | 2 | 135 | 66.7578861683425 |</span>
-<span class="org-table">| 10 | 10 | 10 | 4 | 3 | 298 | 382.323249758704 |</span>
-
 
 <span class="org-level-3">*** results</span>
 <span class="org-level-4">**** setup</span>
@@ -462,12 +435,15 @@ breeding and injection are all 0
 <span class="org-table">|       10 |        0 |        10 |          4 |    1 |      14 |           805.65 |</span>
 <span class="org-table">|       10 |        0 |        10 |          4 |    2 |     189 | 52.4849094202899 |</span>
 <span class="org-table">|       10 |        0 |        10 |          4 |    3 |     239 | 344.271612309488 |</span>
-<span class="org-table">|       10 |       10 |         0 |          4 |    0 |      11 | 69.6933333333333 |</span>
+<span class="org-table">|       10 |       10 |         0 |          4 |    0 |     123 | 89.6826755852843 |</span>
+<span class="org-table">|       10 |       10 |         0 |          4 |    1 |      66 | 903.803076923077 |</span>
+<span class="org-table">|       10 |       10 |         0 |          4 |    2 |     298 | 55.0341900294045 |</span>
+<span class="org-table">|       10 |       10 |         0 |          4 |    3 |     298 | 729.240243765572 |</span>
 <span class="org-table">|       10 |       10 |        10 |        100 |    0 |      10 |             41.5 |</span>
 <span class="org-table">|       10 |       10 |        10 |        100 |    1 |      16 | 579.166666666667 |</span>
 <span class="org-table">|       10 |       10 |        10 |        100 |    2 |     155 | 58.3026855294288 |</span>
 <span class="org-table">|       10 |       10 |        10 |        100 |    3 |     298 | 436.408668716752 |</span>
-<span class="org-table">|       10 |       10 |        10 |          4 |    0 |      17 |           115.98 |</span>
+<span class="org-table">|       10 |       10 |        10 |          4 |    0 |      34 |           168.88 |</span>
 <span class="org-table">|       10 |       10 |        10 |          4 |    1 |      14 | 724.266666666667 |</span>
 <span class="org-table">|       10 |       10 |        10 |          4 |    2 |     135 | 66.7578861683425 |</span>
 <span class="org-table">|       10 |       10 |        10 |          4 |    3 |     298 | 382.323249758704 |</span>
@@ -744,11 +720,26 @@ breeding and injection are all 0
 <span class="org-table">|       10 |        0 |        10 |          4 |  3.2 |     299 | 137.538461538462 |</span>
 <span class="org-table">|       10 |        0 |        10 |          4 |  3.3 |     299 | 806.759197324415 |</span>
 <span class="org-table">|       10 |        0 |        10 |          4 |  3.4 |     298 | 319.295302013423 |</span>
-<span class="org-table">|       10 |       10 |         0 |          4 |  0.0 |      10 |             98.1 |</span>
-<span class="org-table">|       10 |       10 |         0 |          4 |  0.1 |      10 |             37.7 |</span>
-<span class="org-table">|       10 |       10 |         0 |          4 |  0.2 |      10 |             41.5 |</span>
-<span class="org-table">|       10 |       10 |         0 |          4 |  0.3 |      20 |             74.5 |</span>
-<span class="org-table">|       10 |       10 |         0 |          4 |  0.4 |       6 | 96.6666666666667 |</span>
+<span class="org-table">|       10 |       10 |         0 |          4 |  0.0 |       1 |              0.0 |</span>
+<span class="org-table">|       10 |       10 |         0 |          4 |  0.1 |      10 |             24.6 |</span>
+<span class="org-table">|       10 |       10 |         0 |          4 |  0.2 |     299 | 206.013377926421 |</span>
+<span class="org-table">|       10 |       10 |         0 |          4 |  0.3 |     298 |            100.0 |</span>
+<span class="org-table">|       10 |       10 |         0 |          4 |  0.4 |      10 |            117.8 |</span>
+<span class="org-table">|       10 |       10 |         0 |          4 |  1.0 |       1 |              0.0 |</span>
+<span class="org-table">|       10 |       10 |         0 |          4 |  1.1 |      10 |           1004.6 |</span>
+<span class="org-table">|       10 |       10 |         0 |          4 |  1.2 |      10 |            463.4 |</span>
+<span class="org-table">|       10 |       10 |         0 |          4 |  1.3 |      10 |           1277.4 |</span>
+<span class="org-table">|       10 |       10 |         0 |          4 |  1.4 |     299 | 1773.61538461538 |</span>
+<span class="org-table">|       10 |       10 |         0 |          4 |  2.0 |     299 |             93.0 |</span>
+<span class="org-table">|       10 |       10 |         0 |          4 |  2.1 |     299 | 32.6120401337793 |</span>
+<span class="org-table">|       10 |       10 |         0 |          4 |  2.2 |     298 | 47.1140939597315 |</span>
+<span class="org-table">|       10 |       10 |         0 |          4 |  2.3 |     299 | 64.9899665551839 |</span>
+<span class="org-table">|       10 |       10 |         0 |          4 |  2.4 |     299 | 37.4548494983278 |</span>
+<span class="org-table">|       10 |       10 |         0 |          4 |  3.0 |     299 | 292.775919732441 |</span>
+<span class="org-table">|       10 |       10 |         0 |          4 |  3.1 |     298 | 215.013422818792 |</span>
+<span class="org-table">|       10 |       10 |         0 |          4 |  3.2 |     298 | 1379.15100671141 |</span>
+<span class="org-table">|       10 |       10 |         0 |          4 |  3.3 |     299 | 130.260869565217 |</span>
+<span class="org-table">|       10 |       10 |         0 |          4 |  3.4 |     299 |           1629.0 |</span>
 <span class="org-table">|       10 |       10 |        10 |        100 |  0.0 |      10 |             38.5 |</span>
 <span class="org-table">|       10 |       10 |        10 |        100 |  0.1 |      10 |             31.7 |</span>
 <span class="org-table">|       10 |       10 |        10 |        100 |  0.2 |      10 |             51.7 |</span>
@@ -771,7 +762,7 @@ breeding and injection are all 0
 <span class="org-table">|       10 |       10 |        10 |        100 |  3.4 |     298 | 502.315436241611 |</span>
 <span class="org-table">|       10 |       10 |        10 |          1 |  0.0 |      10 |            237.9 |</span>
 <span class="org-table">|       10 |       10 |        10 |          1 |  0.1 |      28 |             83.5 |</span>
-<span class="org-table">|       10 |       10 |        10 |          4 |  0.0 |      10 |             65.5 |</span>
+<span class="org-table">|       10 |       10 |        10 |          4 |  0.0 |      92 |            330.0 |</span>
 <span class="org-table">|       10 |       10 |        10 |          4 |  0.1 |      10 |             50.3 |</span>
 <span class="org-table">|       10 |       10 |        10 |          4 |  0.2 |      10 |             24.6 |</span>
 <span class="org-table">|       10 |       10 |        10 |          4 |  0.3 |      10 |             64.1 |</span>
