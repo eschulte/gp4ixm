@@ -132,7 +132,7 @@ class Group
   def plot_script(counter = false)
     ["set term png",
      (if counter
-        "set output \"#{base}/#{counter}.png\""
+        "set output \"#{base}/group.png\"" # "set output \"#{base}/#{counter}.png\""
       else
         "set output \"#{base}/group.png\""
       end),
