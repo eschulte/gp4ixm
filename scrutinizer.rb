@@ -24,7 +24,7 @@ ixm = LibIXM.new(:sfbprog_path =>   '/Users/eschulte/bin/sfbprog', # path for sf
 
 puts "creating board group"
 puts "putting in a new goal"
-ixm << "g 987xxx*-+*+"
+ixm << "g xxxx***"
 sleep(2) # let the goal get a head start
 puts "resetting the boards"
 ixm << "r "
@@ -39,15 +39,30 @@ ixm.attach_reflex(/^c/) do |packet|
   g.update(packet)
 end
 
-count = 2
-while true
-  if count%10 == 0
-    puts "telling boards I am here [#{count}]"
-    ixm << "c#{count} f"
-    # reset the max value
-    g.maxvalue = 0
+comp = Thread.new do
+  count = 2
+  while true
+    if count%10 == 0
+      # puts "telling boards I am here [#{count}]"
+      # ixm << "c#{count} f"
+      # reset the max value
+      g.maxvalue = 0
+    end
+    count += 1
+    g.plot(update_counter)
+    Thread.pass
+    sleep 1
   end
-  count += 1
-  g.plot(update_counter)
-  sleep 1
 end
+
+# thread for reading user input
+user = Thread.new do
+  while(true)
+    ixm << STDIN.gets
+    Thread.pass
+    sleep 1
+  end
+end
+
+user.join
+comp.join
