@@ -23,24 +23,28 @@ ixm = LibIXM.new(:sfbprog_path =>   '/Users/eschulte/bin/sfbprog', # path for sf
                  :sfbprog_sketch => 'single-evolve/sketch.hex')    # sketch
 
 puts "creating board group"
-g = Group.new
+puts "putting in a new goal"
+ixm << "g 987xxx*-+*+"
+puts "resetting the boards"
+ixm << "r "
+g = Group.new("/Users/eschulte/Desktop/gp-results")
 
 update_counter = 0
 ixm.attach_reflex(/^c/) do |packet|
-  puts "got packet \"#{packet}\""
+  if packet.match(/^c([\.\d]+) (.+)/)
+    puts "\t#{$2}\t#{$1}"
+  end
   update_counter += 1
   g.update(packet)
-  g.plot(update_counter)
 end
 
-count = 111
+count = 2
 while true
-  puts "telling boards I am here [#{count}]"
-  ixm << "c#{count} f"
-  puts "putting in a new goal"
-  ixm << "987xxx*-+*+"
-  puts "resetting the boards"
-  ixm << "r "
+  if count%10 == 0
+    puts "telling boards I am here [#{count}]"
+    ixm << "c#{count} f"
+  end
   count += 1
-  sleep 60
+  g.plot(update_counter)
+  sleep 1
 end

@@ -14,12 +14,13 @@ class Group
   attr_accessor :count, :boards, :base, :maxvalue
 
   # create a new empty group
-  def initialize()
+  def initialize(base)
     self.count = 0
     self.boards = []
     self.maxvalue = 0
     # base directory/path where images are stored
-    self.base = "/tmp/scrutinizer/group"
+    self.base = base
+    %x{mkdir -p #{base}}
   end
 
   def fill_boards
