@@ -23,12 +23,12 @@ ixm = LibIXM.new(:sfbprog_path =>   '/Users/eschulte/bin/sfbprog', # path for sf
                  :sfbprog_sketch => 'single-evolve/sketch.hex')    # sketch
 
 puts "creating board group"
-puts "putting in a new goal"
-ixm << "g xxxx***"
-sleep(2) # let the goal get a head start
-puts "resetting the boards"
-ixm << "r "
 g = Group.new("/Users/eschulte/Desktop/gp-results")
+# puts "putting in a new goal"
+# ixm << "g xxxx***"
+# sleep(2) # let the goal get a head start
+# puts "resetting the boards"
+# ixm << "r "
 
 update_counter = 0
 ixm.attach_reflex(/^c/) do |packet|
