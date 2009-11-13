@@ -422,15 +422,15 @@ void setup() {
 
 void loop() {
   delay(1000); ++goal_seconds;
-  pprintf("L \n");                             // print status information
-  pprintf("L %d second on %s\n", goal_seconds, goal);
-  pprintf("L best fitness is %d\n", pop.best_fitness());
-  pprintf("L mean fitness is "); print(pop.mean_fitness()); pprintf("\n");
-  pprintf("L best individual is %d long and is %s\n",
-          (* pop.best()).size(), (* pop.best()).representation);
-  pprintf("L settings are m:%d b:%d i:%d s:%d t:%d p:%d\n",
-          mutation_tick, breeding_tick, injection_tick,
-          sharing_tick, tournament_size, mutation_prob);
+  // pprintf("L \n");                             // print status information
+  // pprintf("L %d second on %s\n", goal_seconds, goal);
+  // pprintf("L best fitness is %d\n", pop.best_fitness());
+  // pprintf("L mean fitness is "); print(pop.mean_fitness()); pprintf("\n");
+  // pprintf("L best individual is %d long and is %s\n",
+  //         (* pop.best()).size(), (* pop.best()).representation);
+  // pprintf("L settings are m:%d b:%d i:%d s:%d t:%d p:%d\n",
+  //         mutation_tick, breeding_tick, injection_tick,
+  //         sharing_tick, tournament_size, mutation_prob);
   report_double(pop.best_fitness());
   if (buttonDown()) pop.reset();
 }
