@@ -45,8 +45,6 @@ comp = Thread.new do
     if count%10 == 0
       # puts "telling boards I am here [#{count}]"
       # ixm << "c#{count} f"
-      # reset the max value
-      g.maxvalue = 0
     end
     count += 1
     g.plot(update_counter)

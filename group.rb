@@ -109,7 +109,7 @@ class Group
     self.cols.map do |col|
       back_edge = ""; front_edge = ""
       self.boards.select{|b| b.y == col}.sort_by{ |b| b.x }.each do |b|
-        self.maxvalue = b.value if b.value > self.maxvalue
+        self.maxvalue = b.value # if b.value > self.maxvalue
         back_edge += gnuplot_row((b.y - 1), b.x, b.value)
         front_edge += gnuplot_row(b.y, b.x, b.value)
       end
