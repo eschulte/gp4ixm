@@ -14,40 +14,28 @@
 require 'libixm/libixm.rb'
 require 'board.rb'
 require 'group.rb'
-
 # create the ixm object
 puts "initializing ixm connection"
 ixm = LibIXM.new(:sfbprog_path =>   '/Users/eschulte/bin/sfbprog', # path for sfbprog or sfbprog.exe
                  :sfbprog_args =>   '',                            # additional arguments
                  :sfbprog_device => '/dev/tty.usbserial-FTE5HPVE', # device for serial-over-usb
                  :sfbprog_sketch => 'single-evolve/sketch.hex')    # sketch
-
 puts "creating board group"
 g = Group.new("/Users/eschulte/Desktop/gp-results")
-# puts "putting in a new goal"
-# ixm << "g xxxx***"
-# sleep(2) # let the goal get a head start
-# puts "resetting the boards"
-# ixm << "r "
 
-update_counter = 0
 ixm.attach_reflex(/^c/) do |packet|
   if packet.match(/^c([\.\d]+) (.+)/)
     puts "\t#{$2}\t#{$1}"
   end
-  update_counter += 1
   g.update(packet)
 end
 
 comp = Thread.new do
   count = 2
   while true
-    if count%10 == 0
-      # puts "telling boards I am here [#{count}]"
-      # ixm << "c#{count} f"
-    end
     count += 1
-    g.plot(update_counter)
+    puts "plotting"
+    g.plot(count)
     Thread.pass
     sleep 1
   end

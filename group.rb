@@ -21,6 +21,7 @@ class Group
     # base directory/path where images are stored
     self.base = base
     %x{mkdir -p #{base}}
+    %x{mkdir -p #{File.join(base, "data")}}
   end
 
   def fill_boards
@@ -118,9 +119,9 @@ class Group
   end
 
   # dump my data to a temporary file
-  def data_file
+  def data_file(counter)
     # create a temp file
-    t = Tempfile.new("scrutinizer-gnuplot")
+    t = File.open(File.join(base,"data", "#{counter}.data"), 'w')
     t << self.data
     t.flush
     t.path
@@ -129,19 +130,18 @@ class Group
   # generate a gnuplot script using techniques from
   # http://t16web.lanl.gov/Kawano/gnuplot/plot3d2-e.html
   def plot_script(counter = false)
-    [# "set term png",
-     # (if counter
-     #    "set output \"#{base}/#{counter}.png\""
-     #  else
-     #    "set output \"#{base}/group.png\""
-     #  end),
-     # "set zrange [0:#{self.maxvalue}]",
+    ["set term png",
+     (if counter
+        "set output \"#{base}/#{counter}.png\""
+      else
+        "set output \"#{base}/group.png\""
+      end),
      "set pm3d",
-     "splot \"#{self.data_file}\" with pm3d title 'fitness' "].join("\n")
+     "splot \"#{self.data_file(counter)}\" with pm3d title 'fitness' "].join("\n")
   end
 
   def plot(counter = false)
-    g = File.open(File.join(base,"#{counter}.data"), 'w')
+    g = Tempfile.new("scrutinizer-gnuplot")
     g << self.plot_script(counter)
     g.flush
     %x{gnuplot #{g.path} 2> /dev/null}
