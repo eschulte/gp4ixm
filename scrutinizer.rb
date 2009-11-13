@@ -25,6 +25,7 @@ ixm = LibIXM.new(:sfbprog_path =>   '/Users/eschulte/bin/sfbprog', # path for sf
 puts "creating board group"
 puts "putting in a new goal"
 ixm << "g 987xxx*-+*+"
+sleep(2) # let the goal get a head start
 puts "resetting the boards"
 ixm << "r "
 g = Group.new("/Users/eschulte/Desktop/gp-results")
@@ -43,6 +44,8 @@ while true
   if count%10 == 0
     puts "telling boards I am here [#{count}]"
     ixm << "c#{count} f"
+    # reset the max value
+    g.maxvalue = 0
   end
   count += 1
   g.plot(update_counter)

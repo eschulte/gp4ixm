@@ -28,15 +28,11 @@ class Group
     xmin = 0; xmax = 0; ymin = 0; ymax = 0
     by_cords = boards.map{ |b| b.x_y }
     by_cords.each do |x, y|
-      xmin = x if x < xmin
-      xmax = x if x > xmax
-      ymin = y if y < ymin
-      ymax = y if y > ymax
+      xmin = x-1 if x < xmin
+      xmax = x+1 if x > xmax
+      ymin = y-1 if y < ymin
+      ymax = y+1 if y > ymax
     end
-    xmin -= 1
-    xmax += 1
-    ymin -= 1
-    ymax += 1
     # fill in every point in the square
     (xmin..xmax).each{ |x|
       (ymin..ymax).each{ |y|
@@ -135,9 +131,9 @@ class Group
   def plot_script(counter = false)
     ["set term png",
      (if counter
-        "set output \"#{base}.#{counter}.png\""
+        "set output \"#{base}/#{counter}.png\""
       else
-        "set output \"#{base}.png\""
+        "set output \"#{base}/group.png\""
       end),
      "set zrange [0:#{self.maxvalue}]",
      "set pm3d",
