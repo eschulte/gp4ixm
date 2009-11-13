@@ -162,35 +162,16 @@ individual new_ind() {                         // randomly generate a new indivi
 
 individual crossover(individual * mother, individual * father) {
   individual child;
-  char possibilities[16] = BUILDING_BLOCKS;
   int index = 0;
   int mother_point = random((*mother).size());
   int father_point = random((*father).size());
-  char holder;
   for(int i=0; i<mother_point; ++i) {
-    holder = (*mother).representation[i];
-    if(not (holder == '0' || holder == '1' || holder == '2' || holder == '3' || holder == '4' ||
-            holder == '5' || holder == '6' || holder == '7' || holder == '8' || holder == '9' ||
-            holder == '-' || holder == '+' || holder == '/' || holder == '*' || holder == 'x')) {
-      pprintf("L bad value from mother %c\n", holder);
-      child.representation[index] = possibilities[random(15)];
-    } else {
-      child.representation[index] = holder;
-    }
     child.representation[index] = (*mother).representation[i];
     ++index;
   }
   for(int i=father_point; i<(*father).size(); ++i) {
     if((index+1) >= (IND_SIZE - 1)) break;
-    holder = (*father).representation[i];
-    if(not (holder == '0' || holder == '1' || holder == '2' || holder == '3' || holder == '4' ||
-            holder == '5' || holder == '6' || holder == '7' || holder == '8' || holder == '9' ||
-            holder == '-' || holder == '+' || holder == '/' || holder == '*' || holder == 'x')) {
-      pprintf("L bad value from father %c\n", holder);
-      child.representation[index] = possibilities[random(15)];
-    } else {
-      child.representation[index] = holder;
-    }
+    child.representation[index] = (*father).representation[i];
     ++index;
   }
   child.representation[index] = '\0';
