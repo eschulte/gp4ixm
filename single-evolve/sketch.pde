@@ -149,7 +149,8 @@ individual new_ind() {                         // randomly generate a new indivi
   int index = 0;
   ind.fitness = -1;
   char possibilities[16] = BUILDING_BLOCKS;
-  for(int i = 0; i < random(IND_SIZE); ++i) {
+  ind.representation[0] = possibilities[random(15)];
+  for(int i=0; i < random(IND_SIZE); ++i) {
     ind.representation[i] = possibilities[random(15)];
     index = i;
   }
