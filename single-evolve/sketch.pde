@@ -15,10 +15,10 @@
 #define MAX_GOAL_SIZE 64
 
 char goal[MAX_GOAL_SIZE];
-int mutation_tick   = 100;                     // ms per mutation
-int breeding_tick   = 100;                     // ms per breeding
-int injection_tick  = 100;                     // ms per breeding
-int sharing_tick    = 1000;                    // ms per sharing
+int mutation_tick   = 10;                      // ms per mutation
+int breeding_tick   = 10;                      // ms per breeding
+int injection_tick  = 10;                      // ms per breeding
+int sharing_tick    = 500;                     // ms per sharing
 int tournament_size = 4;
 int mutation_prob   = 4;                       // PROB/SIZE = chance_mut of each spot
 
@@ -161,19 +161,38 @@ individual new_ind() {                         // randomly generate a new indivi
 
 individual crossover(individual * mother, individual * father) {
   individual child;
+  char possibilities[16] = BUILDING_BLOCKS;
   int index = 0;
-  int smaller = (*mother).size();
-  if((*father).size() < smaller) smaller = (*father).size();
-  if(IND_SIZE < smaller) smaller = IND_SIZE;
-  int crossover_point = random(smaller);
-  for(int i=0; i<smaller; ++i){
-    index = i;
-    if(i < crossover_point)
-      child.representation[index] = (*mother).representation[index];
-    else
-      child.representation[index] = (*father).representation[index];
+  int mother_point = random((*mother).size());
+  int father_point = random((*father).size());
+  char holder;
+  for(int i=0; i<mother_point; ++i) {
+    holder = (*mother).representation[i];
+    if(not (holder == '0' || holder == '1' || holder == '2' || holder == '3' || holder == '4' ||
+            holder == '5' || holder == '6' || holder == '7' || holder == '8' || holder == '9' ||
+            holder == '-' || holder == '+' || holder == '/' || holder == '*' || holder == 'x')) {
+      pprintf("L bad value from mother %c\n", holder);
+      child.representation[index] = possibilities[random(15)];
+    } else {
+      child.representation[index] = holder;
+    }
+    child.representation[index] = (*mother).representation[i];
+    ++index;
   }
-  child.representation[index+1] = '\0';
+  for(int i=father_point; i<(*father).size(); ++i) {
+    if((index+1) >= (IND_SIZE - 1)) break;
+    holder = (*father).representation[i];
+    if(not (holder == '0' || holder == '1' || holder == '2' || holder == '3' || holder == '4' ||
+            holder == '5' || holder == '6' || holder == '7' || holder == '8' || holder == '9' ||
+            holder == '-' || holder == '+' || holder == '/' || holder == '*' || holder == 'x')) {
+      pprintf("L bad value from father %c\n", holder);
+      child.representation[index] = possibilities[random(15)];
+    } else {
+      child.representation[index] = holder;
+    }
+    ++index;
+  }
+  child.representation[index] = '\0';
   child.score();
   if(not child.check()) pprintf("L from crossover\n");
   return child;
