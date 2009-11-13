@@ -15,12 +15,12 @@ ixm = LibIXM.new(:sfbprog_path =>   '/Users/eschulte/bin/sfbprog', # path for sf
 
 puts "running some experiments..."
 
+# build up all reset strings
 r_strings = ["r"]
-
-[["m", [10]],
- ["b", [0, 10]],
- ["i", [0, 10]],
- ["t", [100, 4, 1]]].each do |key, values|
+[["s", [0, 10, 100]],
+ ["m", [0, 10, 100]],
+ ["b", [0, 10, 100]],
+ ["i", [0, 10, 100]]].each do |key, values|
   new_strings = []
   r_strings = r_strings.each do |r|
     values.each do |val|
@@ -32,7 +32,7 @@ end
 4.times{ r_strings.shift }
 
 # start up
-puts "starting #{(r_strings.size) * 5 * 4} runs"
+puts "starting #{(r_strings.size) * 5 * 3} runs"
 %x{mkdir -p /tmp/experimenter}
 %x{rm /tmp/experimenter/*}
 
@@ -48,7 +48,7 @@ end
 
 count = 4
 r_strings.each do |r_s|
-  ["xx*", "xxx**", "7xx*+", "987xxx*-+*+"].each_with_index do |goal, i|
+  ["xx*", "xxx**", "987xxx*-+*+"].each_with_index do |goal, i|
     5.times do |c|
       print "\n\t#{r_s} run #{c} on #{goal}\n\t"; STDOUT.flush
       $current_file =
@@ -64,8 +64,8 @@ r_strings.each do |r_s|
       ixm << r_s
       # let it run for a while
       sleep_counter = 0
-      while((not $finished) and (sleep_counter < 30))
-        sleep 10
+      while((not $finished) and (sleep_counter < 300))
+        sleep 1
         sleep_counter += 1
       end
       
