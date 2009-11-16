@@ -223,7 +223,7 @@ look at the speedup gained through using the big group (with
 #+begin_src ruby :results raw output :exports code :noweb
   # <<fifth_suite_results_setup>>
   # print out averaged over 5 goal runs
-  puts "|sharing|mutation|breeding|tournament|goal|runtime|average|"
+  puts "|sharing|mutation|breeding|goal|runtime|average|"
   puts "|--------"
   runtime = 0; average = 0
   results.each do |r|
@@ -243,10 +243,10 @@ look at the speedup gained through using the big group (with
 #+end_src
 
 #+resname: fifth_suite_results_by_goal
-| sharing | mutation | breeding | tournament | goal |          runtime | average |
-|---------+----------+----------+------------+------+------------------+---------|
-|       0 |       10 |        0 |          0 |   14 | 930.752777777778 |         |
-|       0 |       10 |       10 |          0 |   12 |         838.1225 |         |
+| sharing | mutation | breeding | goal | runtime |          average |
+|---------+----------+----------+------+---------+------------------|
+|       0 |       10 |       10 |    0 |      19 | 1652.48083333333 |
+|     100 |       10 |       10 |    0 |      12 | 590.180628019324 |
 
 ** fourth suite
 #+srcname: fourth_suite_results_setup
@@ -285,7 +285,7 @@ look at the speedup gained through using the big group (with
 #+begin_src ruby :results raw output :exports code :noweb
   # <<fourth_suite_results_setup>>
   # print out averaged over 5 goal runs
-  puts "|sharing|mutation|breeding|tournament|goal|runtime|average|"
+  puts "|sharing|mutation|breeding|goal|runtime|average|"
   puts "|--------"
   runtime = 0; average = 0
   results.each do |r|
@@ -305,10 +305,10 @@ look at the speedup gained through using the big group (with
 #+end_src
 
 #+resname: fourth_suite_results_by_goal
-| sharing | mutation | breeding | tournament | goal |          runtime | average |
-|---------+----------+----------+------------+------+------------------+---------|
-|     100 |       10 |       10 |          0 |   19 | 1404.53896135266 |         |
-|       0 |       10 |       10 |          0 |   15 | 944.637903225806 |         |
+| sharing | mutation | breeding | goal | runtime |          average |
+|---------+----------+----------+------+---------+------------------|
+|       0 |       10 |       10 |    0 |      22 | 1758.99623655914 |
+|     100 |       10 |       10 |    0 |      12 | 590.180628019324 |
 
 ** third suite
 #+srcname: third_suite_results_setup
@@ -347,7 +347,7 @@ look at the speedup gained through using the big group (with
 #+begin_src ruby :results raw output :exports code :noweb
   # <<third_suite_results_setup>>
   # print out averaged over 5 goal runs
-  puts "|sharing|mutation|breeding|tournament|goal|runtime|average|"
+  puts "|sharing|mutation|breeding|goal|runtime|average|"
   puts "|--------"
   runtime = 0; average = 0
   results.each do |r|
@@ -367,10 +367,10 @@ look at the speedup gained through using the big group (with
 #+end_src
 
 #+resname: third_suite_results_by_goal
-| sharing | mutation | breeding | tournament | goal |          runtime | average |
-|---------+----------+----------+------------+------+------------------+---------|
-|       0 |       10 |        0 |          0 | 1213 | 479.833009370899 |         |
-|       0 |       10 |       10 |          0 | 1220 | 965.927294106587 |         |
+| sharing | mutation | breeding | goal | runtime |          average |
+|---------+----------+----------+------+---------+------------------|
+|       0 |       10 |        0 |    0 |    1213 | 479.833009370899 |
+|       0 |       10 |       10 |    0 |    1220 | 965.927294106587 |
 
 ** first suite
    :PROPERTIES:

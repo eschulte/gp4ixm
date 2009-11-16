@@ -16,15 +16,15 @@ require 'board.rb'
 require 'group.rb'
 # create the ixm object
 puts "initializing ixm connection"
-ixm = LibIXM.new(:sfbprog_path =>   '/Users/eschulte/bin/sfbprog', # path for sfbprog or sfbprog.exe
-                 :sfbprog_args =>   '',                            # additional arguments
-                 :sfbprog_device => '/dev/tty.usbserial-FTE5HPVE', # device for serial-over-usb
+ixm = LibIXM.new(:sfbprog_path   => '/Users/eschulte/bin/sfbprog', # path for sfbprog or sfbprog.exe
+                 :sfbprog_args   => '',                            # additional arguments
+                 :sfbprog_device => '/dev/tty.usbserial-FTE5H1S3', # device for serial-over-usb
                  :sfbprog_sketch => 'single-evolve/sketch.hex')    # sketch
 puts "creating board group"
 g = Group.new("/Users/eschulte/Desktop/gp-results")
 
 ixm.attach_reflex(/^c/) do |packet|
-  if packet.match(/^c([\.\d]+) (.+)/)
+  if packet.match(/^c([-\.\d]+) (.+)/)
     puts "\t#{$2}\t#{$1}"
   end
   g.update(packet)

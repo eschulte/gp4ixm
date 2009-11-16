@@ -1,5 +1,5 @@
 /*                                             -*- mode:C++ -*-
- * new!
+ * newer!
  * Sketch description: Run GP on a single ixm board.
  *
  * Sketch author: Eric Schulte
@@ -18,7 +18,7 @@ char goal[MAX_GOAL_SIZE];
 int mutation_tick   = 10;                      // ms per mutation
 int breeding_tick   = 10;                      // ms per breeding
 int injection_tick  = 10;                      // ms per breeding
-int sharing_tick    = 500;                     // ms per sharing
+int sharing_tick    = 250;                     // ms per sharing
 int tournament_size = 4;
 int mutation_prob   = 4;                       // PROB/SIZE = chance_mut of each spot
 
@@ -229,7 +229,7 @@ void population::incorporate(individual ind) { // add a new individual, evicting
   }
 }
 individual * population::tournament() {          // select individual with tournament of size SIZE
-  int winner = 0;
+  int winner = random(POP_SIZE);
   int challenger = 0;
   for(int i=0; i<tournament_size; ++i) {
     challenger = random(POP_SIZE);

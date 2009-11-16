@@ -70,7 +70,7 @@ class Group
 
   # update this group with a packet
   def update(packet)
-    if packet.match(/^c([\.\d]+) (.+)/)
+    if packet.match(/^c([-\.\d]+) (.+)/)
       new_b = Board.new($2, Float($1))
       remaining = self.boards.reject{ |b| b.x_y == new_b.x_y }
       self.boards = remaining << new_b
@@ -137,6 +137,7 @@ class Group
         "set output \"#{base}/group.png\""
       end),
      "set pm3d",
+     # "set pm3d map",
      "splot \"#{self.data_file(counter)}\" with pm3d title 'fitness' "].join("\n")
   end
 
