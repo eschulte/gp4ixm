@@ -186,6 +186,130 @@ look at the speedup gained through using the big group (with
   :PROPERTIES:
   :CUSTOM_ID: experiments
   :END:
+** third suite
+#+srcname: third_suite_results_setup
+#+begin_src ruby :results output raw :exports code
+  # each instance holds the information from one run
+  class Result
+    attr_accessor :s, :m, :b, :g, :raw
+    def initialize(s, m, b, g)
+      self.s = s; self.m = m; self.b = b; self.g = g
+    end
+    def counts
+      self.raw.split("\n").
+        map{|l| [Float($1), Float($2)] if l.match(/([\.\d]+)[ \t]([\.\d]+)/)}.compact
+    end
+    def runtime() self.counts.size end
+    def average
+      if self.runtime > 0
+        self.counts.inject(0){ |sum, n| sum + n[1] } / self.runtime
+      else
+        -1
+      end
+    end
+  end
+  
+  base = './results/third_suite/'
+  results = Dir.entries(base).map do |e|
+    if e.match(/r_s.(\d+)_m.(\d+)_b.(\d+)_g.(\d+).(\d+)/)
+      r = Result.new($1, $2, $3, Float("#{$4}.#{$5}"))
+      r.raw = File.read(File.join(base, e))
+      r
+    end
+  end.compact
+#+end_src
+
+#+srcname: third_suite_results_by_goal
+#+begin_src ruby :results raw output :exports code :noweb
+  # <<third_suite_results_setup>>
+  # print out averaged over 5 goal runs
+  puts "|sharing|mutation|breeding|tournament|goal|runtime|average|"
+  puts "|--------"
+  runtime = 0; average = 0
+  results.each do |r|
+    goal_num  = r.g.to_s.split(".")[0]
+    goal_time = r.g.to_s.split(".")[1]
+    runtime  += r.runtime
+    average  += r.average
+    if goal_time == "4"
+      runtime = runtime / 5
+      average = average / 5
+      puts "|"+[:s, :m, :b].map{ |meth| r.send(meth).to_s}.join("|")+
+        "|#{goal_num}|#{runtime}|#{average}|"
+      runtime = 0
+      average = 0
+    end
+  end
+#+end_src
+
+#+resname: third_suite_results_by_goal
+| sharing | mutation | breeding | tournament | goal |          runtime | average |
+|---------+----------+----------+------------+------+------------------+---------|
+|       0 |       10 |        0 |          0 | 1213 | 479.833009370899 |         |
+|       0 |       10 |       10 |          0 | 1220 | 965.927294106587 |         |
+
+** third suite
+#+srcname: third_suite_results_setup
+#+begin_src ruby :results output raw :exports code
+  # each instance holds the information from one run
+  class Result
+    attr_accessor :s, :m, :b, :g, :raw
+    def initialize(s, m, b, g)
+      self.s = s; self.m = m; self.b = b; self.g = g
+    end
+    def counts
+      self.raw.split("\n").
+        map{|l| [Float($1), Float($2)] if l.match(/([\.\d]+)[ \t]([\.\d]+)/)}.compact
+    end
+    def runtime() self.counts.size end
+    def average
+      if self.runtime > 0
+        self.counts.inject(0){ |sum, n| sum + n[1] } / self.runtime
+      else
+        -1
+      end
+    end
+  end
+  
+  base = './results/third_suite/'
+  results = Dir.entries(base).map do |e|
+    if e.match(/r_s.(\d+)_m.(\d+)_b.(\d+)_g.(\d+).(\d+)/)
+      r = Result.new($1, $2, $3, Float("#{$4}.#{$5}"))
+      r.raw = File.read(File.join(base, e))
+      r
+    end
+  end.compact
+#+end_src
+
+#+srcname: third_suite_results_by_goal
+#+begin_src ruby :results raw output :exports code :noweb
+  # <<third_suite_results_setup>>
+  # print out averaged over 5 goal runs
+  puts "|sharing|mutation|breeding|tournament|goal|runtime|average|"
+  puts "|--------"
+  runtime = 0; average = 0
+  results.each do |r|
+    goal_num  = r.g.to_s.split(".")[0]
+    goal_time = r.g.to_s.split(".")[1]
+    runtime  += r.runtime
+    average  += r.average
+    if goal_time == "4"
+      runtime = runtime / 5
+      average = average / 5
+      puts "|"+[:s, :m, :b].map{ |meth| r.send(meth).to_s}.join("|")+
+        "|#{goal_num}|#{runtime}|#{average}|"
+      runtime = 0
+      average = 0
+    end
+  end
+#+end_src
+
+#+resname: third_suite_results_by_goal
+| sharing | mutation | breeding | tournament | goal |          runtime | average |
+|---------+----------+----------+------------+------+------------------+---------|
+|       0 |       10 |        0 |          0 | 1213 | 479.833009370899 |         |
+|       0 |       10 |       10 |          0 | 1220 | 965.927294106587 |         |
+
 ** first suite
    :PROPERTIES:
    :CUSTOM_ID: first_suite
