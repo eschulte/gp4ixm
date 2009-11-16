@@ -8,9 +8,9 @@ require 'libixm/libixm.rb'
 
 # create the ixm object
 puts "initializing ixm connection"
-ixm = LibIXM.new(:sfbprog_path =>   '/Users/eschulte/bin/sfbprog', # path for sfbprog or sfbprog.exe
+ixm = LibIXM.new(:sfbprog_path =>   '/nfs/adaptive/eschulte/bin/sfbprog', # path for sfbprog or sfbprog.exe
                  :sfbprog_args =>   '',                            # additional arguments
-                 :sfbprog_device => '/dev/tty.usbserial-FTE5HPVE', # device for serial-over-usb
+                 :sfbprog_device => '/dev/ttyUSB0',                # device for serial-over-usb
                  :sfbprog_sketch => 'single-evolve/sketch.hex')    # sketch
 
 puts "running some experiments..."
@@ -31,10 +31,12 @@ r_strings = ["r"]
 end
 4.times{ r_strings.shift }
 
+Integer(ARGV[0]).times{ r_strings.shift }
+
 # start up
-puts "starting #{(r_strings.size) * 5 * 3} runs"
-%x{mkdir -p /tmp/experimenter}
-%x{rm /tmp/experimenter/*}
+puts "starting #{(r_strings.size)} runs"
+%x{mkdir -p /nfs/adaptive/eschulte/Desktop/ixm-experiments}
+# %x{rm /nfs/adaptive/eschulte/Desktop/ixm-experiments/*}
 
 # set up the reflex
 ixm.attach_reflex(/^c/) do |packet|
@@ -43,6 +45,8 @@ ixm.attach_reflex(/^c/) do |packet|
     $current_file << "#{Time.now - $start_time}\t#{$1}\t#{$2}\n"
     $current_file.flush
     $finished = true if Float($1) < 1
+  else
+    puts packet
   end
 end
 
@@ -52,7 +56,7 @@ r_strings.each do |r_s|
     5.times do |c|
       print "\n\t#{r_s} run #{c} on #{goal}\n\t"; STDOUT.flush
       $current_file =
-        File.open("/tmp/experimenter/"+
+        File.open("/nfs/adaptive/eschulte/Desktop/ixm-experiments/"+
                   "#{r_s.gsub(":",".").gsub(" ","_")}_g.#{i}.#{c}.log", "w")
       $finished = false
       $start_time = Time.now
@@ -72,4 +76,5 @@ r_strings.each do |r_s|
       $current_file.close
     end
   end
+  break
 end
