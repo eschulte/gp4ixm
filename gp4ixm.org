@@ -186,8 +186,8 @@ look at the speedup gained through using the big group (with
   :PROPERTIES:
   :CUSTOM_ID: experiments
   :END:
-** fifth suite
-#+srcname: fifth_suite_results_setup
+** sharing suite
+#+srcname: shared_suite_results_setup
 #+begin_src ruby :results output raw :exports code
   # each instance holds the information from one run
   class Result
@@ -209,7 +209,7 @@ look at the speedup gained through using the big group (with
     end
   end
   
-  base = './results/fifth_suite/'
+  base = "./results/sharing/"
   results = Dir.entries(base).map do |e|
     if e.match(/r_s.(\d+)_m.(\d+)_b.(\d+)_g.(\d+).(\d+)/)
       r = Result.new($1, $2, $3, Float("#{$4}.#{$5}"))
@@ -219,9 +219,9 @@ look at the speedup gained through using the big group (with
   end.compact
 #+end_src
 
-#+srcname: fifth_suite_results_by_goal
+#+srcname: shared_suite_results_by_goal
 #+begin_src ruby :results raw output :exports code :noweb
-  # <<fifth_suite_results_setup>>
+  # <<shared_suite_results_setup>>
   # print out averaged over 5 goal runs
   puts "|sharing|mutation|breeding|goal|runtime|average|"
   puts "|--------"
@@ -242,11 +242,30 @@ look at the speedup gained through using the big group (with
   end
 #+end_src
 
-#+resname: fifth_suite_results_by_goal
-| sharing | mutation | breeding | goal | runtime |          average |
-|---------+----------+----------+------+---------+------------------|
-|       0 |       10 |       10 |    0 |      19 | 1652.48083333333 |
-|     100 |       10 |       10 |    0 |      12 | 590.180628019324 |
+#+resname: shared_suite_results_by_goal
+| goal | sharing | mutation | breeding | runtime |          average |
+|------+---------+----------+----------+---------+------------------|
+|    0 |     100 |       10 |       10 |      34 |  2131.9212962963 |
+|    0 |       0 |       10 |       10 |      14 | 2790.12836363636 |
+|    1 |     100 |       10 |       10 |      10 | 121.083356643357 |
+|    1 |       0 |       10 |       10 |      17 | 300.862181818182 |
+
+#+tblname: shared_results
+| goal |              smb |              -mb |
+|------+------------------+------------------|
+|    1 | 121.083356643357 | 300.862181818182 |
+|    2 |  2131.9212962963 | 2790.12836363636 |
+
+#+begin_src gnuplot :var data=shared_results :exports code :results silent
+  set boxwidth 0.9 relative
+  set title 'run times by GP params'
+  set xlabel 'problems'
+  set xtics ("987xxx*-+*+" 3, "7xx*+" 2, "xxx**" 1, "xx*" 0)
+  set ylabel 'runtimes (seconds)'
+  set style data histograms
+  set style fill solid 1.0 border -1
+  plot data using 2 title 'smb', '' using 3 title '-mb'
+#+end_src
 
 ** fourth suite
 #+srcname: fourth_suite_results_setup
