@@ -1,5 +1,5 @@
 /*                                             -*- mode:C++ -*-
- * newer!
+ * 
  * Sketch description: Run GP on a single ixm board.
  *
  * Sketch author: Eric Schulte
@@ -13,20 +13,65 @@
 #define DEFAULT_VAL 0
 #define CHECK_SIZE 10
 #define MAX_GOAL_SIZE 64
+#define INITIAL_CHECK_RANGE 100
 
 char goal[MAX_GOAL_SIZE];
+int test_size = 4;
+
+// GP parameters for evolution of individual functions
 int mutation_tick   = 10;                      // ms per mutation
 int breeding_tick   = 10;                      // ms per breeding
 int injection_tick  = 10;                      // ms per breeding
 int sharing_tick    = 250;                     // ms per sharing
-int tournament_size = 4;
+int tournament_size = 4;                       // number of individuals selected per tournament
 int mutation_prob   = 4;                       // PROB/SIZE = chance_mut of each spot
+
+// GA parameters for evolution of eval-arrays
+int eval_mutation_tick   = 10;                  // ms per mutation
+int eval_breeding_tick   = 10;                  // ms per breeding
+int eval_injection_tick  = 10;                  // ms per breeding
+int eval_sharing_tick    = 250;                 // ms per sharing
+int eval_tournament_size = 4;                   // number of individuals selected per tournament
+int eval_mutation_prob   = 1;                   // PROB/SIZE = chance_mut of each spot
 
 // alarm variables
 int mutation_alarm_index  = -1;
 int breeding_alarm_index  = -1;
 int injection_alarm_index = -1;
 int sharing_alarm_index   = -1;
+int eval_mutation_alarm_index  = -1;
+int eval_breeding_alarm_index  = -1;
+int eval_injection_alarm_index = -1;
+int eval_sharing_alarm_index   = -1;
+
+struct eval_individual {
+  int representation[CHECK_SIZE];
+  int fitness;
+  int score();
+  int update_fitness(int new_fit) {
+    if (fitness == 0)
+      fitness = new_fit;
+    else
+      fitness = (fitness + new_fit ) / 2;
+    return fitness;
+  }
+  void mutate() {
+    for(int i=0; i<CHECK_SIZE; ++i)
+      if((random(1000)/1000) <= (mutation_prob/CHECK_SIZE)) {
+        if ((random(1000)/1000) < 0.5)
+          representation[i] = representation[i] + random(representation[i]);
+        else
+          representation[i] = representation[i] - random(representation[i]);
+      }
+  }
+  eval_individual copy() {
+    eval_individual my_copy;
+    for(int i=0; i<CHECK_SIZE; i++)
+      my_copy.representation[i] = representation[i];
+    my_copy.fitness = fitness;
+    return my_copy;
+  };
+};
 
 /*
  * Reverse Polish Notation Calculator
@@ -91,6 +136,13 @@ struct individual {
     return size;
   }
   int score();
+  int update_fitness(int new_fit) {
+    if (fitness == 0)
+      fitness = new_fit;
+    else
+      fitness = (fitness + new_fit ) / 2;
+    return fitness;
+  }
   void mutate();
   individual copy() {
     individual my_copy;
@@ -118,24 +170,10 @@ struct individual {
     return ok;
   }
 };
-int individual::score() {
-  // int values[CHECK_SIZE];
-  fitness = 0;
-  int difference;
-  // for(int i=0; i<CHECK_SIZE; i++) values[i] = random(10);
-  for(int i=0; i<CHECK_SIZE; ++i) {
-    difference = (evaluate(i, goal) - evaluate(i, representation));
-    if (difference < 0)
-      fitness = fitness - difference;
-    else
-      fitness = fitness + difference;
-  }
-  return fitness;
-}
 void individual::mutate() {                    // mutate an individual (each place change 1/size)
   char possibilities[16] = BUILDING_BLOCKS;
   for(int i=0; i<size(); ++i)
-    if(random(size()) == mutation_prob)
+    if((random(1000)/1000) <= (mutation_prob/size()))
       representation[i] = possibilities[random(15)];
   score();
   if(not check()) pprintf("L from mutate\n");
@@ -159,6 +197,18 @@ individual new_ind() {                         // randomly generate a new indivi
   if(not ind.check()) pprintf("L from new_ind\n");
   return ind;
 }
+eval_individual new_eval_ind() {               // randomly generate a new individual
+  eval_individual ind;
+  ind.fitness = -1;
+  ind.representation[0] = random(INITIAL_CHECK_RANGE);
+  for(int i=0; i < random(IND_SIZE); ++i)
+    if ((random(1000)/1000) < 0.5)
+      ind.representation[i] = random(INITIAL_CHECK_RANGE);
+    else
+      ind.representation[i] = 0 - random(INITIAL_CHECK_RANGE);
+  ind.score();                                 // evaluate the fitness of the new eval_individual
+  return ind;
+}
 
 individual crossover(individual * mother, individual * father) {
   individual child;
@@ -180,6 +230,18 @@ individual crossover(individual * mother, individual * father) {
   return child;
 }
 
+eval_individual eval_crossover(eval_individual * mother, eval_individual * father) {
+  eval_individual child;
+  int cross_point = random(CHECK_SIZE);
+  for(int i=0; i<CHECK_SIZE; ++i)
+    if (i < cross_point)
+      child.representation[i] = (*mother).representation[i];
+    else
+      child.representation[i] = (*father).representation[i];
+  child.score();
+  return child;
+}
+
 void share(individual * candidate) {
   pprintf("i %s\n", (*candidate).representation);
 }
@@ -194,7 +256,7 @@ struct population {
     for(int i = 0; i < POP_SIZE; ++i)
       pop[i] = new_ind();
   }
-  void       incorporate(individual ind);
+  void incorporate(individual ind);
   individual * tournament();
   individual breed();
   individual * best() {
@@ -242,6 +304,108 @@ individual population::breed() {               // breed two members returning a 
   return crossover(tournament(), tournament());
 }
 population pop;
+
+struct eval_population {
+  eval_individual pop[POP_SIZE];
+  void rescore();
+  void reset() {
+    for(int i = 0; i < POP_SIZE; ++i)
+      pop[i] = new_eval_ind();
+  }
+  void incorporate(eval_individual ind);
+  eval_individual * tournament();
+  eval_individual breed();
+  eval_individual * best() {
+    eval_individual * best = &pop[0];
+    for(int i=0; i<POP_SIZE; ++i)
+      if(pop[i].fitness > (*best).fitness)
+        best = &pop[i];
+    return best;
+  }
+  int best_fitness() {
+    int best = pop[0].fitness;
+    for(int i=0; i<POP_SIZE; ++i) if (pop[i].fitness > best) best = pop[i].fitness;
+    return best;
+  }
+  double mean_fitness() {
+    double mean = 0;
+    for(int i=0; i<POP_SIZE; ++i) mean = mean + pop[i].fitness;
+    return (mean / POP_SIZE);
+  }
+};
+void eval_population::rescore() {             // re-evaluate the fitness of every individual
+  for(int i=0; i<POP_SIZE; ++i)
+    pop[i].score();
+}
+void eval_population::incorporate(eval_individual ind) { // add a new individual, evicting the worst
+  int worst_ind = 0;
+  for(int i=0; i<POP_SIZE; ++i)
+    if (pop[i].fitness < pop[worst_ind].fitness)
+      worst_ind = i;
+  pop[worst_ind] = ind;
+}
+eval_individual * eval_population::tournament() {  // select individual with tournament of size SIZE
+  int winner = random(POP_SIZE);
+  int challenger = 0;
+  for(int i=0; i<tournament_size; ++i) {
+    challenger = random(POP_SIZE);
+    if(pop[challenger].fitness > pop[winner].fitness)
+      winner = challenger;
+  }
+  return & pop[winner];
+}
+eval_individual eval_population::breed() {    // breed two members returning a new individual
+  return eval_crossover(tournament(), tournament());
+}
+eval_population eval_pop;
+
+/*
+ * Scoring relies on the existence of the populations
+ */
+int individual::score() {
+  // int values[CHECK_SIZE];
+  int fit = 0;
+  int difference;
+  eval_individual eval;
+  for(int j=0; j<test_size; ++j) {
+    eval = eval_pop.pop[random(POP_SIZE)];
+    fit = 0;
+    for(int i=0; i<CHECK_SIZE; ++i) {
+      difference = (evaluate(eval.representation[i], goal) -
+                    evaluate(eval.representation[i], representation));
+      if (difference < 0)
+        fit = fit - difference;
+      else
+        fit = fit + difference;
+    }
+    // apply these fitness evaluation numbers to the score of the eval_individual
+    eval.update_fitness(fit);
+  }
+  fitness = fit/test_size;
+  return fitness;
+}
+int eval_individual::score() {
+  // int values[CHECK_SIZE];
+  int fit = 0;
+  int difference;
+  individual fodder;
+  for(int j=0; j<test_size; ++j) {
+    fodder = pop.pop[random(POP_SIZE)];
+    fit = 0;
+    for(int i=0; i<CHECK_SIZE; ++i) {
+      difference = (evaluate(representation[i], goal) -
+                    evaluate(representation[i], fodder.representation));
+      if (difference < 0)
+        fit = fit - difference;
+      else
+        fit = fit + difference;
+    }
+    // apply these fitness evaluation numbers to the score of the fodder individual
+    fodder.update_fitness(fit);
+  }
+  fitness = fit/test_size;
+  return fitness;
+}
 
 /*
  * Alarms (Mutation and Breeding) eventually (Sharing and Data collection)
