@@ -245,6 +245,12 @@ eval_individual eval_crossover(eval_individual * mother, eval_individual * fathe
 void share(individual * candidate) {
   pprintf("i %s\n", (*candidate).representation);
 }
+void eval_share(eval_individual * candidate) {
+  pprintf("e ");
+  for(int i=0; i<CHECK_SIZE; ++i)
+    pprintf("%d", (*candidate).representation[i]);
+  pprintf("\n");
+}
 
 /*
  * Population
@@ -422,6 +428,18 @@ static void do_mutate(u32 when) {
       Alarms.set(Alarms.currentAlarmNumber(), when+mutation_tick);
   }
 }
+static void do_eval_mutate(u32 when) {
+  eval_individual new_guy = (*eval_pop.tournament()).copy();
+  new_guy.mutate();
+  eval_pop.incorporate(new_guy);
+  if(eval_mutation_tick > 0) {                 // don't reschedule if tick is 0
+    if (when+eval_mutation_tick < millis()){
+      pprintf("L eval_mutating too fast\n");
+      Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
+    } else
+      Alarms.set(Alarms.currentAlarmNumber(), when+eval_mutation_tick);
+  }
+}
 static void do_breed(u32 when) {
   pop.incorporate(pop.breed());
   if(breeding_tick > 0) {                      // don't reschedule if tick is 0
@@ -430,6 +448,16 @@ static void do_breed(u32 when) {
       Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
     } else
       Alarms.set(Alarms.currentAlarmNumber(), when+breeding_tick);
+  }
+}
+static void do_eval_breed(u32 when) {
+  eval_pop.incorporate(eval_pop.breed());
+  if(eval_breeding_tick > 0) {                 // don't reschedule if tick is 0
+    if (when+eval_breeding_tick < millis()) {
+      pprintf("L eval_breeding too fast\n");
+      Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
+    } else
+      Alarms.set(Alarms.currentAlarmNumber(), when+eval_breeding_tick);
   }
 }
 static void do_inject(u32 when) {
@@ -443,6 +471,17 @@ static void do_inject(u32 when) {
       Alarms.set(Alarms.currentAlarmNumber(), when+injection_tick);
   }
 }
+static void do_eval_inject(u32 when) {
+  eval_pop.incorporate(new_eval_ind());
+  if(eval_injection_tick > 0) {                // don't reschedule if tick is 0
+    if (when+eval_injection_tick < millis()) {
+      pprintf("L eval_injecting too fast\n");
+      Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
+    }
+    else
+      Alarms.set(Alarms.currentAlarmNumber(), when+eval_injection_tick);
+  }
+}
 static void do_share(u32 when) {
   share(pop.tournament());
   if(sharing_tick > 0) {                      // don't reschedule if tick is 0
@@ -452,6 +491,17 @@ static void do_share(u32 when) {
     }
     else
       Alarms.set(Alarms.currentAlarmNumber(), when+sharing_tick);
+  }
+}
+static void do_eval_share(u32 when) {
+  eval_share(eval_pop.tournament());
+  if(eval_sharing_tick > 0) {                 // don't reschedule if tick is 0
+    if (when+eval_sharing_tick < millis()) {
+      pprintf("L eval_sharing too fast\n");
+      Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
+    }
+    else
+      Alarms.set(Alarms.currentAlarmNumber(), when+eval_sharing_tick);
   }
 }
 
@@ -512,13 +562,42 @@ void acceptIndividual(u8 * packet) {
   pop.incorporate(ind);
 }
 
+void acceptEvalIndividual(u8 * packet) {
+  eval_individual ind;
+  int index = 0;
+  ind.fitness = -1;
+  int point;
+  if (packetScanf(packet, "i ") != 2) {
+    pprintf("L bad individual: '%#p'\n",packet);
+    return;
+  }
+  while((packetScanf(packet, "%d", &point)) && index < CHECK_SIZE) {
+    ind.representation[index] = point;
+    ++index;
+  }
+  ind.score();
+  if(ind.fitness > pop.best_fitness()) {
+    ledToggle(BODY_RGB_RED_PIN);
+    delay(250);
+    ledToggle(BODY_RGB_RED_PIN);
+  }
+  eval_pop.incorporate(ind);
+}
+
 void reset() {
   pop.reset();                                 // randomly generate a population
+  eval_pop.reset();                            // randomly generate a new eval population
   if(mutation_tick > 0) {
     if(mutation_alarm_index < 0) {             // maybe begin the mutation alarm
       mutation_alarm_index = Alarms.create(do_mutate);
     }
     Alarms.set(mutation_alarm_index,millis() + 1000);
+  }
+  if(eval_mutation_tick > 0) {
+    if(eval_mutation_alarm_index < 0) {        // maybe begin the eval_mutation alarm
+      eval_mutation_alarm_index = Alarms.create(do_eval_mutate);
+    }
+    Alarms.set(eval_mutation_alarm_index,millis() + 1000);
   }
   if(breeding_tick > 0) {
     if(breeding_alarm_index < 0) {             // maybe begin the breeding alarm
@@ -526,17 +605,35 @@ void reset() {
     }
     Alarms.set(breeding_alarm_index,millis() + 1250);
   }
+  if(eval_breeding_tick > 0) {
+    if(eval_breeding_alarm_index < 0) {        // maybe begin the eval_breeding alarm
+      eval_breeding_alarm_index = Alarms.create(do_eval_breed);
+    }
+    Alarms.set(eval_breeding_alarm_index,millis() + 1250);
+  }
   if(injection_tick > 0) {
     if(injection_alarm_index < 0) {             // maybe begin the injection alarm
       injection_alarm_index = Alarms.create(do_inject);
     }
     Alarms.set(injection_alarm_index,millis() + 1000);
   }
+  if(eval_injection_tick > 0) {
+    if(eval_injection_alarm_index < 0) {        // maybe begin the eval_injection alarm
+      eval_injection_alarm_index = Alarms.create(do_eval_inject);
+    }
+    Alarms.set(eval_injection_alarm_index,millis() + 1000);
+  }
   if(sharing_tick > 0) {
     if(sharing_alarm_index < 0) {             // maybe begin the sharing alarm
       sharing_alarm_index = Alarms.create(do_share);
     }
     Alarms.set(sharing_alarm_index,millis() + 1000);
+  }
+  if(eval_sharing_tick > 0) {
+    if(eval_sharing_alarm_index < 0) {        // maybe begin the eval_sharing alarm
+      eval_sharing_alarm_index = Alarms.create(do_eval_share);
+    }
+    Alarms.set(eval_sharing_alarm_index,millis() + 1000);
   }
 }
 
@@ -580,6 +677,7 @@ void setup() {
   collector_init();                            // initialize the collector
   Body.reflex('g', newGoal);                   // reset the goal function.
   Body.reflex('i', acceptIndividual);          // incorporate a neighbor's individual
+  Body.reflex('e', acceptEvalIndividual);      // incorporate a neighbor's evaluation individual
   Body.reflex('r', populationReset);           // reset the population (and settings)
   reset();
 }
