@@ -394,15 +394,25 @@ double individual::score() {
     eval.update_fitness(fit);
     update_fitness(fit);
   }
-  
-  // pprintf("L     (%s) fit=", representation);
-  // facePrint(ALL_FACES, fitness);
-  // pprintf("\n");
-  
   return fitness;
 }
 double eval_individual::score() {
-  // AAAAAAAAAHHHHHHHHHHHHH
+  // int values[CHECK_SIZE];
+  int fit = 0;
+  int difference;
+  individual fodder;
+  for(int j=0; j<POP_SIZE; ++j) {
+    fodder = pop.pop[j];
+    fit = 0;
+    for(int i=0; i<CHECK_SIZE; ++i) {
+      difference = (evaluate(representation[i], goal) -
+                    evaluate(representation[i], fodder.representation));
+      if (difference < 0)
+        difference = (0 - difference);
+      fit = fit + difference;
+    }
+    update_fitness(fit);
+  }
   return fitness;
 }
 
