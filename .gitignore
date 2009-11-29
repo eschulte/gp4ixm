@@ -16,3 +16,6 @@ doc
 
 ## org cruft
 ltxpng
+
+## nfs cruft
+.nfs*
