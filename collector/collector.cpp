@@ -7,9 +7,10 @@
 #include "SFBAlarm.h"           // For Alarms, etc
 #include "SFBEeprom.h"          // For persistent storage to the Eeprom
 
-#define MAX_DIST  100
-#define DATA_ADDR 0
-#define MAX_HELD  1000
+#define MAX_DIST   100
+#define DATA_ADDR  0
+#define MAX_HELD   1000
+#define MAX_STRING 100
 
 struct Collector {
   bool initialized;
@@ -59,15 +60,29 @@ void clear_collection() {
   Collection col; collection = col;
   collection.initialized = false;
 }
-void read_collection() {
-  eepromRead(DATA_ADDR, (u8*) &collection, sizeof(collection));
-  collection.initialized = true;
-}
 void write_collection() {
   if (collection.initialized) {
     eepromWrite(DATA_ADDR, (u8*) &collection, sizeof(collection));
   } else {
     pprintf("L can't write an uninitiziled collection\n");
+  }
+}
+void read_collection() {
+  eepromRead(DATA_ADDR, (u8*) &collection, sizeof(collection));
+  collection.initialized = true;
+}
+void report_collection() {
+  for(int i=0; i<collection.ints_index; ++i)
+    report_int(collection.ints[i]);
+  for(int i=0; i<collection.doubles_index; ++i)
+    report_double(collection.doubles[i]);
+  char str[MAX_STRING]; int str_ind = 0;
+  for(int i=0; i<collection.strings_index; ++i) {
+    str[str_ind] = collection.strings[i];
+    if (collection.strings[i] == '\0')
+      report_string(str);
+    else
+      ++str_ind;
   }
 }
 
@@ -101,9 +116,7 @@ void noticeCollector(u8 * packet) {
   char ch;
   int in;
   int out;
-  if (packetScanf(packet, "c") != 1) {
-    pprintf("L bad '%#p'\n",packet);
-  } else {
+  if (packetScanf(packet, "c") == 1) {
     if (packetScanf(packet, "%d ", &count)) {         // update count
       if (count > collector.count) {
         collector.initialized = true;
@@ -135,21 +148,30 @@ void noticeCollector(u8 * packet) {
           }
         }
       }
-    } else if (packetScanf(packet, "%c ", &ch)) { // interact with collection
-      if (ch == 'w') {
+    } else if (packetScanf(packet, "%c", &ch)) { // interact with collection
+      if (ch == 'c') {
+        pprintf("L Clearing collection\n");
+        clear_collection();
+      } else if (ch == 'w') {
         pprintf("L writing collection\n");
+        write_collection();
       } else if (ch == 'r') {
         pprintf("L reading collection\n");
+        read_collection();
       } else if (ch == 'R') {
         pprintf("L reporting collection\n");
+        report_collection();
       } else {
-        pprintf("L bad '%#p'\n",packet);
+        pprintf("L bad character '%c' '%#p' try 'ccr' to read a collection\n", ch, packet);
         return;
       }
     } else {
       pprintf("L bad '%#p'\n",packet);
       return;
     }
+  } else {
+    pprintf("L bad '%#p'\n",packet);
+    return;
   }
 }
 

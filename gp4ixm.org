@@ -900,6 +900,9 @@ breeding and injection are all 0
 |       10 |       10 |        10 |          4 |  3.4 |     298 |  100.46644295302 |
 
 * Issues / Notes
+** eeprom
+reading gives, error code (2, 1, 3) "Eeprom address out of range"
+
 ** new error code
 after running multiple experiments with libixm, I've managed to
 uncover a new error code...

@@ -4,6 +4,8 @@
  *
  * Sketch author: Eric Schulte
  *
+ * new 2
+ * 
  */
 #include "collector.h"
 
@@ -705,7 +707,9 @@ void loop() {
   pprintf("L \n");
   pprintf("L \n");
   pprintf("L \n");
-
+  
+  save_double()
+  
   // if (buttonDown()) pop.reset();
 }
 
