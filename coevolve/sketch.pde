@@ -202,10 +202,7 @@ eval_individual new_eval_ind() {               // randomly generate a new indivi
   ind.fitness = 0;
   ind.representation[0] = random(INITIAL_CHECK_RANGE);
   for(int i=0; i < random(IND_SIZE); ++i)
-    if ((random(1000)/1000) < 0.5)
-      ind.representation[i] = random(INITIAL_CHECK_RANGE);
-    else
-      ind.representation[i] = 0 - random(INITIAL_CHECK_RANGE);
+    ind.representation[i] = random(-INITIAL_CHECK_RANGE, INITIAL_CHECK_RANGE);
   ind.score();                                 // evaluate the fitness of the new eval_individual
   return ind;
 }
