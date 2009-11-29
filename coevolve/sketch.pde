@@ -29,7 +29,7 @@ int mutation_prob   = 4;                       // PROB/SIZE = chance_mut of each
 // GA parameters for evolution of eval-arrays
 int eval_mutation_tick   = 10;                 // ms per mutation
 int eval_breeding_tick   = 10;                 // ms per breeding
-int eval_injection_tick  = 10;                 // ms per breeding
+int eval_injection_tick  = 1000;                 // ms per breeding
 int eval_sharing_tick    = 250;                // ms per sharing
 int eval_tournament_size = 4;                  // number of individuals selected per tournament
 int eval_mutation_prob   = 1;                  // PROB/SIZE = chance_mut of each spot
@@ -200,10 +200,11 @@ individual new_ind() {                         // randomly generate a new indivi
 eval_individual new_eval_ind() {               // randomly generate a new individual
   eval_individual ind;
   ind.fitness = 0;
-  ind.representation[0] = random(INITIAL_CHECK_RANGE);
-  for(int i=0; i < random(IND_SIZE); ++i)
+  ind.representation[0] = random(-INITIAL_CHECK_RANGE, INITIAL_CHECK_RANGE);
+  for(int i=0; i < random(CHECK_SIZE); ++i)
     ind.representation[i] = random(-INITIAL_CHECK_RANGE, INITIAL_CHECK_RANGE);
   ind.score();                                 // evaluate the fitness of the new eval_individual
+  pprintf("L returning\n");
   return ind;
 }
 
@@ -353,6 +354,7 @@ void eval_population::rescore() {             // re-evaluate the fitness of ever
 }
 void eval_population::incorporate(eval_individual ind) { // add a new individual, evicting the worst
   int worst_ind = 0;
+  pprintf("L eval_evicting\n");
   for(int i=0; i<EVAL_POP_SIZE; ++i)
     if (pop[i].fitness < pop[worst_ind].fitness)
       worst_ind = i;
@@ -474,17 +476,17 @@ static void do_inject(u32 when) {
       Alarms.set(Alarms.currentAlarmNumber(), when+injection_tick);
   }
 }
-// static void do_eval_inject(u32 when) {
-//   eval_pop.incorporate(new_eval_ind());
-//   if(eval_injection_tick > 0) {                // don't reschedule if tick is 0
-//     if (when+eval_injection_tick < millis()) {
-//       pprintf("L eval_injecting too fast\n");
-//       Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
-//     }
-//     else
-//       Alarms.set(Alarms.currentAlarmNumber(), when+eval_injection_tick);
-//   }
-// }
+static void do_eval_inject(u32 when) {
+  eval_pop.incorporate(new_eval_ind());
+  if(eval_injection_tick > 0) {                // don't reschedule if tick is 0
+    if (when+eval_injection_tick < millis()) {
+      pprintf("L eval_injecting too fast\n");
+      Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
+    }
+    else
+      Alarms.set(Alarms.currentAlarmNumber(), when+eval_injection_tick);
+  }
+}
 static void do_share(u32 when) {
   share(pop.tournament());
   if(sharing_tick > 0) {                      // don't reschedule if tick is 0
@@ -620,12 +622,12 @@ void reset() {
     }
     Alarms.set(injection_alarm_index,millis() + 1000);
   }
-  // if(eval_injection_tick > 0) {
-  //   if(eval_injection_alarm_index < 0) {        // maybe begin the eval_injection alarm
-  //     eval_injection_alarm_index = Alarms.create(do_eval_inject);
-  //   }
-  //   Alarms.set(eval_injection_alarm_index,millis() + 1000);
-  // }
+  if(eval_injection_tick > 0) {
+    if(eval_injection_alarm_index < 0) {        // maybe begin the eval_injection alarm
+      eval_injection_alarm_index = Alarms.create(do_eval_inject);
+    }
+    Alarms.set(eval_injection_alarm_index,millis() + 1000);
+  }
   if(sharing_tick > 0) {
     if(sharing_alarm_index < 0) {             // maybe begin the sharing alarm
       sharing_alarm_index = Alarms.create(do_share);
