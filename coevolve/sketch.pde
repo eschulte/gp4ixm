@@ -651,8 +651,8 @@ void populationReset(u8 * packet) {
     pprintf("L bad reset: '%#p'\n",packet);
     return;
   }
-  // only allow population resets every 5 seconds
-  if(goal_seconds > 5){
+  // only allow population resets every 2 seconds
+  if(goal_seconds > 2){
     goal_seconds = 0;
     char key;
     int val;
@@ -670,8 +670,6 @@ void populationReset(u8 * packet) {
     ledToggle(BODY_RGB_BLUE_PIN);
     ledToggle(BODY_RGB_RED_PIN);
     reset();
-    delay(250);
-    pprintf("%#p\n", packet);
     ledToggle(BODY_RGB_BLUE_PIN);
     ledToggle(BODY_RGB_RED_PIN);
   }
