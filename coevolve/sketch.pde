@@ -8,7 +8,7 @@
 #include "collector.h"
 
 #define POP_SIZE 100
-#define EVAL_POP_SIZE 100
+#define EVAL_POP_SIZE 20
 #define IND_SIZE 24
 #define BUILDING_BLOCKS "0123456789x+-*/"
 #define DEFAULT_VAL 0
@@ -17,12 +17,11 @@
 #define INITIAL_CHECK_RANGE 100
 
 char goal[MAX_GOAL_SIZE];
-int test_size = 4;
 
 // GP parameters for evolution of individual functions
-int mutation_tick   = 100;                      // ms per mutation
-int breeding_tick   = 100;                      // ms per breeding
-int injection_tick  = 100;                      // ms per breeding
+int mutation_tick   = 50;                      // ms per mutation
+int breeding_tick   = 50;                      // ms per breeding
+int injection_tick  = 50;                      // ms per breeding
 int sharing_tick    = 250;                     // ms per sharing
 int tournament_size = 4;                       // number of individuals selected per tournament
 int mutation_prob   = 4;                       // PROB/SIZE = chance_mut of each spot
@@ -51,9 +50,9 @@ struct eval_individual {
   double score();
   double update_fitness(int new_fit) {
     if (fitness == 0)
-      fitness = new_fit;
+      fitness = (double) new_fit;
     else
-      fitness = ((double) (fitness + new_fit)) / 2;
+      fitness = ((fitness + (double) new_fit) / 2);
     return fitness;
   }
   void mutate() {
@@ -139,9 +138,9 @@ struct individual {
   double score();
   double update_fitness(int new_fit) {
     if (fitness == 0)
-      fitness = new_fit;
+      fitness = (double) new_fit;
     else
-      fitness = ((double) (fitness + new_fit )) / 2;
+      fitness = ((fitness + (double) new_fit) / 2);
     return fitness;
   }
   void mutate();
@@ -385,8 +384,8 @@ double individual::score() {
   int fit = 0;
   int difference;
   eval_individual eval;
-  for(int j=0; j<test_size; ++j) {
-    eval = eval_pop.pop[random(EVAL_POP_SIZE)];
+  for(int j=0; j<EVAL_POP_SIZE; ++j) {
+    eval = eval_pop.pop[j];
     fit = 0;
     for(int i=0; i<CHECK_SIZE; ++i) {
       difference = (evaluate(eval.representation[i], goal) -
@@ -406,24 +405,7 @@ double individual::score() {
   return fitness;
 }
 double eval_individual::score() {
-  // int values[CHECK_SIZE];
-  int fit = 0;
-  int difference;
-  individual fodder;
-  for(int j=0; j<test_size; ++j) {
-    fodder = pop.pop[random(POP_SIZE)];
-    fit = 0;
-    for(int i=0; i<CHECK_SIZE; ++i) {
-      difference = (evaluate(representation[i], goal) -
-                    evaluate(representation[i], fodder.representation));
-      if (difference < 0)
-        difference = (0 - difference);
-      fit = fit + difference;
-    }
-    // apply these fitness evaluation numbers to the score of the fodder individual
-    fodder.update_fitness(fit);
-    update_fitness(fit);
-  }
+  // AAAAAAAAAHHHHHHHHHHHHH
   return fitness;
 }
 
