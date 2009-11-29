@@ -392,9 +392,8 @@ double individual::score() {
       difference = (evaluate(eval.representation[i], goal) -
                     evaluate(eval.representation[i], representation));
       if (difference < 0)
-        fit = fit - difference;
-      else
-        fit = fit + difference;
+        difference = (0 - difference);
+      fit = fit + difference;
     }
     eval.update_fitness(fit);
     update_fitness(fit);
@@ -418,9 +417,8 @@ double eval_individual::score() {
       difference = (evaluate(representation[i], goal) -
                     evaluate(representation[i], fodder.representation));
       if (difference < 0)
-        fit = fit - difference;
-      else
-        fit = fit + difference;
+        difference = (0 - difference);
+      fit = fit + difference;
     }
     // apply these fitness evaluation numbers to the score of the fodder individual
     fodder.update_fitness(fit);
