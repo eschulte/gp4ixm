@@ -12,7 +12,7 @@
 #define IND_SIZE 24
 #define BUILDING_BLOCKS "0123456789x+-*/"
 #define DEFAULT_VAL 0
-#define CHECK_SIZE 10
+#define CHECK_SIZE 5
 #define MAX_GOAL_SIZE 64
 #define INITIAL_CHECK_RANGE 100
 
