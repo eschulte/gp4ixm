@@ -8,6 +8,7 @@
 #include "collector.h"
 
 #define POP_SIZE 100
+#define EVAL_POP_SIZE 1
 #define IND_SIZE 24
 #define BUILDING_BLOCKS "0123456789x+-*/"
 #define DEFAULT_VAL 0
@@ -16,23 +17,23 @@
 #define INITIAL_CHECK_RANGE 100
 
 char goal[MAX_GOAL_SIZE];
-int test_size = 4;
+int test_size = 1;
 
 // GP parameters for evolution of individual functions
-int mutation_tick   = 10;                      // ms per mutation
-int breeding_tick   = 10;                      // ms per breeding
-int injection_tick  = 10;                      // ms per breeding
+int mutation_tick   = 500;                      // ms per mutation
+int breeding_tick   = 500;                      // ms per breeding
+int injection_tick  = 500;                      // ms per breeding
 int sharing_tick    = 250;                     // ms per sharing
 int tournament_size = 4;                       // number of individuals selected per tournament
 int mutation_prob   = 4;                       // PROB/SIZE = chance_mut of each spot
 
 // GA parameters for evolution of eval-arrays
-int eval_mutation_tick   = 10;                  // ms per mutation
-int eval_breeding_tick   = 10;                  // ms per breeding
-int eval_injection_tick  = 10;                  // ms per breeding
-int eval_sharing_tick    = 250;                 // ms per sharing
-int eval_tournament_size = 4;                   // number of individuals selected per tournament
-int eval_mutation_prob   = 1;                   // PROB/SIZE = chance_mut of each spot
+int eval_mutation_tick   = 10;                 // ms per mutation
+int eval_breeding_tick   = 10;                 // ms per breeding
+int eval_injection_tick  = 10;                 // ms per breeding
+int eval_sharing_tick    = 250;                // ms per sharing
+int eval_tournament_size = 4;                  // number of individuals selected per tournament
+int eval_mutation_prob   = 1;                  // PROB/SIZE = chance_mut of each spot
 
 // alarm variables
 int mutation_alarm_index  = -1;
@@ -46,13 +47,13 @@ int eval_sharing_alarm_index   = -1;
 
 struct eval_individual {
   int representation[CHECK_SIZE];
-  int fitness;
-  int score();
-  int update_fitness(int new_fit) {
+  double fitness;
+  double score();
+  double update_fitness(int new_fit) {
     if (fitness == 0)
       fitness = new_fit;
     else
-      fitness = (fitness + new_fit ) / 2;
+      fitness = ((double) (fitness + new_fit)) / 2;
     return fitness;
   }
   void mutate() {
@@ -129,18 +130,18 @@ int evaluate(int x, char * representation) {
  */
 struct individual {
   char representation[IND_SIZE];
-  int fitness;
+  double fitness;
   int size() {
     int size = 0;
     while(representation[size] != '\0') ++size;
     return size;
   }
-  int score();
-  int update_fitness(int new_fit) {
+  double score();
+  double update_fitness(int new_fit) {
     if (fitness == 0)
       fitness = new_fit;
     else
-      fitness = (fitness + new_fit ) / 2;
+      fitness = ((double) (fitness + new_fit )) / 2;
     return fitness;
   }
   void mutate();
@@ -185,7 +186,7 @@ void individual::mutate() {                    // mutate an individual (each pla
 individual new_ind() {                         // randomly generate a new individual
   individual ind;
   int index = 0;
-  ind.fitness = -1;
+  ind.fitness = 0;
   char possibilities[16] = BUILDING_BLOCKS;
   ind.representation[0] = possibilities[random(15)];
   for(int i=0; i < random(IND_SIZE); ++i) {
@@ -199,7 +200,7 @@ individual new_ind() {                         // randomly generate a new indivi
 }
 eval_individual new_eval_ind() {               // randomly generate a new individual
   eval_individual ind;
-  ind.fitness = -1;
+  ind.fitness = 0;
   ind.representation[0] = random(INITIAL_CHECK_RANGE);
   for(int i=0; i < random(IND_SIZE); ++i)
     if ((random(1000)/1000) < 0.5)
@@ -272,10 +273,21 @@ struct population {
         best = &pop[i];
     return best;
   }
-  int best_fitness() {
-    int best = pop[0].fitness;
+  double best_fitness() {
+    double best = pop[0].fitness;
     for(int i=0; i<POP_SIZE; ++i) if (pop[i].fitness < best) best = pop[i].fitness;
     return best;
+  }
+  char * best_representation() {
+    double best = pop[0].fitness;
+    char * rep;
+    for(int i=0; i<POP_SIZE; ++i) {
+      if (pop[i].fitness < best) {
+        best = pop[i].fitness;
+        rep = pop[i].representation;
+      }
+    }
+    return rep;
   }
   double mean_fitness() {
     double mean = 0;
@@ -312,10 +324,10 @@ individual population::breed() {               // breed two members returning a 
 population pop;
 
 struct eval_population {
-  eval_individual pop[POP_SIZE];
+  eval_individual pop[EVAL_POP_SIZE];
   void rescore();
   void reset() {
-    for(int i = 0; i < POP_SIZE; ++i)
+    for(int i = 0; i < EVAL_POP_SIZE; ++i)
       pop[i] = new_eval_ind();
   }
   void incorporate(eval_individual ind);
@@ -323,38 +335,38 @@ struct eval_population {
   eval_individual breed();
   eval_individual * best() {
     eval_individual * best = &pop[0];
-    for(int i=0; i<POP_SIZE; ++i)
+    for(int i=0; i<EVAL_POP_SIZE; ++i)
       if(pop[i].fitness > (*best).fitness)
         best = &pop[i];
     return best;
   }
-  int best_fitness() {
+  double best_fitness() {
     int best = pop[0].fitness;
-    for(int i=0; i<POP_SIZE; ++i) if (pop[i].fitness > best) best = pop[i].fitness;
+    for(int i=0; i<EVAL_POP_SIZE; ++i) if (pop[i].fitness > best) best = pop[i].fitness;
     return best;
   }
   double mean_fitness() {
     double mean = 0;
-    for(int i=0; i<POP_SIZE; ++i) mean = mean + pop[i].fitness;
-    return (mean / POP_SIZE);
+    for(int i=0; i<EVAL_POP_SIZE; ++i) mean = mean + pop[i].fitness;
+    return (mean / EVAL_POP_SIZE);
   }
 };
 void eval_population::rescore() {             // re-evaluate the fitness of every individual
-  for(int i=0; i<POP_SIZE; ++i)
+  for(int i=0; i<EVAL_POP_SIZE; ++i)
     pop[i].score();
 }
 void eval_population::incorporate(eval_individual ind) { // add a new individual, evicting the worst
   int worst_ind = 0;
-  for(int i=0; i<POP_SIZE; ++i)
+  for(int i=0; i<EVAL_POP_SIZE; ++i)
     if (pop[i].fitness < pop[worst_ind].fitness)
       worst_ind = i;
   pop[worst_ind] = ind;
 }
 eval_individual * eval_population::tournament() {  // select individual with tournament of size SIZE
-  int winner = random(POP_SIZE);
+  int winner = random(EVAL_POP_SIZE);
   int challenger = 0;
   for(int i=0; i<tournament_size; ++i) {
-    challenger = random(POP_SIZE);
+    challenger = random(EVAL_POP_SIZE);
     if(pop[challenger].fitness > pop[winner].fitness)
       winner = challenger;
   }
@@ -368,13 +380,19 @@ eval_population eval_pop;
 /*
  * Scoring relies on the existence of the populations
  */
-int individual::score() {
+double individual::score() {
   // int values[CHECK_SIZE];
   int fit = 0;
   int difference;
   eval_individual eval;
   for(int j=0; j<test_size; ++j) {
-    eval = eval_pop.pop[random(POP_SIZE)];
+    eval = eval_pop.pop[random(EVAL_POP_SIZE)];
+
+    // pprintf("L %s against %s ", representation, goal);
+    // for(int i=0; i<CHECK_SIZE; ++i)
+    //   pprintf("%d ", eval.representation[i]);
+    // pprintf("\n");
+
     fit = 0;
     for(int i=0; i<CHECK_SIZE; ++i) {
       difference = (evaluate(eval.representation[i], goal) -
@@ -383,14 +401,24 @@ int individual::score() {
         fit = fit - difference;
       else
         fit = fit + difference;
+
+      // pprintf("L with %d difference is %d\n", eval.representation[i], difference);
+
     }
+
     // apply these fitness evaluation numbers to the score of the eval_individual
+
     eval.update_fitness(fit);
   }
   fitness = fit/test_size;
+
+  // pprintf("L fit=");
+  // facePrint(ALL_FACES, fitness);
+  // pprintf("\n");
+
   return fitness;
 }
-int eval_individual::score() {
+double eval_individual::score() {
   // int values[CHECK_SIZE];
   int fit = 0;
   int difference;
@@ -428,18 +456,18 @@ static void do_mutate(u32 when) {
       Alarms.set(Alarms.currentAlarmNumber(), when+mutation_tick);
   }
 }
-static void do_eval_mutate(u32 when) {
-  eval_individual new_guy = (*eval_pop.tournament()).copy();
-  new_guy.mutate();
-  eval_pop.incorporate(new_guy);
-  if(eval_mutation_tick > 0) {                 // don't reschedule if tick is 0
-    if (when+eval_mutation_tick < millis()){
-      pprintf("L eval_mutating too fast\n");
-      Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
-    } else
-      Alarms.set(Alarms.currentAlarmNumber(), when+eval_mutation_tick);
-  }
-}
+// static void do_eval_mutate(u32 when) {
+//   eval_individual new_guy = (*eval_pop.tournament()).copy();
+//   new_guy.mutate();
+//   eval_pop.incorporate(new_guy);
+//   if(eval_mutation_tick > 0) {                 // don't reschedule if tick is 0
+//     if (when+eval_mutation_tick < millis()){
+//       pprintf("L eval_mutating too fast\n");
+//       Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
+//     } else
+//       Alarms.set(Alarms.currentAlarmNumber(), when+eval_mutation_tick);
+//   }
+// }
 static void do_breed(u32 when) {
   pop.incorporate(pop.breed());
   if(breeding_tick > 0) {                      // don't reschedule if tick is 0
@@ -450,16 +478,16 @@ static void do_breed(u32 when) {
       Alarms.set(Alarms.currentAlarmNumber(), when+breeding_tick);
   }
 }
-static void do_eval_breed(u32 when) {
-  eval_pop.incorporate(eval_pop.breed());
-  if(eval_breeding_tick > 0) {                 // don't reschedule if tick is 0
-    if (when+eval_breeding_tick < millis()) {
-      pprintf("L eval_breeding too fast\n");
-      Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
-    } else
-      Alarms.set(Alarms.currentAlarmNumber(), when+eval_breeding_tick);
-  }
-}
+// static void do_eval_breed(u32 when) {
+//   eval_pop.incorporate(eval_pop.breed());
+//   if(eval_breeding_tick > 0) {                 // don't reschedule if tick is 0
+//     if (when+eval_breeding_tick < millis()) {
+//       pprintf("L eval_breeding too fast\n");
+//       Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
+//     } else
+//       Alarms.set(Alarms.currentAlarmNumber(), when+eval_breeding_tick);
+//   }
+// }
 static void do_inject(u32 when) {
   pop.incorporate(new_ind());
   if(injection_tick > 0) {                     // don't reschedule if tick is 0
@@ -471,17 +499,17 @@ static void do_inject(u32 when) {
       Alarms.set(Alarms.currentAlarmNumber(), when+injection_tick);
   }
 }
-static void do_eval_inject(u32 when) {
-  eval_pop.incorporate(new_eval_ind());
-  if(eval_injection_tick > 0) {                // don't reschedule if tick is 0
-    if (when+eval_injection_tick < millis()) {
-      pprintf("L eval_injecting too fast\n");
-      Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
-    }
-    else
-      Alarms.set(Alarms.currentAlarmNumber(), when+eval_injection_tick);
-  }
-}
+// static void do_eval_inject(u32 when) {
+//   eval_pop.incorporate(new_eval_ind());
+//   if(eval_injection_tick > 0) {                // don't reschedule if tick is 0
+//     if (when+eval_injection_tick < millis()) {
+//       pprintf("L eval_injecting too fast\n");
+//       Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
+//     }
+//     else
+//       Alarms.set(Alarms.currentAlarmNumber(), when+eval_injection_tick);
+//   }
+// }
 static void do_share(u32 when) {
   share(pop.tournament());
   if(sharing_tick > 0) {                      // don't reschedule if tick is 0
@@ -493,17 +521,17 @@ static void do_share(u32 when) {
       Alarms.set(Alarms.currentAlarmNumber(), when+sharing_tick);
   }
 }
-static void do_eval_share(u32 when) {
-  eval_share(eval_pop.tournament());
-  if(eval_sharing_tick > 0) {                 // don't reschedule if tick is 0
-    if (when+eval_sharing_tick < millis()) {
-      pprintf("L eval_sharing too fast\n");
-      Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
-    }
-    else
-      Alarms.set(Alarms.currentAlarmNumber(), when+eval_sharing_tick);
-  }
-}
+// static void do_eval_share(u32 when) {
+//   eval_share(eval_pop.tournament());
+//   if(eval_sharing_tick > 0) {                 // don't reschedule if tick is 0
+//     if (when+eval_sharing_tick < millis()) {
+//       pprintf("L eval_sharing too fast\n");
+//       Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
+//     }
+//     else
+//       Alarms.set(Alarms.currentAlarmNumber(), when+eval_sharing_tick);
+//   }
+// }
 
 /*
  * Reflexes
@@ -593,48 +621,48 @@ void reset() {
     }
     Alarms.set(mutation_alarm_index,millis() + 1000);
   }
-  if(eval_mutation_tick > 0) {
-    if(eval_mutation_alarm_index < 0) {        // maybe begin the eval_mutation alarm
-      eval_mutation_alarm_index = Alarms.create(do_eval_mutate);
-    }
-    Alarms.set(eval_mutation_alarm_index,millis() + 1000);
-  }
+  // if(eval_mutation_tick > 0) {
+  //   if(eval_mutation_alarm_index < 0) {        // maybe begin the eval_mutation alarm
+  //     eval_mutation_alarm_index = Alarms.create(do_eval_mutate);
+  //   }
+  //   Alarms.set(eval_mutation_alarm_index,millis() + 1000);
+  // }
   if(breeding_tick > 0) {
     if(breeding_alarm_index < 0) {             // maybe begin the breeding alarm
       breeding_alarm_index = Alarms.create(do_breed);
     }
     Alarms.set(breeding_alarm_index,millis() + 1250);
   }
-  if(eval_breeding_tick > 0) {
-    if(eval_breeding_alarm_index < 0) {        // maybe begin the eval_breeding alarm
-      eval_breeding_alarm_index = Alarms.create(do_eval_breed);
-    }
-    Alarms.set(eval_breeding_alarm_index,millis() + 1250);
-  }
+  // if(eval_breeding_tick > 0) {
+  //   if(eval_breeding_alarm_index < 0) {        // maybe begin the eval_breeding alarm
+  //     eval_breeding_alarm_index = Alarms.create(do_eval_breed);
+  //   }
+  //   Alarms.set(eval_breeding_alarm_index,millis() + 1250);
+  // }
   if(injection_tick > 0) {
     if(injection_alarm_index < 0) {             // maybe begin the injection alarm
       injection_alarm_index = Alarms.create(do_inject);
     }
     Alarms.set(injection_alarm_index,millis() + 1000);
   }
-  if(eval_injection_tick > 0) {
-    if(eval_injection_alarm_index < 0) {        // maybe begin the eval_injection alarm
-      eval_injection_alarm_index = Alarms.create(do_eval_inject);
-    }
-    Alarms.set(eval_injection_alarm_index,millis() + 1000);
-  }
+  // if(eval_injection_tick > 0) {
+  //   if(eval_injection_alarm_index < 0) {        // maybe begin the eval_injection alarm
+  //     eval_injection_alarm_index = Alarms.create(do_eval_inject);
+  //   }
+  //   Alarms.set(eval_injection_alarm_index,millis() + 1000);
+  // }
   if(sharing_tick > 0) {
     if(sharing_alarm_index < 0) {             // maybe begin the sharing alarm
       sharing_alarm_index = Alarms.create(do_share);
     }
     Alarms.set(sharing_alarm_index,millis() + 1000);
   }
-  if(eval_sharing_tick > 0) {
-    if(eval_sharing_alarm_index < 0) {        // maybe begin the eval_sharing alarm
-      eval_sharing_alarm_index = Alarms.create(do_eval_share);
-    }
-    Alarms.set(eval_sharing_alarm_index,millis() + 1000);
-  }
+  // if(eval_sharing_tick > 0) {
+  //   if(eval_sharing_alarm_index < 0) {        // maybe begin the eval_sharing alarm
+  //     eval_sharing_alarm_index = Alarms.create(do_eval_share);
+  //   }
+  //   Alarms.set(eval_sharing_alarm_index,millis() + 1000);
+  // }
 }
 
 // reset packets look like "r m:10 b:0 ..."
@@ -693,8 +721,32 @@ void loop() {
   // pprintf("L settings are m:%d b:%d i:%d s:%d t:%d p:%d\n",
   //         mutation_tick, breeding_tick, injection_tick,
   //         sharing_tick, tournament_size, mutation_prob);
-  report_double(pop.best_fitness());
-  if (buttonDown()) pop.reset();
+  // report_double(pop.best_fitness());
+  // report_string((*pop.tournament()).representation);
+  // report_double(eval_pop.best_fitness());
+  // char str[CHECK_SIZE+1];
+  // for(int i=0; i<CHECK_SIZE; ++i)
+  //   str[i] = itoa((*eval_pop.tournament()).representation[i]);
+  // str[CHECK_SIZE] = '\0';
+  // report_string(str);
+
+  // pprintf("L best %d %c-%c-%c %s\n",
+  //         (*pop.best()).fitness,
+  //         (*pop.best()).representation[0],
+  //         (*pop.best()).representation[1],
+  //         (*pop.best()).representation[2],
+  //         (*pop.best()).representation);
+  pprintf("L best ");
+  facePrint(ALL_FACES, (*pop.best()).fitness);
+  pprintf(" %s \n", (*pop.best()).representation);
+  pprintf("L ------------------------------\n");
+  pprintf("L best %d ", eval_pop.best_fitness());
+  for(int i=0; i<CHECK_SIZE; ++i)
+    pprintf("%d ", (*eval_pop.tournament()).representation[i]);
+  pprintf("\n");
+  pprintf("L \n");
+
+  // if (buttonDown()) pop.reset();
 }
 
 #define SFB_SKETCH_CREATOR_ID B36_3(e,m,s)
