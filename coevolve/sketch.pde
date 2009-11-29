@@ -19,18 +19,18 @@
 char goal[MAX_GOAL_SIZE];
 
 // GP parameters for evolution of individual functions
-int mutation_tick   = 100;                      // ms per mutation
-int breeding_tick   = 100;                      // ms per breeding
-int injection_tick  = 100;                      // ms per breeding
+int mutation_tick   = 100;                     // ms per mutation
+int breeding_tick   = 100;                     // ms per breeding
+int injection_tick  = 100;                     // ms per breeding
 int sharing_tick    = 250;                     // ms per sharing
 int tournament_size = 4;                       // number of individuals selected per tournament
 int mutation_prob   = 4;                       // PROB/SIZE = chance_mut of each spot
 
 // GA parameters for evolution of eval-arrays
-int eval_mutation_tick   = 500;                 // ms per mutation
-int eval_breeding_tick   = 500;                 // ms per breeding
-int eval_injection_tick  = 500;                 // ms per breeding
-int eval_sharing_tick    = 250;                // ms per sharing
+int eval_mutation_tick   = 500;                // ms per mutation
+int eval_breeding_tick   = 500;                // ms per breeding
+int eval_injection_tick  = 500;                // ms per breeding
+int eval_sharing_tick    = 1000;               // ms per sharing
 int eval_tournament_size = 4;                  // number of individuals selected per tournament
 int eval_mutation_prob   = 1;                  // PROB/SIZE = chance_mut of each spot
 
@@ -204,7 +204,6 @@ eval_individual new_eval_ind() {               // randomly generate a new indivi
   for(int i=0; i < random(CHECK_SIZE); ++i)
     ind.representation[i] = random(-INITIAL_CHECK_RANGE, INITIAL_CHECK_RANGE);
   ind.score();                                 // evaluate the fitness of the new eval_individual
-  pprintf("L returning\n");
   return ind;
 }
 
@@ -354,7 +353,6 @@ void eval_population::rescore() {             // re-evaluate the fitness of ever
 }
 void eval_population::incorporate(eval_individual ind) { // add a new individual, evicting the worst
   int worst_ind = 0;
-  pprintf("L eval_evicting\n");
   for(int i=0; i<EVAL_POP_SIZE; ++i)
     if (pop[i].fitness < pop[worst_ind].fitness)
       worst_ind = i;
@@ -455,16 +453,16 @@ static void do_breed(u32 when) {
       Alarms.set(Alarms.currentAlarmNumber(), when+breeding_tick);
   }
 }
-// static void do_eval_breed(u32 when) {
-//   eval_pop.incorporate(eval_pop.breed());
-//   if(eval_breeding_tick > 0) {                 // don't reschedule if tick is 0
-//     if (when+eval_breeding_tick < millis()) {
-//       pprintf("L eval_breeding too fast\n");
-//       Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
-//     } else
-//       Alarms.set(Alarms.currentAlarmNumber(), when+eval_breeding_tick);
-//   }
-// }
+static void do_eval_breed(u32 when) {
+  eval_pop.incorporate(eval_pop.breed());
+  if(eval_breeding_tick > 0) {                 // don't reschedule if tick is 0
+    if (when+eval_breeding_tick < millis()) {
+      pprintf("L eval_breeding too fast\n");
+      Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
+    } else
+      Alarms.set(Alarms.currentAlarmNumber(), when+eval_breeding_tick);
+  }
+}
 static void do_inject(u32 when) {
   pop.incorporate(new_ind());
   if(injection_tick > 0) {                     // don't reschedule if tick is 0
@@ -498,17 +496,17 @@ static void do_share(u32 when) {
       Alarms.set(Alarms.currentAlarmNumber(), when+sharing_tick);
   }
 }
-// static void do_eval_share(u32 when) {
-//   eval_share(eval_pop.tournament());
-//   if(eval_sharing_tick > 0) {                 // don't reschedule if tick is 0
-//     if (when+eval_sharing_tick < millis()) {
-//       pprintf("L eval_sharing too fast\n");
-//       Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
-//     }
-//     else
-//       Alarms.set(Alarms.currentAlarmNumber(), when+eval_sharing_tick);
-//   }
-// }
+static void do_eval_share(u32 when) {
+  eval_share(eval_pop.tournament());
+  if(eval_sharing_tick > 0) {                 // don't reschedule if tick is 0
+    if (when+eval_sharing_tick < millis()) {
+      pprintf("L eval_sharing too fast\n");
+      Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
+    }
+    else
+      Alarms.set(Alarms.currentAlarmNumber(), when+eval_sharing_tick);
+  }
+}
 
 /*
  * Reflexes
@@ -610,12 +608,12 @@ void reset() {
     }
     Alarms.set(breeding_alarm_index,millis() + 1250);
   }
-  // if(eval_breeding_tick > 0) {
-  //   if(eval_breeding_alarm_index < 0) {        // maybe begin the eval_breeding alarm
-  //     eval_breeding_alarm_index = Alarms.create(do_eval_breed);
-  //   }
-  //   Alarms.set(eval_breeding_alarm_index,millis() + 1250);
-  // }
+  if(eval_breeding_tick > 0) {
+    if(eval_breeding_alarm_index < 0) {        // maybe begin the eval_breeding alarm
+      eval_breeding_alarm_index = Alarms.create(do_eval_breed);
+    }
+    Alarms.set(eval_breeding_alarm_index,millis() + 1250);
+  }
   if(injection_tick > 0) {
     if(injection_alarm_index < 0) {             // maybe begin the injection alarm
       injection_alarm_index = Alarms.create(do_inject);
@@ -634,12 +632,12 @@ void reset() {
     }
     Alarms.set(sharing_alarm_index,millis() + 1000);
   }
-  // if(eval_sharing_tick > 0) {
-  //   if(eval_sharing_alarm_index < 0) {        // maybe begin the eval_sharing alarm
-  //     eval_sharing_alarm_index = Alarms.create(do_eval_share);
-  //   }
-  //   Alarms.set(eval_sharing_alarm_index,millis() + 1000);
-  // }
+  if(eval_sharing_tick > 0) {
+    if(eval_sharing_alarm_index < 0) {        // maybe begin the eval_sharing alarm
+      eval_sharing_alarm_index = Alarms.create(do_eval_share);
+    }
+    Alarms.set(eval_sharing_alarm_index,millis() + 1000);
+  }
 }
 
 // reset packets look like "r m:10 b:0 ..."
