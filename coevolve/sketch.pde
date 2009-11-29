@@ -8,7 +8,7 @@
 #include "collector.h"
 
 #define POP_SIZE 100
-#define EVAL_POP_SIZE 1
+#define EVAL_POP_SIZE 100
 #define IND_SIZE 24
 #define BUILDING_BLOCKS "0123456789x+-*/"
 #define DEFAULT_VAL 0
@@ -17,12 +17,12 @@
 #define INITIAL_CHECK_RANGE 100
 
 char goal[MAX_GOAL_SIZE];
-int test_size = 1;
+int test_size = 4;
 
 // GP parameters for evolution of individual functions
-int mutation_tick   = 500;                      // ms per mutation
-int breeding_tick   = 500;                      // ms per breeding
-int injection_tick  = 500;                      // ms per breeding
+int mutation_tick   = 100;                      // ms per mutation
+int breeding_tick   = 100;                      // ms per breeding
+int injection_tick  = 100;                      // ms per breeding
 int sharing_tick    = 250;                     // ms per sharing
 int tournament_size = 4;                       // number of individuals selected per tournament
 int mutation_prob   = 4;                       // PROB/SIZE = chance_mut of each spot
@@ -186,7 +186,6 @@ void individual::mutate() {                    // mutate an individual (each pla
 individual new_ind() {                         // randomly generate a new individual
   individual ind;
   int index = 0;
-  ind.fitness = 0;
   char possibilities[16] = BUILDING_BLOCKS;
   ind.representation[0] = possibilities[random(15)];
   for(int i=0; i < random(IND_SIZE); ++i) {
@@ -194,6 +193,7 @@ individual new_ind() {                         // randomly generate a new indivi
     index = i;
   }
   ind.representation[index+1] = '\0';
+  ind.fitness = 0;
   ind.score();                                 // evaluate the fitness of the new individual
   if(not ind.check()) pprintf("L from new_ind\n");
   return ind;
@@ -387,12 +387,6 @@ double individual::score() {
   eval_individual eval;
   for(int j=0; j<test_size; ++j) {
     eval = eval_pop.pop[random(EVAL_POP_SIZE)];
-
-    // pprintf("L %s against %s ", representation, goal);
-    // for(int i=0; i<CHECK_SIZE; ++i)
-    //   pprintf("%d ", eval.representation[i]);
-    // pprintf("\n");
-
     fit = 0;
     for(int i=0; i<CHECK_SIZE; ++i) {
       difference = (evaluate(eval.representation[i], goal) -
@@ -401,21 +395,15 @@ double individual::score() {
         fit = fit - difference;
       else
         fit = fit + difference;
-
-      // pprintf("L with %d difference is %d\n", eval.representation[i], difference);
-
     }
-
-    // apply these fitness evaluation numbers to the score of the eval_individual
-
     eval.update_fitness(fit);
+    update_fitness(fit);
   }
-  fitness = fit/test_size;
-
-  // pprintf("L fit=");
+  
+  // pprintf("L     (%s) fit=", representation);
   // facePrint(ALL_FACES, fitness);
   // pprintf("\n");
-
+  
   return fitness;
 }
 double eval_individual::score() {
@@ -436,8 +424,8 @@ double eval_individual::score() {
     }
     // apply these fitness evaluation numbers to the score of the fodder individual
     fodder.update_fitness(fit);
+    update_fitness(fit);
   }
-  fitness = fit/test_size;
   return fitness;
 }
 
@@ -712,32 +700,12 @@ void setup() {
 
 void loop() {
   delay(1000); ++goal_seconds;
-  // pprintf("L \n");                             // print status information
-  // pprintf("L %d second on %s\n", goal_seconds, goal);
-  // pprintf("L best fitness is %d\n", pop.best_fitness());
-  // pprintf("L mean fitness is "); print(pop.mean_fitness()); pprintf("\n");
-  // pprintf("L best individual is %d long and is %s\n",
-  //         (* pop.best()).size(), (* pop.best()).representation);
-  // pprintf("L settings are m:%d b:%d i:%d s:%d t:%d p:%d\n",
-  //         mutation_tick, breeding_tick, injection_tick,
-  //         sharing_tick, tournament_size, mutation_prob);
-  // report_double(pop.best_fitness());
-  // report_string((*pop.tournament()).representation);
-  // report_double(eval_pop.best_fitness());
-  // char str[CHECK_SIZE+1];
-  // for(int i=0; i<CHECK_SIZE; ++i)
-  //   str[i] = itoa((*eval_pop.tournament()).representation[i]);
-  // str[CHECK_SIZE] = '\0';
-  // report_string(str);
-
-  // pprintf("L best %d %c-%c-%c %s\n",
-  //         (*pop.best()).fitness,
-  //         (*pop.best()).representation[0],
-  //         (*pop.best()).representation[1],
-  //         (*pop.best()).representation[2],
-  //         (*pop.best()).representation);
-  pprintf("L best ");
-  facePrint(ALL_FACES, (*pop.best()).fitness);
+  pprintf("L goal %s\n", goal);
+  (*pop.best()).score();
+  pprintf("L mean ");
+  facePrint(ALL_FACES, pop.mean_fitness());
+  pprintf(" best ");
+  facePrint(ALL_FACES, pop.best_fitness());
   pprintf(" %s \n", (*pop.best()).representation);
   pprintf("L ------------------------------\n");
   pprintf("L best %d ", eval_pop.best_fitness());
@@ -745,10 +713,12 @@ void loop() {
     pprintf("%d ", (*eval_pop.tournament()).representation[i]);
   pprintf("\n");
   pprintf("L \n");
+  pprintf("L \n");
+  pprintf("L \n");
 
   // if (buttonDown()) pop.reset();
 }
 
 #define SFB_SKETCH_CREATOR_ID B36_3(e,m,s)
-#define SFB_SKETCH_PROGRAM_ID B36_2(g,p)
+#define SFB_SKETCH_PROGRAM_ID B36_4(c,o,e,v)
 #define SFB_SKETCH_COPYRIGHT_NOTICE "GPL V3"
