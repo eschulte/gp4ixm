@@ -5,8 +5,11 @@
 #include "SFBPrint.h"           // For facePrint
 #include "SFBPrintf.h"          // For pprintf, etc
 #include "SFBAlarm.h"           // For Alarms, etc
+#include "SFBEeprom.h"          // For persistent storage to the Eeprom
 
-#define MAX_DIST 100
+#define MAX_DIST  100
+#define DATA_ADDR 0
+#define MAX_HELD  1000
 
 struct Collector {
   bool initialized;
@@ -40,6 +43,27 @@ struct Collector {
   }
 };
 Collector collector;
+
+struct Collection {
+  bool initialized;
+  int ints[MAX_HELD];
+  int ints_index;
+  double doubles[MAX_HELD];
+  int    doubles_index;
+  char strings[10*MAX_HELD];
+  int  strings_index;
+};
+Collection collection;
+
+void clear_collection() {
+  Collection col; collection = col;
+}
+void read_collection() {
+  eepromRead(DATA_ADDR, (u8*) &collection, sizeof(collection));
+}
+void write_collection() {
+  eepromWrite(DATA_ADDR, (u8*) &collection, sizeof(collection));
+}
 
 char reverseStep(char step) {
   switch(step) {
@@ -109,6 +133,9 @@ void noticeCollector(u8 * packet) {
 void collector_init() {
   Collector collector;
   collector.initialized = false;
+  Collection collection;
+  read_collection();
+  collection.initialized = true;
   Body.reflex('c', noticeCollector);
 }
 
@@ -122,4 +149,26 @@ void report_string(const char * val) {
 
 void report_double(double val) {
   collector.report_double(val);
+}
+
+void save_int(int val) {
+  collection.ints[collection.ints_index] = val;
+  collection.ints_index = collection.ints_index + 1;
+}
+
+void save_double(double val) {
+  collection.doubles[collection.doubles_index] = val;
+  collection.doubles_index = collection.doubles_index + 1;
+}
+
+void save_string(char * val) {
+  char ch = '0';
+  int index = 0;
+  while(ch != '\0') {
+    ch = val[index];
+    collection.strings[collection.strings_index] = ch;
+    collection.strings_index = collection.strings_index + 1;
+  }
+  collection.strings[collection.strings_index] = '\0';
+  collection.strings_index = collection.strings_index + 1; 
 }
