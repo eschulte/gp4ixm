@@ -1,6 +1,6 @@
 /*                                             -*- mode:C++ -*-
  * 
- * Sketch description: Run GP on a single ixm board.
+ * Sketch description: Run GP on a single ixm board with coevolution
  *
  * Sketch author: Eric Schulte
  *
