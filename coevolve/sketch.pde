@@ -19,17 +19,17 @@
 char goal[MAX_GOAL_SIZE];
 
 // GP parameters for evolution of individual functions
-int mutation_tick   = 50;                      // ms per mutation
-int breeding_tick   = 50;                      // ms per breeding
-int injection_tick  = 50;                      // ms per breeding
+int mutation_tick   = 100;                      // ms per mutation
+int breeding_tick   = 100;                      // ms per breeding
+int injection_tick  = 100;                      // ms per breeding
 int sharing_tick    = 250;                     // ms per sharing
 int tournament_size = 4;                       // number of individuals selected per tournament
 int mutation_prob   = 4;                       // PROB/SIZE = chance_mut of each spot
 
 // GA parameters for evolution of eval-arrays
-int eval_mutation_tick   = 10;                 // ms per mutation
-int eval_breeding_tick   = 10;                 // ms per breeding
-int eval_injection_tick  = 1000;                 // ms per breeding
+int eval_mutation_tick   = 500;                 // ms per mutation
+int eval_breeding_tick   = 500;                 // ms per breeding
+int eval_injection_tick  = 500;                 // ms per breeding
 int eval_sharing_tick    = 250;                // ms per sharing
 int eval_tournament_size = 4;                  // number of individuals selected per tournament
 int eval_mutation_prob   = 1;                  // PROB/SIZE = chance_mut of each spot
@@ -433,18 +433,18 @@ static void do_mutate(u32 when) {
       Alarms.set(Alarms.currentAlarmNumber(), when+mutation_tick);
   }
 }
-// static void do_eval_mutate(u32 when) {
-//   eval_individual new_guy = (*eval_pop.tournament()).copy();
-//   new_guy.mutate();
-//   eval_pop.incorporate(new_guy);
-//   if(eval_mutation_tick > 0) {                 // don't reschedule if tick is 0
-//     if (when+eval_mutation_tick < millis()){
-//       pprintf("L eval_mutating too fast\n");
-//       Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
-//     } else
-//       Alarms.set(Alarms.currentAlarmNumber(), when+eval_mutation_tick);
-//   }
-// }
+static void do_eval_mutate(u32 when) {
+  eval_individual new_guy = (*eval_pop.tournament()).copy();
+  new_guy.mutate();
+  eval_pop.incorporate(new_guy);
+  if(eval_mutation_tick > 0) {                 // don't reschedule if tick is 0
+    if (when+eval_mutation_tick < millis()){
+      pprintf("L eval_mutating too fast\n");
+      Alarms.set(Alarms.currentAlarmNumber(), millis()+1000);
+    } else
+      Alarms.set(Alarms.currentAlarmNumber(), when+eval_mutation_tick);
+  }
+}
 static void do_breed(u32 when) {
   pop.incorporate(pop.breed());
   if(breeding_tick > 0) {                      // don't reschedule if tick is 0
@@ -598,12 +598,12 @@ void reset() {
     }
     Alarms.set(mutation_alarm_index,millis() + 1000);
   }
-  // if(eval_mutation_tick > 0) {
-  //   if(eval_mutation_alarm_index < 0) {        // maybe begin the eval_mutation alarm
-  //     eval_mutation_alarm_index = Alarms.create(do_eval_mutate);
-  //   }
-  //   Alarms.set(eval_mutation_alarm_index,millis() + 1000);
-  // }
+  if(eval_mutation_tick > 0) {
+    if(eval_mutation_alarm_index < 0) {        // maybe begin the eval_mutation alarm
+      eval_mutation_alarm_index = Alarms.create(do_eval_mutate);
+    }
+    Alarms.set(eval_mutation_alarm_index,millis() + 1000);
+  }
   if(breeding_tick > 0) {
     if(breeding_alarm_index < 0) {             // maybe begin the breeding alarm
       breeding_alarm_index = Alarms.create(do_breed);
