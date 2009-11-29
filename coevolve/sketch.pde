@@ -14,7 +14,7 @@
 #define DEFAULT_VAL 0
 #define CHECK_SIZE 5
 #define MAX_GOAL_SIZE 64
-#define INITIAL_CHECK_RANGE 100
+#define CHECK_RANGE 100
 
 char goal[MAX_GOAL_SIZE];
 
@@ -56,13 +56,18 @@ struct eval_individual {
     return fitness;
   }
   void mutate() {
-    for(int i=0; i<CHECK_SIZE; ++i)
+    int old;
+    for(int i=0; i<CHECK_SIZE; ++i) {
+      old = representation[i];
       if((random(1000)/1000) <= (mutation_prob/CHECK_SIZE)) {
         if ((random(1000)/1000) < 0.5)
           representation[i] = representation[i] + random(representation[i]);
         else
           representation[i] = representation[i] - random(representation[i]);
       }
+      if ((representation[i] > CHECK_RANGE) || (representation[i] < -CHECK_RANGE))
+        representation[i] = old;
+    }    
   }
   eval_individual copy() {
     eval_individual my_copy;
@@ -200,9 +205,9 @@ individual new_ind() {                         // randomly generate a new indivi
 eval_individual new_eval_ind() {               // randomly generate a new individual
   eval_individual ind;
   ind.fitness = 0;
-  ind.representation[0] = random(-INITIAL_CHECK_RANGE, INITIAL_CHECK_RANGE);
+  ind.representation[0] = random(-CHECK_RANGE, CHECK_RANGE);
   for(int i=0; i < random(CHECK_SIZE); ++i)
-    ind.representation[i] = random(-INITIAL_CHECK_RANGE, INITIAL_CHECK_RANGE);
+    ind.representation[i] = random(-CHECK_RANGE, CHECK_RANGE);
   ind.score();                                 // evaluate the fitness of the new eval_individual
   return ind;
 }
