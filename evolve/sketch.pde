@@ -1,11 +1,12 @@
 /*                                             -*- mode:C++ -*-
- * newer!
+ * 
  * Sketch description: Run GP on a single ixm board.
  *
  * Sketch author: Eric Schulte
  *
  */
 #include "collector.h"
+#include <math.h>
 
 #define POP_SIZE 100
 #define IND_SIZE 24
@@ -54,6 +55,7 @@ void RpnStack::apply(char op) {
   else if(op == '-')   result = left - right;
   else if(op == '*')   result = left * right;
   else if(op == '/')   if (right == 0) result = 0; else result = (left / right);
+  else if(op == 's')   { push_value(left); result = sin(right); }
   else             {   pprintf("L hork on operator %c\n", op); return; }
   push_value(result);
 }
@@ -432,6 +434,7 @@ void loop() {
   //         mutation_tick, breeding_tick, injection_tick,
   //         sharing_tick, tournament_size, mutation_prob);
   report_double(pop.best_fitness());
+  report_string((*pop.best()).representation);
   if (buttonDown()) pop.reset();
 }
 
