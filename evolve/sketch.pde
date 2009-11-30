@@ -16,9 +16,9 @@
 #define MAX_GOAL_SIZE 64
 
 char goal[MAX_GOAL_SIZE];
-int mutation_tick   = 10;                      // ms per mutation
-int breeding_tick   = 10;                      // ms per breeding
-int injection_tick  = 10;                      // ms per breeding
+int mutation_tick   = 100;                      // ms per mutation
+int breeding_tick   = 100;                      // ms per breeding
+int injection_tick  = 100;                      // ms per breeding
 int sharing_tick    = 250;                     // ms per sharing
 int tournament_size = 4;
 int mutation_prob   = 4;                       // PROB/SIZE = chance_mut of each spot
@@ -44,7 +44,7 @@ struct RpnStack {
     } else
       return default_value;
   }
-  int value() { return stack[(ind - 1)]; }
+  double value() { return stack[(ind - 1)]; }
   void apply(char op);
 };
 void RpnStack::apply(char op) {
@@ -66,6 +66,7 @@ RpnStack rpn_stack;
  */
 double evaluate(int x, char * representation) {
   char ch;
+  // pprintf("L evaluating %s[%d] = ", representation, x);
   rpn_stack.reset();
   for(int i=0; i<IND_SIZE; ++i) {              // step through the calculation string
     ch = representation[i];
@@ -75,9 +76,11 @@ double evaluate(int x, char * representation) {
       rpn_stack.push_value((ch - 48));
     else if (ch == 'x')                        // if x then push x's value
       rpn_stack.push_value(x);
-    else if (ch == '+' || ch == '-' || ch == '*' || ch == '/')
+    else if (ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == 's')
       rpn_stack.apply(ch);                     // apply operator to rpn_stack
   }
+  // facePrint(ALL_FACES, rpn_stack.value());
+  // pprintf("\n");
   return rpn_stack.value();
 }
 
