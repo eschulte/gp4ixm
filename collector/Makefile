@@ -1,4 +1,4 @@
-BASEDIR:=/nfs/adaptive/eschulte/src/ixm/sfb/src/template/../..
+BASEDIR:=/Users/eschulte/src/ixm/sfb/src/template/../..
 
 export TARGET=body
 include $(BASEDIR)/config/Makevars.mk

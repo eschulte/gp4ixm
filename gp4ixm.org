@@ -1088,11 +1088,46 @@ c8x* f
 c528.00 f
 c45845x* f
 #+begin_src gnuplot
-  set xrange [0..10]
+  set xrange [1..10]
   plot 100*sin(x)
-  replot 5*x
+  # replot (((((((9/x)*2)-x)*5)-x)/x)+x)*x
+  replot (7*x)*((((x*(9/x)*3-9)-6-x)/x)+x)
 #+end_src
 [[file:data/sin-gp.2.png]]
+
+** big grid
+
+results from evolving against 100*sin(x) in the big grid
+
+c409.00 fllrr
+c409.00 fffffl
+c/*xx59x/3*9-*7-x/x+* fllrr
+c/**x59x/3*8-*5-7-x/x+* fffffl
+c409.00 ffff
+c/**x59x/3*8-*5-7-x/x+* ffff
+c409.00 ffffflffflr
+c/7xx59x/3*9-*7-x/x+* ffffflffflr
+c409.00 fffff
+c3*xx59x/3*8-*5-7-x/x+* fffff
+
+
+
+better
+
+
+
+c/7x*x9x/3*9-*6-x-x/x+* fllrl
+c372.00 fllrlrl
+c/7x*x9x/3*9-*6-x-x/x+* fllrlrl
+c372.00 ff
+c/7x*x9x/3*9-*6-x-x/x+* ff
+c372.00 fffr
+c/7x*x9x/3*9-*6-x-x/x+* fffr
+c372.00 ffffflf
+c372.00 fllr
+c37x*x9x/3*9-*6-x-x/x+* ffffflf
+c/7x*x9x/3*9-*6-x-x/x+* fllr
+i /7x*x9x/3*9-*6-x-x/x+*
 
 ** eeprom
 reading gives, error code (2, 1, 3) "Eeprom address out of range"
