@@ -53,11 +53,14 @@ puts ""
 # set up the reflex
 ixm.attach_reflex(/c/) do |packet|
   begin
-    if packet.match(/^c([\.\d-]+) (.*)/) # negative!!
+    if packet.match(/^c([\d-]+\.[\d]+) (\S*)/) # score -- c0.00 f
       print "."; STDOUT.flush;
       $current_file << "#{Time.now - $start_time}\t#{$1}\t#{$2}\n"
       $current_file.flush
       $finished = true if Float($1) == 0
+    elsif packet.match(/c([\d\*\-\+\/x]+) (\S*)/) # best -- c44/4x5x5-+* f
+      $current_best << "#{Time.now - $start_time}\t#{$1}\t#{$2}\n"
+      $current_best.flush
     else
       puts packet
     end
@@ -76,6 +79,10 @@ r_strings.each do |r_s|
         File.open(File.join(results_dir,
                             "#{r_s.gsub(":",".").gsub(" ","_")}_g.#{i}.#{c}.log"),
                   "w")
+      $current_best =
+        File.open(File.join(results_dir,
+                            "#{r_s.gsub(":",".").gsub(" ","_")}_g.#{i}.#{c}.best"),
+                  "w")
       $finished = false
       $start_time = Time.now
       
@@ -93,6 +100,7 @@ r_strings.each do |r_s|
       end
       
       $current_file.close
+      $current_best.close
     end
   end
   # break
