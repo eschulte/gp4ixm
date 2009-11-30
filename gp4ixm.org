@@ -211,8 +211,8 @@ look at the speedup gained through using the big group (with
   
   base = "./results/fifth-milestone/"
   results = Dir.entries(base).map do |e|
-    if e.match(/r_s.(\d+)_m.(\d+)_b.(\d+)_g.(\d+).(\d+)/)
-      r = Result.new($1, $2, $3, Float("#{$4}.#{$5}"))
+    if e.match(/r_s.(\d+)_m.(\d+)_b.(\d+)_i.(\d+)_g.(\d+).(\d+)/)
+      r = Result.new($1, $2, $3, Float("#{$5}.#{$6}"))
       r.raw = File.read(File.join(base, e))
       r
     end
@@ -223,7 +223,7 @@ look at the speedup gained through using the big group (with
 #+begin_src ruby :results raw output :exports code :noweb
   # <<fifth_milestone_results_setup>>
   # print out averaged over 5 goal runs
-  puts "|sharing|mutation|breeding|goal|runtime|average|"
+  puts "|sharing|mutation|breeding|goal|runtime|average fitness|"
   puts "|--------"
   runtime = 0; average = 0
   results.each do |r|
@@ -242,17 +242,33 @@ look at the speedup gained through using the big group (with
   end
 #+end_src
 
+#+results: fifth_milestone_results_by_goal
+| sharing | mutation | breeding | goal | runtime |  average fitness |
+|---------+----------+----------+------+---------+------------------|
+|       0 |       10 |       10 |    0 |       9 | 4049.28409090909 |
+|       0 |       10 |      100 |    0 |      14 | 2060.36547619048 |
+|       0 |      100 |      100 |    0 |     101 | 2529.54963621051 |
+|       0 |      100 |       10 |    0 |     132 | 2909.66486823494 |
+|       0 |       10 |       10 |    1 |      42 | 266.851231300345 |
+|       0 |      100 |       10 |    1 |     141 | 139.570506458541 |
+|       0 |       10 |      100 |    1 |     264 | 99.7771832410837 |
+|       0 |      100 |      100 |    1 |     303 | 270.617550373458 |
 
+#+tblname: fifth_milestone_results
+| goal | m.10 b.10 | m.10 b.100 | m.100 b.10 | m.100 b.100 |
+|------+-----------+------------+------------+-------------|
+|    1 |         9 |         14 |        132 |         101 |
+|    2 |        42 |        264 |        141 |         303 |
 
 #+begin_src gnuplot :var data=fifth_milestone_results :exports code :results silent
   set boxwidth 0.9 relative
   set title 'run times by GP params'
   set xlabel 'problems'
-  set xtics ("987xxx*-+*+" 3, "7xx*+" 2, "xxx**" 1, "xx*" 0)
+  set xtics ("xxx**xxxx***+", "7xxx**+")
   set ylabel 'runtimes (seconds)'
   set style data histograms
   set style fill solid 1.0 border -1
-  plot data using 2 title 'smb', '' using 3 title '-mb'
+  plot data using 2 title 'm.10 b.10', '' using 3 title 'm.10 b.100', '' using 4 title 'm.100 b.10', '' using 5 title 'm.100 b.100'
 #+end_src
 
 ** five boards
