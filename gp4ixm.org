@@ -1099,6 +1099,8 @@ c45845x* f
 
 results from evolving against 100*sin(x) in the big grid
 
+getting pretty good...
+
 c409.00 fllrr
 c409.00 fffffl
 c/*xx59x/3*9-*7-x/x+* fllrr
@@ -1110,11 +1112,7 @@ c/7xx59x/3*9-*7-x/x+* ffffflffflr
 c409.00 fffff
 c3*xx59x/3*8-*5-7-x/x+* fffff
 
-
-
-better
-
-
+better even better...
 
 c/7x*x9x/3*9-*6-x-x/x+* fllrl
 c372.00 fllrlrl
