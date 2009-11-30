@@ -186,6 +186,75 @@ look at the speedup gained through using the big group (with
   :PROPERTIES:
   :CUSTOM_ID: experiments
   :END:
+** fifth milestone
+#+srcname: fifth_milestone_results_setup
+#+begin_src ruby :results output raw :exports code
+  # each instance holds the information from one run
+  class Result
+    attr_accessor :s, :m, :b, :g, :raw
+    def initialize(s, m, b, g)
+      self.s = s; self.m = m; self.b = b; self.g = g
+    end
+    def counts
+      self.raw.split("\n").
+        map{|l| [Float($1), Float($2)] if l.match(/([\.\d]+)[ \t]([\.\d]+)/)}.compact
+    end
+    def runtime() self.counts.size end
+    def average
+      if self.runtime > 0
+        self.counts.inject(0){ |sum, n| sum + n[1] } / self.runtime
+      else
+        -1
+      end
+    end
+  end
+  
+  base = "./results/fifth-milestone/"
+  results = Dir.entries(base).map do |e|
+    if e.match(/r_s.(\d+)_m.(\d+)_b.(\d+)_g.(\d+).(\d+)/)
+      r = Result.new($1, $2, $3, Float("#{$4}.#{$5}"))
+      r.raw = File.read(File.join(base, e))
+      r
+    end
+  end.compact
+#+end_src
+
+#+srcname: fifth_milestone_results_by_goal
+#+begin_src ruby :results raw output :exports code :noweb
+  # <<fifth_milestone_results_setup>>
+  # print out averaged over 5 goal runs
+  puts "|sharing|mutation|breeding|goal|runtime|average|"
+  puts "|--------"
+  runtime = 0; average = 0
+  results.each do |r|
+    goal_num  = r.g.to_s.split(".")[0]
+    goal_time = r.g.to_s.split(".")[1]
+    runtime  += r.runtime
+    average  += r.average
+    if goal_time == "4"
+      runtime = runtime / 5
+      average = average / 5
+      puts "|"+[:s, :m, :b].map{ |meth| r.send(meth).to_s}.join("|")+
+        "|#{goal_num}|#{runtime}|#{average}|"
+      runtime = 0
+      average = 0
+    end
+  end
+#+end_src
+
+
+
+#+begin_src gnuplot :var data=fifth_milestone_results :exports code :results silent
+  set boxwidth 0.9 relative
+  set title 'run times by GP params'
+  set xlabel 'problems'
+  set xtics ("987xxx*-+*+" 3, "7xx*+" 2, "xxx**" 1, "xx*" 0)
+  set ylabel 'runtimes (seconds)'
+  set style data histograms
+  set style fill solid 1.0 border -1
+  plot data using 2 title 'smb', '' using 3 title '-mb'
+#+end_src
+
 ** sharing suite
 #+srcname: shared_suite_results_setup
 #+begin_src ruby :results output raw :exports code
@@ -900,6 +969,27 @@ breeding and injection are all 0
 |       10 |       10 |        10 |          4 |  3.4 |     298 |  100.46644295302 |
 
 * Issues / Notes
+** working on sin
+c38x48+7* f
+
+(4+8)*7 = 84
+
+g xs55+55+**
+#+begin_src gnuplot
+  set xrange [0..10]
+  plot 100*sin(x)
+  replot 9*9*x
+#+end_src
+[[file:data/sing-gp.1.png]]
+
+c0278/54x5*** f
+#+begin_src gnuplot
+  set xrange [0..10]
+  plot 100*sin(x)
+  replot 8/5*x*4*4
+#+end_src
+[[file:data/sing-gp.2.png]]
+
 ** eeprom
 reading gives, error code (2, 1, 3) "Eeprom address out of range"
 
