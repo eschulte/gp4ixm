@@ -11,7 +11,7 @@
 #define POP_SIZE 100
 #define IND_SIZE 24
 #define BUILDING_BLOCKS "0123456789x+-*/"
-#define DEFAULT_VAL 0
+#define DEFAULT_VAL 0.0
 #define CHECK_SIZE 10
 #define MAX_GOAL_SIZE 64
 
@@ -34,11 +34,11 @@ int sharing_alarm_index   = -1;
  */
 struct RpnStack {
   int ind;
-  int stack[IND_SIZE];
-  int default_value;
+  double stack[IND_SIZE];
+  double default_value;
   void reset() { ind = 0; default_value = DEFAULT_VAL; }
-  void push_value(int val) { stack[ind] = val; ++ind; return; }
-  int pop_value() {
+  void push_value(double val) { stack[ind] = val; ++ind; return; }
+  double pop_value() {
     if(ind > 0) {
       --ind; return stack[ind];
     } else
@@ -48,9 +48,9 @@ struct RpnStack {
   void apply(char op);
 };
 void RpnStack::apply(char op) {
-  int right = pop_value();
-  int left = pop_value();
-  int result;
+  double right = pop_value();
+  double left = pop_value();
+  double result;
   if     (op == '+')   result = (left + right);
   else if(op == '-')   result = left - right;
   else if(op == '*')   result = left * right;
@@ -64,7 +64,7 @@ RpnStack rpn_stack;
 /*
  * Evaluation
  */
-int evaluate(int x, char * representation) {
+double evaluate(int x, char * representation) {
   char ch;
   rpn_stack.reset();
   for(int i=0; i<IND_SIZE; ++i) {              // step through the calculation string
@@ -86,13 +86,13 @@ int evaluate(int x, char * representation) {
  */
 struct individual {
   char representation[IND_SIZE];
-  int fitness;
+  double fitness;
   int size() {
     int size = 0;
     while(representation[size] != '\0') ++size;
     return size;
   }
-  int score();
+  double score();
   void mutate();
   individual copy() {
     individual my_copy;
@@ -120,10 +120,10 @@ struct individual {
     return ok;
   }
 };
-int individual::score() {
+double individual::score() {
   // int values[CHECK_SIZE];
-  fitness = 0;
-  int difference;
+  fitness = 0.0;
+  double difference;
   // for(int i=0; i<CHECK_SIZE; i++) values[i] = random(10);
   for(int i=0; i<CHECK_SIZE; ++i) {
     difference = (evaluate(i, goal) - evaluate(i, representation));
@@ -149,7 +149,7 @@ void individual::mutate() {                    // mutate an individual (each pla
 individual new_ind() {                         // randomly generate a new individual
   individual ind;
   int index = 0;
-  ind.fitness = -1;
+  ind.fitness = -1.0;
   char possibilities[16] = BUILDING_BLOCKS;
   ind.representation[0] = possibilities[random(15)];
   for(int i=0; i < random(IND_SIZE); ++i) {
@@ -206,7 +206,7 @@ struct population {
         best = &pop[i];
     return best;
   }
-  int best_fitness() {
+  double best_fitness() {
     int best = pop[0].fitness;
     for(int i=0; i<POP_SIZE; ++i) if (pop[i].fitness < best) best = pop[i].fitness;
     return best;
@@ -330,7 +330,7 @@ void newGoal(u8 * packet) {
 void acceptIndividual(u8 * packet) {
   individual ind;
   int index = 0;
-  ind.fitness = -1;
+  ind.fitness = -1.0;
   char ch;
   if (packetScanf(packet, "i ") != 2) {
     pprintf("L bad individual: '%#p'\n",packet);
