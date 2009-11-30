@@ -4,22 +4,36 @@
 # and collect the results an a manner amenable to review/analysis
 #
 require 'tempfile'
-require 'libixm/libixm.rb'
+require 'fileutils'
+require File.join(File.dirname(__FILE__), "libixm", "libixm.rb")
+
+usage = "Usage: ruby experimenter.rb path/to/results/directory [optional # experiments to skip]"
+
+if ARGV[0] and ARGV[0].match(/help/)
+  puts usage
+  Process.exit
+elsif ARGV[0]
+  results_dir = File.expand_path(ARGV[0])
+  FileUtils.mkdir_p(results_dir)
+else
+  puts "you must supply a directory to hold results"
+  puts usage
+  Process.exit
+end
 
 # create the ixm object
 puts "initializing ixm connection"
-ixm = LibIXM.new(:sfbprog_path =>   '/nfs/adaptive/eschulte/bin/sfbprog', # path for sfbprog or sfbprog.exe
-                 :sfbprog_args =>   '',                            # additional arguments
-                 :sfbprog_device => '/dev/ttyUSB0', # '/dev/tty.usbserial-FTE5H1S3', # device for serial-over-usb
-                 :sfbprog_sketch => 'single-evolve/sketch.hex')    # sketch
-
-puts "running some experiments..."
+ixm = LibIXM.new(:sfbprog_path =>   '/nfs/adaptive/eschulte/bin/sfbprog',
+                 :sfbprog_args =>   '',
+                 :sfbprog_device => '/dev/ttyUSB0',
+                 :sfbprog_sketch => 'evolve/sketch.hex')
 
 # build up all reset strings
 r_strings = ["r"]
-[["s", [100]],
- ["m", [10]],
- ["b", [10]],].each do |key, values|
+[["s", [0]],
+ ["m", [10, 100]],
+ ["b", [10, 100]],
+ ["i", [0]]].each do |key, values|
   new_strings = []
   r_strings = r_strings.each do |r|
     values.each do |val|
@@ -28,41 +42,45 @@ r_strings = ["r"]
   end
   r_strings = new_strings
 end
-1.times{ r_strings.shift }
-
-# Integer(ARGV[0]).times{ r_strings.shift }
+# possibly pop off the first couple of tests
+Integer(ARGV[1]).times{ r_strings.shift }
 
 # start up
-puts "starting #{(r_strings.size)} runs"
-%x{mkdir -p /nfs/adaptive/eschulte/Desktop/ixm-experiments}
+puts "running #{(r_strings.size)} experiments"
+puts "saving result in #{results_dir}"
+puts ""
 
 # set up the reflex
 ixm.attach_reflex(/c/) do |packet|
-  puts packet
-  if packet.match(/^c.([\.\d]+) (.*)/) # negative!!
-    # print "."; STDOUT.flush;
-    $current_file << "#{Time.now - $start_time}\t#{$1}\t#{$2}\n"
-    $current_file.flush
-    $finished = true if Float($1) == 0
-  else
-    puts packet
+  begin
+    if packet.match(/^c([\.\d-]+) (.*)/) # negative!!
+      print "."; STDOUT.flush;
+      $current_file << "#{Time.now - $start_time}\t#{$1}\t#{$2}\n"
+      $current_file.flush
+      $finished = true if Float($1) == 0
+    else
+      puts packet
+    end
+  rescue
+    puts "failure!!"
+    puts "\t'#{packet}'"
   end
 end
 
-count = 4
+count = 444
 r_strings.each do |r_s|
-  # ["xx*", "xxx**", "987xxx*-+*+"].each_with_index do |goal, i|
   ["xxx**xxxx***+", "7xxx**+"].each_with_index do |goal, i|
     5.times do |c|
       print "\n\t#{r_s} run #{c} on #{goal}\n\t"; STDOUT.flush
       $current_file =
-        File.open("/nfs/adaptive/eschulte/Desktop/ixm-experiments/"+
-                  "#{r_s.gsub(":",".").gsub(" ","_")}_g.#{i}.#{c}.log", "w")
+        File.open(File.join(results_dir,
+                            "#{r_s.gsub(":",".").gsub(" ","_")}_g.#{i}.#{c}.log"),
+                  "w")
       $finished = false
       $start_time = Time.now
       
       # start up the ixm boards running with these settings
-      ixm << "c#{count} "
+      ixm << "c#{count} f"
       ixm << "g #{goal}"
       count += 1
        sleep(2)
