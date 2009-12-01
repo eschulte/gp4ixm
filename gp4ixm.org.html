@@ -1189,39 +1189,41 @@ c45845x* f
    <span class="org-special-keyword">:CUSTOM_ID:</span> <span class="org-property-value">sine-big-grid</span>
 <span class="org-special-keyword">   :END:</span>
 
-results from evolving against 100*sin(x) in the big grid
+results from evolving against <span class="org-code">=100*sin(x)=</span> in the big grid
 
 getting pretty good...
 
-c409.00 fllrr
-c409.00 fffffl
-c/*xx59x/3*9-*7-x/x+* fllrr
-c/**x59x/3*8-*5-7-x/x+* fffffl
-c409.00 ffff
-c/**x59x/3*8-*5-7-x/x+* ffff
-c409.00 ffffflffflr
-c/7xx59x/3*9-*7-x/x+* ffffflffflr
-c409.00 fffff
-c3*xx59x/3*8-*5-7-x/x+* fffff
+<span class="org-code">: c409.00 fllrr
+: c409.00 fffffl
+: c/*xx59x/3*9-*7-x/x+* fllrr
+: c/**x59x/3*8-*5-7-x/x+* fffffl
+: c409.00 ffff
+: c/**x59x/3*8-*5-7-x/x+* ffff
+: c409.00 ffffflffflr
+: c/7xx59x/3*9-*7-x/x+* ffffflffflr
+: c409.00 fffff
+: c3*xx59x/3*8-*5-7-x/x+* fffff
+</span>
+getting even better...
 
-better even better...
-
-c/7x*x9x/3*9-*6-x-x/x+* fllrl
-c372.00 fllrlrl
-c/7x*x9x/3*9-*6-x-x/x+* fllrlrl
-c372.00 ff
-c/7x*x9x/3*9-*6-x-x/x+* ff
-c372.00 fffr
-c/7x*x9x/3*9-*6-x-x/x+* fffr
-c372.00 ffffflf
-c372.00 fllr
-c37x*x9x/3*9-*6-x-x/x+* ffffflf
-c/7x*x9x/3*9-*6-x-x/x+* fllr
-i /7x*x9x/3*9-*6-x-x/x+*
-
+<span class="org-code">: c/7x*x9x/3*9-*6-x-x/x+* fllrl
+: c372.00 fllrlrl
+: c/7x*x9x/3*9-*6-x-x/x+* fllrlrl
+: c372.00 ff
+: c/7x*x9x/3*9-*6-x-x/x+* ff
+: c372.00 fffr
+: c/7x*x9x/3*9-*6-x-x/x+* fffr
+: c372.00 ffffflf
+: c372.00 fllr
+: c37x*x9x/3*9-*6-x-x/x+* ffffflf
+: c/7x*x9x/3*9-*6-x-x/x+* fllr
+: i /7x*x9x/3*9-*6-x-x/x+*
+</span>
 <span class="org-meta-line">#+results: best-ind-big-grid-sine</span>
 <span class="org-table">| 37x*x9x/3*9-*6-x-x/x+* |</span>
 
+This ruby code will take rpn like the above and convert it to real
+algebra suitable for gnuplot.
 <span class="org-meta-line">#+source: rpn-to-alg</span>
 <span class="org-meta-line">#+begin_src ruby :var ind=best-ind-big-grid-sine :results output
 </span><span class="org-block">  operators = %W{+ - / *}
@@ -1238,17 +1240,22 @@ i /7x*x9x/3*9-*6-x-x/x+*
   puts $stack.pop</span><span class="org-meta-line">
 #+end_src</span>
 
+results
 <span class="org-meta-line">#+results: rpn-to-alg</span>
 <span class="org-code">: ((7 * x) * (((((x * (((9 / x) * 3) - 9)) - 6) - x) / x) + x))
 </span>
+lets plot the above w/gnuplot
 <span class="org-meta-line">#+begin_src gnuplot :var alg=rpn-to-alg :exports code
 </span><span class="org-block">  set xrange [1..10]
   plot 100*sin(x)
   replot $alg</span><span class="org-meta-line">
 #+end_src</span>
 
+results
 <span class="org-link">file:data/best-ind-big-grid-sine.png</span>
 
+just to confirm that the score assigned on-board makes sense, lets
+re-calculate in ruby.
 <span class="org-meta-line">#+begin_src ruby :results output raw :exports code
 </span><span class="org-block">  def guy(x)
     ((7 * x) * (((((x * (((9 / x) * 3) - 9)) - 6) - x) / x) + x))
@@ -1264,6 +1271,7 @@ i /7x*x9x/3*9-*6-x-x/x+*
   puts "difference: #{diff}"</span><span class="org-meta-line">
 #+end_src</span>
 
+The following looks good modulo rounding off on board
 <span class="org-meta-line">#+results:</span>
 <span class="org-table">|  x |  guy |            target |</span>
 <span class="org-table">|----+------+-------------------|</span>

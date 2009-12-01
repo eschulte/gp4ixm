@@ -7,7 +7,7 @@ lang="en" xml:lang="en">
 <title>Distributed GP for IXM</title>
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2009-11-30 19:14:18 MST"/>
+<meta name="generated" content="2009-11-30 19:20:08 MST"/>
 <meta name="author" content="Eric Schulte"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -1660,12 +1660,12 @@ c45845x* f
 
 
 <p>
-results from evolving against 100*sin(x) in the big grid
+results from evolving against <code>100*sin(x)</code> in the big grid
 </p>
 <p>
 getting pretty good&hellip;
 </p>
-<p>
+<pre class="example">
 c409.00 fllrr
 c409.00 fffffl
 c/*xx59x/3*9-*7-x/x+* fllrr
@@ -1676,11 +1676,13 @@ c409.00 ffffflffflr
 c/7xx59x/3*9-*7-x/x+* ffffflffflr
 c409.00 fffff
 c3*xx59x/3*8-*5-7-x/x+* fffff
-</p>
+</pre>
+
+
 <p>
-better even better&hellip;
+getting even better&hellip;
 </p>
-<p>
+<pre class="example">
 c/7x*x9x/3*9-*6-x-x/x+* fllrl
 c372.00 fllrlrl
 c/7x*x9x/3*9-*6-x-x/x+* fllrlrl
@@ -1693,7 +1695,9 @@ c372.00 fllr
 c37x*x9x/3*9-*6-x-x/x+* ffffflf
 c/7x*x9x/3*9-*6-x-x/x+* fllr
 i /7x*x9x/3*9-*6-x-x/x+*
-</p>
+</pre>
+
+
 <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
 <caption></caption>
 <colgroup><col align="left" />
@@ -1704,7 +1708,10 @@ i /7x*x9x/3*9-*6-x-x/x+*
 </table>
 
 
-
+<p>
+This ruby code will take rpn like the above and convert it to real
+algebra suitable for gnuplot.
+</p>
 
 
 <pre class="src src-ruby">operators = %<span style="color: #ffffff;">W</span>{+ - / *}
@@ -1724,12 +1731,16 @@ puts <span style="color: #b0c4de;">$stack</span>.pop
 
 
 
-<pre class="example">
+<p>
+results
+</p><pre class="example">
 ((7 * x) * (((((x * (((9 / x) * 3) - 9)) - 6) - x) / x) + x))
 </pre>
 
 
-
+<p>
+lets plot the above w/gnuplot
+</p>
 
 
 <pre class="src src-gnuplot"><span style="color: #6D9CBE;">set</span> xrange [<span style="color: #6D9CBE;">1..10</span>]
@@ -1741,9 +1752,13 @@ puts <span style="color: #b0c4de;">$stack</span>.pop
 
 
 <p>
+results
 <img src="data/best-ind-big-grid-sine.png"  alt="data/best-ind-big-grid-sine.png" />
 </p>
-
+<p>
+just to confirm that the score assigned on-board makes sense, lets
+re-calculate in ruby.
+</p>
 
 
 <pre class="src src-ruby"><span style="color: #CC7833;">def</span> <span style="color: #FFC66D;">guy</span>(x)
@@ -1763,7 +1778,9 @@ puts <span style="color: #A5C261;">"difference: </span><span style="color: #b0c4
 
 
 
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<p>
+The following looks good modulo rounding off on board
+</p><table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
 <caption></caption>
 <colgroup><col align="right" /><col align="right" /><col align="right" />
 </colgroup>
