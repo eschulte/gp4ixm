@@ -1095,7 +1095,10 @@ c45845x* f
 #+end_src
 [[file:data/sin-gp.2.png]]
 
-** big grid
+** sine big grid
+   :PROPERTIES:
+   :CUSTOM_ID: sine-big-grid
+   :END:
 
 results from evolving against 100*sin(x) in the big grid
 
