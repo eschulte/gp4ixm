@@ -1169,6 +1169,22 @@ algebra suitable for gnuplot.
   puts $stack.pop
 #+end_src
 
+#+begin_src clojure :var ind=best-ind-big-grid-sine :session
+  (let [operators '(\+ \- \* \/)
+        stack '()
+        [member [x seq]
+         (if (seq sq)
+           (if (= x (first sq))
+             sq
+             (recur x (rest sq))))]
+        [eat (fn [stack el]
+               (if (member el operators)
+                 (eat (cons (str "( " (second stack) el (first stack)) (rest (rest (rest stack))))
+                      (first stack))))]])
+#+end_src
+
+
+
 results
 #+results: rpn-to-alg
 : ((7 * x) * (((((x * (((9 / x) * 3) - 9)) - 6) - x) / x) + x))
