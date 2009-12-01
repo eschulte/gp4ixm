@@ -275,6 +275,380 @@ look at the speedup gained through using the big group (with
 <span class="org-special-keyword">  :PROPERTIES:</span>
   <span class="org-special-keyword">:CUSTOM_ID:</span> <span class="org-property-value">experiments</span>
 <span class="org-special-keyword">  :END:</span>
+<span class="org-level-2">** fifth milestone</span>
+<span class="org-meta-line">#+srcname: fifth_milestone_results_setup</span>
+<span class="org-meta-line">#+begin_src ruby :results output raw :exports code
+</span><span class="org-block">  # each instance holds the information from one run
+  class Result
+    attr_accessor :s, :m, :b, :g, :raw
+    def initialize(s, m, b, g)
+      self.s = s; self.m = m; self.b = b; self.g = g
+    end
+    def counts
+      self.raw.split("\n").
+        map{|l| [Float($1), Float($2)] if l.match(/([\.\d]+)[ \t]([\.\d]+)/)}.compact
+    end
+    def runtime() self.counts.size end
+    def average
+      if self.runtime &gt; 0
+        self.counts.inject(0){ |sum, n| sum + n[1] } / self.runtime
+      else
+        -1
+      end
+    end
+  end
+  
+  base = "./results/fifth-milestone/"
+  results = Dir.entries(base).map do |e|
+    if e.match(/r_s.(\d+)_m.(\d+)_b.(\d+)_i.(\d+)_g.(\d+).(\d+)/)
+      r = Result.new($1, $2, $3, Float("#{$5}.#{$6}"))
+      r.raw = File.read(File.join(base, e))
+      r
+    end
+  end.compact</span><span class="org-meta-line">
+#+end_src</span>
+
+<span class="org-meta-line">#+srcname: fifth_milestone_results_by_goal</span>
+<span class="org-meta-line">#+begin_src ruby :results raw output :exports code :noweb
+</span><span class="org-block">  # &lt;&lt;fifth_milestone_results_setup&gt;&gt;
+  # print out averaged over 5 goal runs
+  puts "|sharing|mutation|breeding|goal|runtime|average fitness|"
+  puts "|--------"
+  runtime = 0; average = 0
+  results.each do |r|
+    goal_num  = r.g.to_s.split(".")[0]
+    goal_time = r.g.to_s.split(".")[1]
+    runtime  += r.runtime
+    average  += r.average
+    if goal_time == "4"
+      runtime = runtime / 5
+      average = average / 5
+      puts "|"+[:s, :m, :b].map{ |meth| r.send(meth).to_s}.join("|")+
+        "|#{goal_num}|#{runtime}|#{average}|"
+      runtime = 0
+      average = 0
+    end
+  end</span><span class="org-meta-line">
+#+end_src</span>
+
+<span class="org-meta-line">#+results: fifth_milestone_results_by_goal</span>
+<span class="org-table">| sharing | mutation | breeding | goal | runtime |  average fitness |</span>
+<span class="org-table">|---------+----------+----------+------+---------+------------------|</span>
+<span class="org-table">|       0 |       10 |       10 |    0 |       9 | 4049.28409090909 |</span>
+<span class="org-table">|       0 |       10 |      100 |    0 |      14 | 2060.36547619048 |</span>
+<span class="org-table">|       0 |      100 |      100 |    0 |     101 | 2529.54963621051 |</span>
+<span class="org-table">|       0 |      100 |       10 |    0 |     132 | 2909.66486823494 |</span>
+<span class="org-table">|       0 |       10 |       10 |    1 |      42 | 266.851231300345 |</span>
+<span class="org-table">|       0 |      100 |       10 |    1 |     141 | 139.570506458541 |</span>
+<span class="org-table">|       0 |       10 |      100 |    1 |     264 | 99.7771832410837 |</span>
+<span class="org-table">|       0 |      100 |      100 |    1 |     303 | 270.617550373458 |</span>
+
+<span class="org-meta-line">#+tblname: fifth_milestone_results</span>
+<span class="org-table">| goal | m.10 b.10 | m.10 b.100 | m.100 b.10 | m.100 b.100 |</span>
+<span class="org-table">|------+-----------+------------+------------+-------------|</span>
+<span class="org-table">|    1 |         9 |         14 |        132 |         101 |</span>
+<span class="org-table">|    2 |        42 |        264 |        141 |         303 |</span>
+
+<span class="org-meta-line">#+begin_src gnuplot :var data=fifth_milestone_results :exports code :results silent
+</span><span class="org-block">  set boxwidth 0.9 relative
+  set title 'run times by GP params'
+  set xlabel 'problems'
+  set xtics ("xxx**xxxx***+", "7xxx**+")
+  set ylabel 'runtimes (seconds)'
+  set style data histograms
+  set style fill solid 1.0 border -1
+  plot data using 2 title 'm.10 b.10', '' using 3 title 'm.10 b.100', '' using 4 title 'm.100 b.10', '' using 5 title 'm.100 b.100'</span><span class="org-meta-line">
+#+end_src</span>
+
+<span class="org-level-2">** five boards</span>
+<span class="org-meta-line">#+srcname: five_boards_suite_results_setup</span>
+<span class="org-meta-line">#+begin_src ruby :results output raw :exports code
+</span><span class="org-block">  # each instance holds the information from one run
+  class Result
+    attr_accessor :s, :m, :b, :g, :raw
+    def initialize(s, m, b, g)
+      self.s = s; self.m = m; self.b = b; self.g = g
+    end
+    def counts
+      self.raw.split("\n").
+        map{|l| [Float($1), Float($2)] if l.match(/([\.\d]+)[ \t]([\.\d]+)/)}.compact
+    end
+    def runtime() self.counts.size end
+    def average
+      if self.runtime &gt; 0
+        self.counts.inject(0){ |sum, n| sum + n[1] } / self.runtime
+      else
+        -1
+      end
+    end
+  end
+  
+  base = "./results/five_boards/"
+  results = Dir.entries(base).map do |e|
+    if e.match(/r_s.(\d+)_m.(\d+)_b.(\d+)_g.(\d+).(\d+)/)
+      r = Result.new($1, $2, $3, Float("#{$4}.#{$5}"))
+      r.raw = File.read(File.join(base, e))
+      r
+    end
+  end.compact</span><span class="org-meta-line">
+#+end_src</span>
+
+<span class="org-meta-line">#+srcname: five_boards_suite_results_by_goal</span>
+<span class="org-meta-line">#+begin_src ruby :results raw output :exports code :noweb
+</span><span class="org-block">  # &lt;&lt;five_boards_suite_results_setup&gt;&gt;
+  # print out averaged over 5 goal runs
+  puts "|sharing|mutation|breeding|goal|runtime|average|"
+  puts "|--------"
+  runtime = 0; average = 0
+  results.each do |r|
+    goal_num  = r.g.to_s.split(".")[0]
+    goal_time = r.g.to_s.split(".")[1]
+    runtime  += r.runtime
+    average  += r.average
+    if goal_time == "4"
+      runtime = runtime / 5
+      average = average / 5
+      puts "|"+[:s, :m, :b].map{ |meth| r.send(meth).to_s}.join("|")+
+        "|#{goal_num}|#{runtime}|#{average}|"
+      runtime = 0
+      average = 0
+    end
+  end</span><span class="org-meta-line">
+#+end_src</span>
+
+<span class="org-meta-line">#+resname: five_boards_suite_results_by_goal</span>
+<span class="org-table">| sharing | mutation | breeding | goal | runtime |          average |</span>
+<span class="org-table">|---------+----------+----------+------+---------+------------------|</span>
+<span class="org-table">|       0 |       10 |        0 |    0 |      12 | 1675.91545454545 |</span>
+<span class="org-table">|       0 |       10 |        0 |    1 |      14 | 372.944848484848 |</span>
+<span class="org-table">|       0 |       10 |       10 |    0 |      26 | 1833.57716283716 |</span>
+<span class="org-table">|       0 |       10 |       10 |    1 |      13 | 202.757727272727 |</span>
+<span class="org-table">|     100 |       10 |        0 |    0 |     946 | 270.970690762932 |</span>
+<span class="org-table">|     100 |       10 |       10 |    0 |    1516 | 2143742185.72859 |</span>
+<span class="org-table">|     100 |       10 |       10 |    1 |    1515 | 2144584333.64829 |</span>
+
+<span class="org-meta-line">#+tblname: five_boards_results</span>
+<span class="org-table">| goal |              smb |              -mb |</span>
+<span class="org-table">|------+------------------+------------------|</span>
+<span class="org-table">|    1 | 121.083356643357 | 300.862181818182 |</span>
+<span class="org-table">|    2 |  2131.9212962963 | 2790.12836363636 |</span>
+
+<span class="org-meta-line">#+begin_src gnuplot :var data=five_boards_results :exports code :results silent
+</span><span class="org-block">  set boxwidth 0.9 relative
+  set title 'run times by GP params'
+  set xlabel 'problems'
+  set xtics ("987xxx*-+*+" 3, "7xx*+" 2, "xxx**" 1, "xx*" 0)
+  set ylabel 'runtimes (seconds)'
+  set style data histograms
+  set style fill solid 1.0 border -1
+  plot data using 2 title 'smb', '' using 3 title '-mb'</span><span class="org-meta-line">
+#+end_src</span>
+
+<span class="org-level-2">** sharing suite</span>
+<span class="org-meta-line">#+srcname: shared_suite_results_setup</span>
+<span class="org-meta-line">#+begin_src ruby :results output raw :exports code
+</span><span class="org-block">  # each instance holds the information from one run
+  class Result
+    attr_accessor :s, :m, :b, :g, :raw
+    def initialize(s, m, b, g)
+      self.s = s; self.m = m; self.b = b; self.g = g
+    end
+    def counts
+      self.raw.split("\n").
+        map{|l| [Float($1), Float($2)] if l.match(/([\.\d]+)[ \t]([\.\d]+)/)}.compact
+    end
+    def runtime() self.counts.size end
+    def average
+      if self.runtime &gt; 0
+        self.counts.inject(0){ |sum, n| sum + n[1] } / self.runtime
+      else
+        -1
+      end
+    end
+  end
+  
+  base = "./results/sharing/"
+  results = Dir.entries(base).map do |e|
+    if e.match(/r_s.(\d+)_m.(\d+)_b.(\d+)_g.(\d+).(\d+)/)
+      r = Result.new($1, $2, $3, Float("#{$4}.#{$5}"))
+      r.raw = File.read(File.join(base, e))
+      r
+    end
+  end.compact</span><span class="org-meta-line">
+#+end_src</span>
+
+<span class="org-meta-line">#+srcname: shared_suite_results_by_goal</span>
+<span class="org-meta-line">#+begin_src ruby :results raw output :exports code :noweb
+</span><span class="org-block">  # &lt;&lt;shared_suite_results_setup&gt;&gt;
+  # print out averaged over 5 goal runs
+  puts "|sharing|mutation|breeding|goal|runtime|average|"
+  puts "|--------"
+  runtime = 0; average = 0
+  results.each do |r|
+    goal_num  = r.g.to_s.split(".")[0]
+    goal_time = r.g.to_s.split(".")[1]
+    runtime  += r.runtime
+    average  += r.average
+    if goal_time == "4"
+      runtime = runtime / 5
+      average = average / 5
+      puts "|"+[:s, :m, :b].map{ |meth| r.send(meth).to_s}.join("|")+
+        "|#{goal_num}|#{runtime}|#{average}|"
+      runtime = 0
+      average = 0
+    end
+  end</span><span class="org-meta-line">
+#+end_src</span>
+
+<span class="org-meta-line">#+resname: shared_suite_results_by_goal</span>
+<span class="org-table">| goal | sharing | mutation | breeding | runtime |          average |</span>
+<span class="org-table">|------+---------+----------+----------+---------+------------------|</span>
+<span class="org-table">|    0 |     100 |       10 |       10 |      34 |  2131.9212962963 |</span>
+<span class="org-table">|    0 |       0 |       10 |       10 |      14 | 2790.12836363636 |</span>
+<span class="org-table">|    1 |     100 |       10 |       10 |      10 | 121.083356643357 |</span>
+<span class="org-table">|    1 |       0 |       10 |       10 |      17 | 300.862181818182 |</span>
+
+<span class="org-meta-line">#+tblname: shared_results</span>
+<span class="org-table">| goal |              smb |              -mb |</span>
+<span class="org-table">|------+------------------+------------------|</span>
+<span class="org-table">|    1 | 121.083356643357 | 300.862181818182 |</span>
+<span class="org-table">|    2 |  2131.9212962963 | 2790.12836363636 |</span>
+
+<span class="org-meta-line">#+begin_src gnuplot :var data=shared_results :exports code :results silent
+</span><span class="org-block">  set boxwidth 0.9 relative
+  set title 'run times by GP params'
+  set xlabel 'problems'
+  set xtics ("987xxx*-+*+" 3, "7xx*+" 2, "xxx**" 1, "xx*" 0)
+  set ylabel 'runtimes (seconds)'
+  set style data histograms
+  set style fill solid 1.0 border -1
+  plot data using 2 title 'smb', '' using 3 title '-mb'</span><span class="org-meta-line">
+#+end_src</span>
+
+<span class="org-level-2">** fourth suite</span>
+<span class="org-meta-line">#+srcname: fourth_suite_results_setup</span>
+<span class="org-meta-line">#+begin_src ruby :results output raw :exports code
+</span><span class="org-block">  # each instance holds the information from one run
+  class Result
+    attr_accessor :s, :m, :b, :g, :raw
+    def initialize(s, m, b, g)
+      self.s = s; self.m = m; self.b = b; self.g = g
+    end
+    def counts
+      self.raw.split("\n").
+        map{|l| [Float($1), Float($2)] if l.match(/([\.\d]+)[ \t]([\.\d]+)/)}.compact
+    end
+    def runtime() self.counts.size end
+    def average
+      if self.runtime &gt; 0
+        self.counts.inject(0){ |sum, n| sum + n[1] } / self.runtime
+      else
+        -1
+      end
+    end
+  end
+  
+  base = './results/fourth_suite/'
+  results = Dir.entries(base).map do |e|
+    if e.match(/r_s.(\d+)_m.(\d+)_b.(\d+)_g.(\d+).(\d+)/)
+      r = Result.new($1, $2, $3, Float("#{$4}.#{$5}"))
+      r.raw = File.read(File.join(base, e))
+      r
+    end
+  end.compact</span><span class="org-meta-line">
+#+end_src</span>
+
+<span class="org-meta-line">#+srcname: fourth_suite_results_by_goal</span>
+<span class="org-meta-line">#+begin_src ruby :results raw output :exports code :noweb
+</span><span class="org-block">  # &lt;&lt;fourth_suite_results_setup&gt;&gt;
+  # print out averaged over 5 goal runs
+  puts "|sharing|mutation|breeding|goal|runtime|average|"
+  puts "|--------"
+  runtime = 0; average = 0
+  results.each do |r|
+    goal_num  = r.g.to_s.split(".")[0]
+    goal_time = r.g.to_s.split(".")[1]
+    runtime  += r.runtime
+    average  += r.average
+    if goal_time == "4"
+      runtime = runtime / 5
+      average = average / 5
+      puts "|"+[:s, :m, :b].map{ |meth| r.send(meth).to_s}.join("|")+
+        "|#{goal_num}|#{runtime}|#{average}|"
+      runtime = 0
+      average = 0
+    end
+  end</span><span class="org-meta-line">
+#+end_src</span>
+
+<span class="org-meta-line">#+resname: fourth_suite_results_by_goal</span>
+<span class="org-table">| sharing | mutation | breeding | goal | runtime |          average |</span>
+<span class="org-table">|---------+----------+----------+------+---------+------------------|</span>
+<span class="org-table">|       0 |       10 |       10 |    0 |      22 | 1758.99623655914 |</span>
+<span class="org-table">|     100 |       10 |       10 |    0 |      12 | 590.180628019324 |</span>
+
+<span class="org-level-2">** third suite</span>
+<span class="org-meta-line">#+srcname: third_suite_results_setup</span>
+<span class="org-meta-line">#+begin_src ruby :results output raw :exports code
+</span><span class="org-block">  # each instance holds the information from one run
+  class Result
+    attr_accessor :s, :m, :b, :g, :raw
+    def initialize(s, m, b, g)
+      self.s = s; self.m = m; self.b = b; self.g = g
+    end
+    def counts
+      self.raw.split("\n").
+        map{|l| [Float($1), Float($2)] if l.match(/([\.\d]+)[ \t]([\.\d]+)/)}.compact
+    end
+    def runtime() self.counts.size end
+    def average
+      if self.runtime &gt; 0
+        self.counts.inject(0){ |sum, n| sum + n[1] } / self.runtime
+      else
+        -1
+      end
+    end
+  end
+  
+  base = './results/third_suite/'
+  results = Dir.entries(base).map do |e|
+    if e.match(/r_s.(\d+)_m.(\d+)_b.(\d+)_g.(\d+).(\d+)/)
+      r = Result.new($1, $2, $3, Float("#{$4}.#{$5}"))
+      r.raw = File.read(File.join(base, e))
+      r
+    end
+  end.compact</span><span class="org-meta-line">
+#+end_src</span>
+
+<span class="org-meta-line">#+srcname: third_suite_results_by_goal</span>
+<span class="org-meta-line">#+begin_src ruby :results raw output :exports code :noweb
+</span><span class="org-block">  # &lt;&lt;third_suite_results_setup&gt;&gt;
+  # print out averaged over 5 goal runs
+  puts "|sharing|mutation|breeding|goal|runtime|average|"
+  puts "|--------"
+  runtime = 0; average = 0
+  results.each do |r|
+    goal_num  = r.g.to_s.split(".")[0]
+    goal_time = r.g.to_s.split(".")[1]
+    runtime  += r.runtime
+    average  += r.average
+    if goal_time == "4"
+      runtime = runtime / 5
+      average = average / 5
+      puts "|"+[:s, :m, :b].map{ |meth| r.send(meth).to_s}.join("|")+
+        "|#{goal_num}|#{runtime}|#{average}|"
+      runtime = 0
+      average = 0
+    end
+  end</span><span class="org-meta-line">
+#+end_src</span>
+
+<span class="org-meta-line">#+resname: third_suite_results_by_goal</span>
+<span class="org-table">| sharing | mutation | breeding | goal | runtime |          average |</span>
+<span class="org-table">|---------+----------+----------+------+---------+------------------|</span>
+<span class="org-table">|       0 |       10 |        0 |    0 |    1213 | 479.833009370899 |</span>
+<span class="org-table">|       0 |       10 |       10 |    0 |    1220 | 965.927294106587 |</span>
+
 <span class="org-level-2">** first suite</span>
 <span class="org-special-keyword">   :PROPERTIES:</span>
    <span class="org-special-keyword">:CUSTOM_ID:</span> <span class="org-property-value">first_suite</span>
@@ -784,6 +1158,128 @@ breeding and injection are all 0
 <span class="org-table">|       10 |       10 |        10 |          4 |  3.4 |     298 |  100.46644295302 |</span>
 
 <span class="org-level-1">* Issues / Notes</span>
+<span class="org-level-2">** working on sine</span>
+c38x48+7* f
+
+(4+8)*7 = 84
+
+g xs55+55+**
+
+c555.00 f
+c8x* f
+<span class="org-meta-line">#+begin_src gnuplot
+</span><span class="org-block">  set xrange [0..10]
+  plot 100*sin(x)
+  replot 8*x</span><span class="org-meta-line">
+#+end_src</span>
+<span class="org-link">file:data/sin-gp.1.png</span>
+
+c528.00 f
+c45845x* f
+<span class="org-meta-line">#+begin_src gnuplot
+</span><span class="org-block">  set xrange [1..10]
+  plot 100*sin(x)
+  # replot (((((((9/x)*2)-x)*5)-x)/x)+x)*x
+  replot (7*x)*((((x*(9/x)*3-9)-6-x)/x)+x)</span><span class="org-meta-line">
+#+end_src</span>
+<span class="org-link">file:data/sin-gp.2.png</span>
+
+<span class="org-level-2">** big grid</span>
+
+results from evolving against 100*sin(x) in the big grid
+
+getting pretty good...
+
+c409.00 fllrr
+c409.00 fffffl
+c/*xx59x/3*9-*7-x/x+* fllrr
+c/**x59x/3*8-*5-7-x/x+* fffffl
+c409.00 ffff
+c/**x59x/3*8-*5-7-x/x+* ffff
+c409.00 ffffflffflr
+c/7xx59x/3*9-*7-x/x+* ffffflffflr
+c409.00 fffff
+c3*xx59x/3*8-*5-7-x/x+* fffff
+
+better even better...
+
+c/7x*x9x/3*9-*6-x-x/x+* fllrl
+c372.00 fllrlrl
+c/7x*x9x/3*9-*6-x-x/x+* fllrlrl
+c372.00 ff
+c/7x*x9x/3*9-*6-x-x/x+* ff
+c372.00 fffr
+c/7x*x9x/3*9-*6-x-x/x+* fffr
+c372.00 ffffflf
+c372.00 fllr
+c37x*x9x/3*9-*6-x-x/x+* ffffflf
+c/7x*x9x/3*9-*6-x-x/x+* fllr
+i /7x*x9x/3*9-*6-x-x/x+*
+
+<span class="org-meta-line">#+results: best-ind-big-grid-sine</span>
+<span class="org-table">| 37x*x9x/3*9-*6-x-x/x+* |</span>
+
+<span class="org-meta-line">#+source: rpn-to-alg</span>
+<span class="org-meta-line">#+begin_src ruby :var ind=best-ind-big-grid-sine :results output
+</span><span class="org-block">  operators = %W{+ - / *}
+  $stack = []
+  ind[0][0].split(//).each do |ch|
+    if operators.include?(ch)
+      right = $stack.pop or "1"
+      left = $stack.pop or "1"
+      $stack.push("(#{left} #{ch} #{right})")
+    else
+      $stack.push(ch)
+    end
+  end
+  puts $stack.pop</span><span class="org-meta-line">
+#+end_src</span>
+
+<span class="org-meta-line">#+results: rpn-to-alg</span>
+<span class="org-code">: ((7 * x) * (((((x * (((9 / x) * 3) - 9)) - 6) - x) / x) + x))
+</span>
+<span class="org-meta-line">#+begin_src gnuplot :var alg=rpn-to-alg :exports code
+</span><span class="org-block">  set xrange [1..10]
+  plot 100*sin(x)
+  replot $alg</span><span class="org-meta-line">
+#+end_src</span>
+
+<span class="org-link">file:data/best-ind-big-grid-sine.png</span>
+
+<span class="org-meta-line">#+begin_src ruby :results output raw :exports code
+</span><span class="org-block">  def guy(x)
+    ((7 * x) * (((((x * (((9 / x) * 3) - 9)) - 6) - x) / x) + x))
+  end
+  diff = 0
+  puts "| x | guy | target |"
+  puts "|------------"
+  (1..10).each do |n|
+    puts "| #{n} | #{guy(n)} | #{100 * Math.sin(n)} |"
+    diff += ((100 * Math.sin(n)) - guy(n)).abs
+  end
+  puts ""
+  puts "difference: #{diff}"</span><span class="org-meta-line">
+#+end_src</span>
+
+<span class="org-meta-line">#+results:</span>
+<span class="org-table">|  x |  guy |            target |</span>
+<span class="org-table">|----+------+-------------------|</span>
+<span class="org-table">|  1 |   84 |  84.1470984807897 |</span>
+<span class="org-table">|  2 |   14 |  90.9297426825682 |</span>
+<span class="org-table">|  3 |    0 |  14.1120008059867 |</span>
+<span class="org-table">|  4 |  -56 | -75.6802495307928 |</span>
+<span class="org-table">|  5 | -140 | -95.8924274663138 |</span>
+<span class="org-table">|  6 |  -84 | -27.9415498198926 |</span>
+<span class="org-table">|  7 |  -49 |  65.6986598718789 |</span>
+<span class="org-table">|  8 |    0 |  98.9358246623382 |</span>
+<span class="org-table">|  9 |   63 |  41.2118485241757 |</span>
+<span class="org-table">| 10 |  -70 |  -54.402111088937 |</span>
+
+difference: 462.055639135035
+
+<span class="org-level-2">** eeprom</span>
+reading gives, error code (2, 1, 3) "Eeprom address out of range"
+
 <span class="org-level-2">** new error code</span>
 after running multiple experiments with libixm, I've managed to
 uncover a new error code...

@@ -4,11 +4,10 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
 lang="en" xml:lang="en">
 <head>
-
 <title>Distributed GP for IXM</title>
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2009-11-09 12:48:17 MST"/>
+<meta name="generated" content="2009-11-30 19:11:18 MST"/>
 <meta name="author" content="Eric Schulte"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -71,6 +70,7 @@ lang="en" xml:lang="en">
 </head>
 <body>
 <div id="content">
+
 <h1 class="title">Distributed GP for IXM</h1>
 
 
@@ -94,17 +94,25 @@ lang="en" xml:lang="en">
 </li>
 <li><a href="#experiments">Experiments </a>
 <ul>
+<li><a href="#sec-5.1">fifth milestone </a></li>
+<li><a href="#sec-5.2">five boards </a></li>
+<li><a href="#sec-5.3">sharing suite </a></li>
+<li><a href="#sec-5.4">fourth suite </a></li>
+<li><a href="#sec-5.5">third suite </a></li>
 <li><a href="#first_suite">first suite </a></li>
 </ul>
 </li>
 <li><a href="#sec-6">Issues / Notes </a>
 <ul>
-<li><a href="#sec-6.1">new error code </a></li>
-<li><a href="#sec-6.2">new segfaults&hellip; </a></li>
-<li><a href="#sec-6.3">size overflow </a></li>
-<li><a href="#sec-6.4">hard goals </a></li>
-<li><a href="#sec-6.5">possibility of over-clocking the ixm w/alarms </a></li>
-<li><a href="#sec-6.6">segfault (possibly crossover) </a></li>
+<li><a href="#sec-6.1">working on sine </a></li>
+<li><a href="#sec-6.2">big grid </a></li>
+<li><a href="#sec-6.3">eeprom </a></li>
+<li><a href="#sec-6.4">new error code </a></li>
+<li><a href="#sec-6.5">new segfaults&hellip; </a></li>
+<li><a href="#sec-6.6">size overflow </a></li>
+<li><a href="#sec-6.7">hard goals </a></li>
+<li><a href="#sec-6.8">possibility of over-clocking the ixm w/alarms </a></li>
+<li><a href="#sec-6.9">segfault (possibly crossover) </a></li>
 </ul>
 </li>
 </ul>
@@ -425,7 +433,7 @@ sketch
 <h4 id="sec-4.1.4">experimental results (and playing with the big group) </h4>
 <div class="outline-text-4" id="text-4.1.4">
 
-<p>review the initial <a href="#sec-5.1">initial experimental results</a>
+<p>review the initial <a href="#sec-5.6">initial experimental results</a>
 </p>
 <p>
 look at the speedup gained through using the big group (with
@@ -497,8 +505,526 @@ set of rules which relate states of individual to actions
 
 </div>
 
+<div id="outline-container-5.1" class="outline-3">
+<h3 id="sec-5.1">fifth milestone </h3>
+<div class="outline-text-3" id="text-5.1">
+
+
+
+
+<pre class="src src-ruby"><span style="color: #BC9458; font-style: italic;"># </span><span style="color: #BC9458; font-style: italic;">each instance holds the information from one run
+</span><span style="color: #CC7833;">class</span> <span style="color: #ffffff;">Result</span>
+  attr_accessor <span style="color: #6D9CBE;">:s</span>, <span style="color: #6D9CBE;">:m</span>, <span style="color: #6D9CBE;">:b</span>, <span style="color: #6D9CBE;">:g</span>, <span style="color: #6D9CBE;">:raw</span>
+  <span style="color: #CC7833;">def</span> <span style="color: #FFC66D;">initialize</span>(s, m, b, g)
+    <span style="color: #b0c4de;">self</span>.s = s; <span style="color: #b0c4de;">self</span>.m = m; <span style="color: #b0c4de;">self</span>.b = b; <span style="color: #b0c4de;">self</span>.g = g
+  <span style="color: #CC7833;">end</span>
+  <span style="color: #CC7833;">def</span> <span style="color: #FFC66D;">counts</span>
+    <span style="color: #b0c4de;">self</span>.raw.split(<span style="color: #A5C261;">"\n"</span>).
+      map{|l| [<span style="color: #ffffff;">Float</span>(<span style="color: #b0c4de;">$1</span>), <span style="color: #ffffff;">Float</span>(<span style="color: #b0c4de;">$2</span>)] <span style="color: #CC7833;">if</span> l.match(<span style="color: #A5C261;">/([\.\d]+)[ \t]([\.\d]+)/</span>)}.compact
+  <span style="color: #CC7833;">end</span>
+  <span style="color: #CC7833;">def</span> <span style="color: #FFC66D;">runtime</span>() <span style="color: #b0c4de;">self</span>.counts.size <span style="color: #CC7833;">end</span>
+  <span style="color: #CC7833;">def</span> <span style="color: #FFC66D;">average</span>
+    <span style="color: #CC7833;">if</span> <span style="color: #b0c4de;">self</span>.runtime &gt; 0
+      <span style="color: #b0c4de;">self</span>.counts.inject(0){ |sum, n| sum + n[1] } / <span style="color: #b0c4de;">self</span>.runtime
+    <span style="color: #CC7833;">else</span>
+      -1
+    <span style="color: #CC7833;">end</span>
+  <span style="color: #CC7833;">end</span>
+<span style="color: #CC7833;">end</span>
+
+base = <span style="color: #A5C261;">"./results/fifth-milestone/"</span>
+results = <span style="color: #ffffff;">Dir</span>.entries(base).map <span style="color: #CC7833;">do</span> |e|
+  <span style="color: #CC7833;">if</span> e.match(<span style="color: #A5C261;">/r_s.(\d+)_m.(\d+)_b.(\d+)_i.(\d+)_g.(\d+).(\d+)/</span>)
+    r = <span style="color: #ffffff;">Result</span>.new(<span style="color: #b0c4de;">$1</span>, <span style="color: #b0c4de;">$2</span>, <span style="color: #b0c4de;">$3</span>, <span style="color: #ffffff;">Float</span>(<span style="color: #A5C261;">"</span><span style="color: #b0c4de;">#{$5}</span><span style="color: #A5C261;">.</span><span style="color: #b0c4de;">#{$6}</span><span style="color: #A5C261;">"</span>))
+    r.raw = <span style="color: #ffffff;">File</span>.read(<span style="color: #ffffff;">File</span>.join(base, e))
+    r
+  <span style="color: #CC7833;">end</span>
+<span style="color: #CC7833;">end</span>.compact
+</pre>
+
+
+
+
+
+<pre class="src src-ruby"><span style="color: #BC9458; font-style: italic;"># </span><span style="color: #BC9458; font-style: italic;">&lt;&lt;fifth_milestone_results_setup&gt;&gt;
+</span><span style="color: #BC9458; font-style: italic;"># </span><span style="color: #BC9458; font-style: italic;">print out averaged over 5 goal runs
+</span>puts <span style="color: #A5C261;">"|sharing|mutation|breeding|goal|runtime|average fitness|"</span>
+puts <span style="color: #A5C261;">"|--------"</span>
+runtime = 0; average = 0
+results.each <span style="color: #CC7833;">do</span> |r|
+  goal_num  = r.g.to_s.split(<span style="color: #A5C261;">"."</span>)[0]
+  goal_time = r.g.to_s.split(<span style="color: #A5C261;">"."</span>)[1]
+  runtime  += r.runtime
+  average  += r.average
+  <span style="color: #CC7833;">if</span> goal_time == <span style="color: #A5C261;">"4"</span>
+    runtime = runtime / 5
+    average = average / 5
+    puts <span style="color: #A5C261;">"|"</span>+[<span style="color: #6D9CBE;">:s</span>, <span style="color: #6D9CBE;">:m</span>, <span style="color: #6D9CBE;">:b</span>].map{ |meth| r.send(meth).to_s}.join(<span style="color: #A5C261;">"|"</span>)+
+      <span style="color: #A5C261;">"|</span><span style="color: #b0c4de;">#{goal_num}</span><span style="color: #A5C261;">|</span><span style="color: #b0c4de;">#{runtime}</span><span style="color: #A5C261;">|</span><span style="color: #b0c4de;">#{average}</span><span style="color: #A5C261;">|"</span>
+    runtime = 0
+    average = 0
+  <span style="color: #CC7833;">end</span>
+<span style="color: #CC7833;">end</span>
+</pre>
+
+
+
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="right" /><col align="right" /><col align="right" /><col align="right" /><col align="right" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">sharing</th><th scope="col">mutation</th><th scope="col">breeding</th><th scope="col">goal</th><th scope="col">runtime</th><th scope="col">average fitness</th></tr>
+</thead>
+<tbody>
+<tr><td>0</td><td>10</td><td>10</td><td>0</td><td>9</td><td>4049.28409090909</td></tr>
+<tr><td>0</td><td>10</td><td>100</td><td>0</td><td>14</td><td>2060.36547619048</td></tr>
+<tr><td>0</td><td>100</td><td>100</td><td>0</td><td>101</td><td>2529.54963621051</td></tr>
+<tr><td>0</td><td>100</td><td>10</td><td>0</td><td>132</td><td>2909.66486823494</td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>1</td><td>42</td><td>266.851231300345</td></tr>
+<tr><td>0</td><td>100</td><td>10</td><td>1</td><td>141</td><td>139.570506458541</td></tr>
+<tr><td>0</td><td>10</td><td>100</td><td>1</td><td>264</td><td>99.7771832410837</td></tr>
+<tr><td>0</td><td>100</td><td>100</td><td>1</td><td>303</td><td>270.617550373458</td></tr>
+</tbody>
+</table>
+
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="right" /><col align="right" /><col align="left" /><col align="left" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">goal</th><th scope="col">m.10 b.10</th><th scope="col">m.10 b.100</th><th scope="col">m.100 b.10</th><th scope="col">m.100 b.100</th></tr>
+</thead>
+<tbody>
+<tr><td>1</td><td>9</td><td>14</td><td>132</td><td>101</td></tr>
+<tr><td>2</td><td>42</td><td>264</td><td>141</td><td>303</td></tr>
+</tbody>
+</table>
+
+
+
+
+
+<pre class="src src-gnuplot"><span style="color: #6D9CBE;">set</span> boxwidth 0.9 relative
+<span style="color: #6D9CBE;">set</span> <span style="color: #ffffff;">title</span> <span style="color: #A5C261;">'run times by GP params'</span>
+<span style="color: #6D9CBE;">set</span> xlabel <span style="color: #A5C261;">'problems'</span>
+<span style="color: #6D9CBE;">set</span> xtics ("xxx**xxxx***+", "7xxx**+")
+<span style="color: #6D9CBE;">set</span> ylabel <span style="color: #A5C261;">'runtimes (seconds)'</span>
+<span style="color: #6D9CBE;">set</span> style data histograms
+<span style="color: #6D9CBE;">set</span> style fill solid 1.0 border -1
+<span style="color: #CC7833;">plot</span> <span style="color: #b0c4de;">data</span> <span style="color: #ffffff;">using</span> 2 <span style="color: #ffffff;">title</span> <span style="color: #A5C261;">'m.10 b.10'</span>, <span style="color: #A5C261;">''</span> <span style="color: #ffffff;">using</span> 3 <span style="color: #ffffff;">title</span> <span style="color: #A5C261;">'m.10 b.100'</span>, <span style="color: #A5C261;">''</span> <span style="color: #ffffff;">using</span> 4 <span style="color: #ffffff;">title</span> <span style="color: #A5C261;">'m.100 b.10'</span>, <span style="color: #A5C261;">''</span> <span style="color: #ffffff;">using</span> 5 <span style="color: #ffffff;">title</span> <span style="color: #A5C261;">'m.100 b.100'</span>
+</pre>
+
+
+
+
+</div>
+
+</div>
+
+<div id="outline-container-5.2" class="outline-3">
+<h3 id="sec-5.2">five boards </h3>
+<div class="outline-text-3" id="text-5.2">
+
+
+
+
+<pre class="src src-ruby"><span style="color: #BC9458; font-style: italic;"># </span><span style="color: #BC9458; font-style: italic;">each instance holds the information from one run
+</span><span style="color: #CC7833;">class</span> <span style="color: #ffffff;">Result</span>
+  attr_accessor <span style="color: #6D9CBE;">:s</span>, <span style="color: #6D9CBE;">:m</span>, <span style="color: #6D9CBE;">:b</span>, <span style="color: #6D9CBE;">:g</span>, <span style="color: #6D9CBE;">:raw</span>
+  <span style="color: #CC7833;">def</span> <span style="color: #FFC66D;">initialize</span>(s, m, b, g)
+    <span style="color: #b0c4de;">self</span>.s = s; <span style="color: #b0c4de;">self</span>.m = m; <span style="color: #b0c4de;">self</span>.b = b; <span style="color: #b0c4de;">self</span>.g = g
+  <span style="color: #CC7833;">end</span>
+  <span style="color: #CC7833;">def</span> <span style="color: #FFC66D;">counts</span>
+    <span style="color: #b0c4de;">self</span>.raw.split(<span style="color: #A5C261;">"\n"</span>).
+      map{|l| [<span style="color: #ffffff;">Float</span>(<span style="color: #b0c4de;">$1</span>), <span style="color: #ffffff;">Float</span>(<span style="color: #b0c4de;">$2</span>)] <span style="color: #CC7833;">if</span> l.match(<span style="color: #A5C261;">/([\.\d]+)[ \t]([\.\d]+)/</span>)}.compact
+  <span style="color: #CC7833;">end</span>
+  <span style="color: #CC7833;">def</span> <span style="color: #FFC66D;">runtime</span>() <span style="color: #b0c4de;">self</span>.counts.size <span style="color: #CC7833;">end</span>
+  <span style="color: #CC7833;">def</span> <span style="color: #FFC66D;">average</span>
+    <span style="color: #CC7833;">if</span> <span style="color: #b0c4de;">self</span>.runtime &gt; 0
+      <span style="color: #b0c4de;">self</span>.counts.inject(0){ |sum, n| sum + n[1] } / <span style="color: #b0c4de;">self</span>.runtime
+    <span style="color: #CC7833;">else</span>
+      -1
+    <span style="color: #CC7833;">end</span>
+  <span style="color: #CC7833;">end</span>
+<span style="color: #CC7833;">end</span>
+
+base = <span style="color: #A5C261;">"./results/five_boards/"</span>
+results = <span style="color: #ffffff;">Dir</span>.entries(base).map <span style="color: #CC7833;">do</span> |e|
+  <span style="color: #CC7833;">if</span> e.match(<span style="color: #A5C261;">/r_s.(\d+)_m.(\d+)_b.(\d+)_g.(\d+).(\d+)/</span>)
+    r = <span style="color: #ffffff;">Result</span>.new(<span style="color: #b0c4de;">$1</span>, <span style="color: #b0c4de;">$2</span>, <span style="color: #b0c4de;">$3</span>, <span style="color: #ffffff;">Float</span>(<span style="color: #A5C261;">"</span><span style="color: #b0c4de;">#{$4}</span><span style="color: #A5C261;">.</span><span style="color: #b0c4de;">#{$5}</span><span style="color: #A5C261;">"</span>))
+    r.raw = <span style="color: #ffffff;">File</span>.read(<span style="color: #ffffff;">File</span>.join(base, e))
+    r
+  <span style="color: #CC7833;">end</span>
+<span style="color: #CC7833;">end</span>.compact
+</pre>
+
+
+
+
+
+<pre class="src src-ruby"><span style="color: #BC9458; font-style: italic;"># </span><span style="color: #BC9458; font-style: italic;">&lt;&lt;five_boards_suite_results_setup&gt;&gt;
+</span><span style="color: #BC9458; font-style: italic;"># </span><span style="color: #BC9458; font-style: italic;">print out averaged over 5 goal runs
+</span>puts <span style="color: #A5C261;">"|sharing|mutation|breeding|goal|runtime|average|"</span>
+puts <span style="color: #A5C261;">"|--------"</span>
+runtime = 0; average = 0
+results.each <span style="color: #CC7833;">do</span> |r|
+  goal_num  = r.g.to_s.split(<span style="color: #A5C261;">"."</span>)[0]
+  goal_time = r.g.to_s.split(<span style="color: #A5C261;">"."</span>)[1]
+  runtime  += r.runtime
+  average  += r.average
+  <span style="color: #CC7833;">if</span> goal_time == <span style="color: #A5C261;">"4"</span>
+    runtime = runtime / 5
+    average = average / 5
+    puts <span style="color: #A5C261;">"|"</span>+[<span style="color: #6D9CBE;">:s</span>, <span style="color: #6D9CBE;">:m</span>, <span style="color: #6D9CBE;">:b</span>].map{ |meth| r.send(meth).to_s}.join(<span style="color: #A5C261;">"|"</span>)+
+      <span style="color: #A5C261;">"|</span><span style="color: #b0c4de;">#{goal_num}</span><span style="color: #A5C261;">|</span><span style="color: #b0c4de;">#{runtime}</span><span style="color: #A5C261;">|</span><span style="color: #b0c4de;">#{average}</span><span style="color: #A5C261;">|"</span>
+    runtime = 0
+    average = 0
+  <span style="color: #CC7833;">end</span>
+<span style="color: #CC7833;">end</span>
+</pre>
+
+
+
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="right" /><col align="right" /><col align="right" /><col align="right" /><col align="left" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">sharing</th><th scope="col">mutation</th><th scope="col">breeding</th><th scope="col">goal</th><th scope="col">runtime</th><th scope="col">average</th></tr>
+</thead>
+<tbody>
+<tr><td>0</td><td>10</td><td>0</td><td>0</td><td>12</td><td>1675.91545454545</td></tr>
+<tr><td>0</td><td>10</td><td>0</td><td>1</td><td>14</td><td>372.944848484848</td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>0</td><td>26</td><td>1833.57716283716</td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>1</td><td>13</td><td>202.757727272727</td></tr>
+<tr><td>100</td><td>10</td><td>0</td><td>0</td><td>946</td><td>270.970690762932</td></tr>
+<tr><td>100</td><td>10</td><td>10</td><td>0</td><td>1516</td><td>2143742185.72859</td></tr>
+<tr><td>100</td><td>10</td><td>10</td><td>1</td><td>1515</td><td>2144584333.64829</td></tr>
+</tbody>
+</table>
+
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="right" /><col align="right" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">goal</th><th scope="col">smb</th><th scope="col">-mb</th></tr>
+</thead>
+<tbody>
+<tr><td>1</td><td>121.083356643357</td><td>300.862181818182</td></tr>
+<tr><td>2</td><td>2131.9212962963</td><td>2790.12836363636</td></tr>
+</tbody>
+</table>
+
+
+
+
+
+<pre class="src src-gnuplot"><span style="color: #6D9CBE;">set</span> boxwidth 0.9 relative
+<span style="color: #6D9CBE;">set</span> <span style="color: #ffffff;">title</span> <span style="color: #A5C261;">'run times by GP params'</span>
+<span style="color: #6D9CBE;">set</span> xlabel <span style="color: #A5C261;">'problems'</span>
+<span style="color: #6D9CBE;">set</span> xtics ("987xxx*-+*+" 3, "7xx*+" 2, "xxx**" 1, "xx*" 0)
+<span style="color: #6D9CBE;">set</span> ylabel <span style="color: #A5C261;">'runtimes (seconds)'</span>
+<span style="color: #6D9CBE;">set</span> style data histograms
+<span style="color: #6D9CBE;">set</span> style fill solid 1.0 border -1
+<span style="color: #CC7833;">plot</span> <span style="color: #b0c4de;">data</span> <span style="color: #ffffff;">using</span> 2 <span style="color: #ffffff;">title</span> <span style="color: #A5C261;">'smb'</span>, <span style="color: #A5C261;">''</span> <span style="color: #ffffff;">using</span> 3 <span style="color: #ffffff;">title</span> <span style="color: #A5C261;">'-mb'</span>
+</pre>
+
+
+
+
+</div>
+
+</div>
+
+<div id="outline-container-5.3" class="outline-3">
+<h3 id="sec-5.3">sharing suite </h3>
+<div class="outline-text-3" id="text-5.3">
+
+
+
+
+<pre class="src src-ruby"><span style="color: #BC9458; font-style: italic;"># </span><span style="color: #BC9458; font-style: italic;">each instance holds the information from one run
+</span><span style="color: #CC7833;">class</span> <span style="color: #ffffff;">Result</span>
+  attr_accessor <span style="color: #6D9CBE;">:s</span>, <span style="color: #6D9CBE;">:m</span>, <span style="color: #6D9CBE;">:b</span>, <span style="color: #6D9CBE;">:g</span>, <span style="color: #6D9CBE;">:raw</span>
+  <span style="color: #CC7833;">def</span> <span style="color: #FFC66D;">initialize</span>(s, m, b, g)
+    <span style="color: #b0c4de;">self</span>.s = s; <span style="color: #b0c4de;">self</span>.m = m; <span style="color: #b0c4de;">self</span>.b = b; <span style="color: #b0c4de;">self</span>.g = g
+  <span style="color: #CC7833;">end</span>
+  <span style="color: #CC7833;">def</span> <span style="color: #FFC66D;">counts</span>
+    <span style="color: #b0c4de;">self</span>.raw.split(<span style="color: #A5C261;">"\n"</span>).
+      map{|l| [<span style="color: #ffffff;">Float</span>(<span style="color: #b0c4de;">$1</span>), <span style="color: #ffffff;">Float</span>(<span style="color: #b0c4de;">$2</span>)] <span style="color: #CC7833;">if</span> l.match(<span style="color: #A5C261;">/([\.\d]+)[ \t]([\.\d]+)/</span>)}.compact
+  <span style="color: #CC7833;">end</span>
+  <span style="color: #CC7833;">def</span> <span style="color: #FFC66D;">runtime</span>() <span style="color: #b0c4de;">self</span>.counts.size <span style="color: #CC7833;">end</span>
+  <span style="color: #CC7833;">def</span> <span style="color: #FFC66D;">average</span>
+    <span style="color: #CC7833;">if</span> <span style="color: #b0c4de;">self</span>.runtime &gt; 0
+      <span style="color: #b0c4de;">self</span>.counts.inject(0){ |sum, n| sum + n[1] } / <span style="color: #b0c4de;">self</span>.runtime
+    <span style="color: #CC7833;">else</span>
+      -1
+    <span style="color: #CC7833;">end</span>
+  <span style="color: #CC7833;">end</span>
+<span style="color: #CC7833;">end</span>
+
+base = <span style="color: #A5C261;">"./results/sharing/"</span>
+results = <span style="color: #ffffff;">Dir</span>.entries(base).map <span style="color: #CC7833;">do</span> |e|
+  <span style="color: #CC7833;">if</span> e.match(<span style="color: #A5C261;">/r_s.(\d+)_m.(\d+)_b.(\d+)_g.(\d+).(\d+)/</span>)
+    r = <span style="color: #ffffff;">Result</span>.new(<span style="color: #b0c4de;">$1</span>, <span style="color: #b0c4de;">$2</span>, <span style="color: #b0c4de;">$3</span>, <span style="color: #ffffff;">Float</span>(<span style="color: #A5C261;">"</span><span style="color: #b0c4de;">#{$4}</span><span style="color: #A5C261;">.</span><span style="color: #b0c4de;">#{$5}</span><span style="color: #A5C261;">"</span>))
+    r.raw = <span style="color: #ffffff;">File</span>.read(<span style="color: #ffffff;">File</span>.join(base, e))
+    r
+  <span style="color: #CC7833;">end</span>
+<span style="color: #CC7833;">end</span>.compact
+</pre>
+
+
+
+
+
+<pre class="src src-ruby"><span style="color: #BC9458; font-style: italic;"># </span><span style="color: #BC9458; font-style: italic;">&lt;&lt;shared_suite_results_setup&gt;&gt;
+</span><span style="color: #BC9458; font-style: italic;"># </span><span style="color: #BC9458; font-style: italic;">print out averaged over 5 goal runs
+</span>puts <span style="color: #A5C261;">"|sharing|mutation|breeding|goal|runtime|average|"</span>
+puts <span style="color: #A5C261;">"|--------"</span>
+runtime = 0; average = 0
+results.each <span style="color: #CC7833;">do</span> |r|
+  goal_num  = r.g.to_s.split(<span style="color: #A5C261;">"."</span>)[0]
+  goal_time = r.g.to_s.split(<span style="color: #A5C261;">"."</span>)[1]
+  runtime  += r.runtime
+  average  += r.average
+  <span style="color: #CC7833;">if</span> goal_time == <span style="color: #A5C261;">"4"</span>
+    runtime = runtime / 5
+    average = average / 5
+    puts <span style="color: #A5C261;">"|"</span>+[<span style="color: #6D9CBE;">:s</span>, <span style="color: #6D9CBE;">:m</span>, <span style="color: #6D9CBE;">:b</span>].map{ |meth| r.send(meth).to_s}.join(<span style="color: #A5C261;">"|"</span>)+
+      <span style="color: #A5C261;">"|</span><span style="color: #b0c4de;">#{goal_num}</span><span style="color: #A5C261;">|</span><span style="color: #b0c4de;">#{runtime}</span><span style="color: #A5C261;">|</span><span style="color: #b0c4de;">#{average}</span><span style="color: #A5C261;">|"</span>
+    runtime = 0
+    average = 0
+  <span style="color: #CC7833;">end</span>
+<span style="color: #CC7833;">end</span>
+</pre>
+
+
+
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="right" /><col align="right" /><col align="right" /><col align="left" /><col align="left" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">goal</th><th scope="col">sharing</th><th scope="col">mutation</th><th scope="col">breeding</th><th scope="col">runtime</th><th scope="col">average</th></tr>
+</thead>
+<tbody>
+<tr><td>0</td><td>100</td><td>10</td><td>10</td><td>34</td><td>2131.9212962963</td></tr>
+<tr><td>0</td><td>0</td><td>10</td><td>10</td><td>14</td><td>2790.12836363636</td></tr>
+<tr><td>1</td><td>100</td><td>10</td><td>10</td><td>10</td><td>121.083356643357</td></tr>
+<tr><td>1</td><td>0</td><td>10</td><td>10</td><td>17</td><td>300.862181818182</td></tr>
+</tbody>
+</table>
+
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="right" /><col align="right" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">goal</th><th scope="col">smb</th><th scope="col">-mb</th></tr>
+</thead>
+<tbody>
+<tr><td>1</td><td>121.083356643357</td><td>300.862181818182</td></tr>
+<tr><td>2</td><td>2131.9212962963</td><td>2790.12836363636</td></tr>
+</tbody>
+</table>
+
+
+
+
+
+<pre class="src src-gnuplot"><span style="color: #6D9CBE;">set</span> boxwidth 0.9 relative
+<span style="color: #6D9CBE;">set</span> <span style="color: #ffffff;">title</span> <span style="color: #A5C261;">'run times by GP params'</span>
+<span style="color: #6D9CBE;">set</span> xlabel <span style="color: #A5C261;">'problems'</span>
+<span style="color: #6D9CBE;">set</span> xtics ("987xxx*-+*+" 3, "7xx*+" 2, "xxx**" 1, "xx*" 0)
+<span style="color: #6D9CBE;">set</span> ylabel <span style="color: #A5C261;">'runtimes (seconds)'</span>
+<span style="color: #6D9CBE;">set</span> style data histograms
+<span style="color: #6D9CBE;">set</span> style fill solid 1.0 border -1
+<span style="color: #CC7833;">plot</span> <span style="color: #b0c4de;">data</span> <span style="color: #ffffff;">using</span> 2 <span style="color: #ffffff;">title</span> <span style="color: #A5C261;">'smb'</span>, <span style="color: #A5C261;">''</span> <span style="color: #ffffff;">using</span> 3 <span style="color: #ffffff;">title</span> <span style="color: #A5C261;">'-mb'</span>
+</pre>
+
+
+
+
+</div>
+
+</div>
+
+<div id="outline-container-5.4" class="outline-3">
+<h3 id="sec-5.4">fourth suite </h3>
+<div class="outline-text-3" id="text-5.4">
+
+
+
+
+<pre class="src src-ruby"><span style="color: #BC9458; font-style: italic;"># </span><span style="color: #BC9458; font-style: italic;">each instance holds the information from one run
+</span><span style="color: #CC7833;">class</span> <span style="color: #ffffff;">Result</span>
+  attr_accessor <span style="color: #6D9CBE;">:s</span>, <span style="color: #6D9CBE;">:m</span>, <span style="color: #6D9CBE;">:b</span>, <span style="color: #6D9CBE;">:g</span>, <span style="color: #6D9CBE;">:raw</span>
+  <span style="color: #CC7833;">def</span> <span style="color: #FFC66D;">initialize</span>(s, m, b, g)
+    <span style="color: #b0c4de;">self</span>.s = s; <span style="color: #b0c4de;">self</span>.m = m; <span style="color: #b0c4de;">self</span>.b = b; <span style="color: #b0c4de;">self</span>.g = g
+  <span style="color: #CC7833;">end</span>
+  <span style="color: #CC7833;">def</span> <span style="color: #FFC66D;">counts</span>
+    <span style="color: #b0c4de;">self</span>.raw.split(<span style="color: #A5C261;">"\n"</span>).
+      map{|l| [<span style="color: #ffffff;">Float</span>(<span style="color: #b0c4de;">$1</span>), <span style="color: #ffffff;">Float</span>(<span style="color: #b0c4de;">$2</span>)] <span style="color: #CC7833;">if</span> l.match(<span style="color: #A5C261;">/([\.\d]+)[ \t]([\.\d]+)/</span>)}.compact
+  <span style="color: #CC7833;">end</span>
+  <span style="color: #CC7833;">def</span> <span style="color: #FFC66D;">runtime</span>() <span style="color: #b0c4de;">self</span>.counts.size <span style="color: #CC7833;">end</span>
+  <span style="color: #CC7833;">def</span> <span style="color: #FFC66D;">average</span>
+    <span style="color: #CC7833;">if</span> <span style="color: #b0c4de;">self</span>.runtime &gt; 0
+      <span style="color: #b0c4de;">self</span>.counts.inject(0){ |sum, n| sum + n[1] } / <span style="color: #b0c4de;">self</span>.runtime
+    <span style="color: #CC7833;">else</span>
+      -1
+    <span style="color: #CC7833;">end</span>
+  <span style="color: #CC7833;">end</span>
+<span style="color: #CC7833;">end</span>
+
+base = <span style="color: #A5C261;">'./results/fourth_suite/'</span>
+results = <span style="color: #ffffff;">Dir</span>.entries(base).map <span style="color: #CC7833;">do</span> |e|
+  <span style="color: #CC7833;">if</span> e.match(<span style="color: #A5C261;">/r_s.(\d+)_m.(\d+)_b.(\d+)_g.(\d+).(\d+)/</span>)
+    r = <span style="color: #ffffff;">Result</span>.new(<span style="color: #b0c4de;">$1</span>, <span style="color: #b0c4de;">$2</span>, <span style="color: #b0c4de;">$3</span>, <span style="color: #ffffff;">Float</span>(<span style="color: #A5C261;">"</span><span style="color: #b0c4de;">#{$4}</span><span style="color: #A5C261;">.</span><span style="color: #b0c4de;">#{$5}</span><span style="color: #A5C261;">"</span>))
+    r.raw = <span style="color: #ffffff;">File</span>.read(<span style="color: #ffffff;">File</span>.join(base, e))
+    r
+  <span style="color: #CC7833;">end</span>
+<span style="color: #CC7833;">end</span>.compact
+</pre>
+
+
+
+
+
+<pre class="src src-ruby"><span style="color: #BC9458; font-style: italic;"># </span><span style="color: #BC9458; font-style: italic;">&lt;&lt;fourth_suite_results_setup&gt;&gt;
+</span><span style="color: #BC9458; font-style: italic;"># </span><span style="color: #BC9458; font-style: italic;">print out averaged over 5 goal runs
+</span>puts <span style="color: #A5C261;">"|sharing|mutation|breeding|goal|runtime|average|"</span>
+puts <span style="color: #A5C261;">"|--------"</span>
+runtime = 0; average = 0
+results.each <span style="color: #CC7833;">do</span> |r|
+  goal_num  = r.g.to_s.split(<span style="color: #A5C261;">"."</span>)[0]
+  goal_time = r.g.to_s.split(<span style="color: #A5C261;">"."</span>)[1]
+  runtime  += r.runtime
+  average  += r.average
+  <span style="color: #CC7833;">if</span> goal_time == <span style="color: #A5C261;">"4"</span>
+    runtime = runtime / 5
+    average = average / 5
+    puts <span style="color: #A5C261;">"|"</span>+[<span style="color: #6D9CBE;">:s</span>, <span style="color: #6D9CBE;">:m</span>, <span style="color: #6D9CBE;">:b</span>].map{ |meth| r.send(meth).to_s}.join(<span style="color: #A5C261;">"|"</span>)+
+      <span style="color: #A5C261;">"|</span><span style="color: #b0c4de;">#{goal_num}</span><span style="color: #A5C261;">|</span><span style="color: #b0c4de;">#{runtime}</span><span style="color: #A5C261;">|</span><span style="color: #b0c4de;">#{average}</span><span style="color: #A5C261;">|"</span>
+    runtime = 0
+    average = 0
+  <span style="color: #CC7833;">end</span>
+<span style="color: #CC7833;">end</span>
+</pre>
+
+
+
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="right" /><col align="right" /><col align="left" /><col align="left" /><col align="left" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">sharing</th><th scope="col">mutation</th><th scope="col">breeding</th><th scope="col">goal</th><th scope="col">runtime</th><th scope="col">average</th></tr>
+</thead>
+<tbody>
+<tr><td>0</td><td>10</td><td>10</td><td>0</td><td>22</td><td>1758.99623655914</td></tr>
+<tr><td>100</td><td>10</td><td>10</td><td>0</td><td>12</td><td>590.180628019324</td></tr>
+</tbody>
+</table>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-5.5" class="outline-3">
+<h3 id="sec-5.5">third suite </h3>
+<div class="outline-text-3" id="text-5.5">
+
+
+
+
+<pre class="src src-ruby"><span style="color: #BC9458; font-style: italic;"># </span><span style="color: #BC9458; font-style: italic;">each instance holds the information from one run
+</span><span style="color: #CC7833;">class</span> <span style="color: #ffffff;">Result</span>
+  attr_accessor <span style="color: #6D9CBE;">:s</span>, <span style="color: #6D9CBE;">:m</span>, <span style="color: #6D9CBE;">:b</span>, <span style="color: #6D9CBE;">:g</span>, <span style="color: #6D9CBE;">:raw</span>
+  <span style="color: #CC7833;">def</span> <span style="color: #FFC66D;">initialize</span>(s, m, b, g)
+    <span style="color: #b0c4de;">self</span>.s = s; <span style="color: #b0c4de;">self</span>.m = m; <span style="color: #b0c4de;">self</span>.b = b; <span style="color: #b0c4de;">self</span>.g = g
+  <span style="color: #CC7833;">end</span>
+  <span style="color: #CC7833;">def</span> <span style="color: #FFC66D;">counts</span>
+    <span style="color: #b0c4de;">self</span>.raw.split(<span style="color: #A5C261;">"\n"</span>).
+      map{|l| [<span style="color: #ffffff;">Float</span>(<span style="color: #b0c4de;">$1</span>), <span style="color: #ffffff;">Float</span>(<span style="color: #b0c4de;">$2</span>)] <span style="color: #CC7833;">if</span> l.match(<span style="color: #A5C261;">/([\.\d]+)[ \t]([\.\d]+)/</span>)}.compact
+  <span style="color: #CC7833;">end</span>
+  <span style="color: #CC7833;">def</span> <span style="color: #FFC66D;">runtime</span>() <span style="color: #b0c4de;">self</span>.counts.size <span style="color: #CC7833;">end</span>
+  <span style="color: #CC7833;">def</span> <span style="color: #FFC66D;">average</span>
+    <span style="color: #CC7833;">if</span> <span style="color: #b0c4de;">self</span>.runtime &gt; 0
+      <span style="color: #b0c4de;">self</span>.counts.inject(0){ |sum, n| sum + n[1] } / <span style="color: #b0c4de;">self</span>.runtime
+    <span style="color: #CC7833;">else</span>
+      -1
+    <span style="color: #CC7833;">end</span>
+  <span style="color: #CC7833;">end</span>
+<span style="color: #CC7833;">end</span>
+
+base = <span style="color: #A5C261;">'./results/third_suite/'</span>
+results = <span style="color: #ffffff;">Dir</span>.entries(base).map <span style="color: #CC7833;">do</span> |e|
+  <span style="color: #CC7833;">if</span> e.match(<span style="color: #A5C261;">/r_s.(\d+)_m.(\d+)_b.(\d+)_g.(\d+).(\d+)/</span>)
+    r = <span style="color: #ffffff;">Result</span>.new(<span style="color: #b0c4de;">$1</span>, <span style="color: #b0c4de;">$2</span>, <span style="color: #b0c4de;">$3</span>, <span style="color: #ffffff;">Float</span>(<span style="color: #A5C261;">"</span><span style="color: #b0c4de;">#{$4}</span><span style="color: #A5C261;">.</span><span style="color: #b0c4de;">#{$5}</span><span style="color: #A5C261;">"</span>))
+    r.raw = <span style="color: #ffffff;">File</span>.read(<span style="color: #ffffff;">File</span>.join(base, e))
+    r
+  <span style="color: #CC7833;">end</span>
+<span style="color: #CC7833;">end</span>.compact
+</pre>
+
+
+
+
+
+<pre class="src src-ruby"><span style="color: #BC9458; font-style: italic;"># </span><span style="color: #BC9458; font-style: italic;">&lt;&lt;third_suite_results_setup&gt;&gt;
+</span><span style="color: #BC9458; font-style: italic;"># </span><span style="color: #BC9458; font-style: italic;">print out averaged over 5 goal runs
+</span>puts <span style="color: #A5C261;">"|sharing|mutation|breeding|goal|runtime|average|"</span>
+puts <span style="color: #A5C261;">"|--------"</span>
+runtime = 0; average = 0
+results.each <span style="color: #CC7833;">do</span> |r|
+  goal_num  = r.g.to_s.split(<span style="color: #A5C261;">"."</span>)[0]
+  goal_time = r.g.to_s.split(<span style="color: #A5C261;">"."</span>)[1]
+  runtime  += r.runtime
+  average  += r.average
+  <span style="color: #CC7833;">if</span> goal_time == <span style="color: #A5C261;">"4"</span>
+    runtime = runtime / 5
+    average = average / 5
+    puts <span style="color: #A5C261;">"|"</span>+[<span style="color: #6D9CBE;">:s</span>, <span style="color: #6D9CBE;">:m</span>, <span style="color: #6D9CBE;">:b</span>].map{ |meth| r.send(meth).to_s}.join(<span style="color: #A5C261;">"|"</span>)+
+      <span style="color: #A5C261;">"|</span><span style="color: #b0c4de;">#{goal_num}</span><span style="color: #A5C261;">|</span><span style="color: #b0c4de;">#{runtime}</span><span style="color: #A5C261;">|</span><span style="color: #b0c4de;">#{average}</span><span style="color: #A5C261;">|"</span>
+    runtime = 0
+    average = 0
+  <span style="color: #CC7833;">end</span>
+<span style="color: #CC7833;">end</span>
+</pre>
+
+
+
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="right" /><col align="right" /><col align="left" /><col align="left" /><col align="left" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">sharing</th><th scope="col">mutation</th><th scope="col">breeding</th><th scope="col">goal</th><th scope="col">runtime</th><th scope="col">average</th></tr>
+</thead>
+<tbody>
+<tr><td>0</td><td>10</td><td>0</td><td>0</td><td>1213</td><td>479.833009370899</td></tr>
+<tr><td>0</td><td>10</td><td>10</td><td>0</td><td>1220</td><td>965.927294106587</td></tr>
+</tbody>
+</table>
+
+
+</div>
+
+</div>
+
 <div id="outline-container-first_suite" class="outline-3">
-<h3 id="first_suite"><a name="sec-5.1" id="sec-5.1"></a>first suite </h3>
+<h3 id="first_suite"><a name="sec-5.6" id="sec-5.6"></a>first suite </h3>
 <div class="outline-text-3" id="text-first_suite">
 
 
@@ -544,9 +1070,9 @@ breeding and injection are all 0
 
 </div>
 
-<div id="outline-container-5.1.1" class="outline-4">
-<h4 id="sec-5.1.1">looking at mutation, breeding, and injection </h4>
-<div class="outline-text-4" id="text-5.1.1">
+<div id="outline-container-5.6.1" class="outline-4">
+<h4 id="sec-5.6.1">looking at mutation, breeding, and injection </h4>
+<div class="outline-text-4" id="text-5.6.1">
 
 <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
 <caption></caption>
@@ -589,12 +1115,12 @@ breeding and injection are all 0
 
 </div>
 
-<div id="outline-container-5.1.2" class="outline-4">
-<h4 id="sec-5.1.2">results </h4>
-<div class="outline-text-4" id="text-5.1.2">
+<div id="outline-container-5.6.2" class="outline-4">
+<h4 id="sec-5.6.2">results </h4>
+<div class="outline-text-4" id="text-5.6.2">
 
 <ul>
-<li id="sec-5.1.2.1">setup <br/>
+<li id="sec-5.6.2.1">setup <br/>
 
 
 
@@ -632,7 +1158,7 @@ results = <span style="color: #ffffff;">Dir</span>.entries(base).map <span style
 
 
 </li>
-<li id="sec-5.1.2.2">grouped by goal <br/>
+<li id="sec-5.6.2.2">grouped by goal <br/>
 
 
 
@@ -736,7 +1262,7 @@ results.each <span style="color: #CC7833;">do</span> |r|
 
 
 </li>
-<li id="sec-5.1.2.3">full results <br/>
+<li id="sec-5.6.2.3">full results <br/>
 
 
 
@@ -1099,8 +1625,186 @@ results.each <span style="color: #CC7833;">do</span> |r|
 </div>
 
 <div id="outline-container-6.1" class="outline-3">
-<h3 id="sec-6.1">new error code </h3>
+<h3 id="sec-6.1">working on sine </h3>
 <div class="outline-text-3" id="text-6.1">
+
+<p>c38x48+7* f
+</p>
+<p>
+(4+8)*7 = 84
+</p>
+<p>
+g xs55+55+**
+</p>
+<p>
+c555.00 f
+c8x* f
+</p>
+<p>
+<img src="data/sin-gp.1.png"  alt="data/sin-gp.1.png" />
+</p>
+<p>
+c528.00 f
+c45845x* f
+</p>
+<p>
+<img src="data/sin-gp.2.png"  alt="data/sin-gp.2.png" />
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-6.2" class="outline-3">
+<h3 id="sec-6.2">big grid </h3>
+<div class="outline-text-3" id="text-6.2">
+
+
+<p>
+results from evolving against 100*sin(x) in the big grid
+</p>
+<p>
+getting pretty good&hellip;
+</p>
+<p>
+c409.00 fllrr
+c409.00 fffffl
+c/*xx59x/3*9-*7-x/x+* fllrr
+c/**x59x/3*8-*5-7-x/x+* fffffl
+c409.00 ffff
+c/**x59x/3*8-*5-7-x/x+* ffff
+c409.00 ffffflffflr
+c/7xx59x/3*9-*7-x/x+* ffffflffflr
+c409.00 fffff
+c3*xx59x/3*8-*5-7-x/x+* fffff
+</p>
+<p>
+better even better&hellip;
+</p>
+<p>
+c/7x*x9x/3*9-*6-x-x/x+* fllrl
+c372.00 fllrlrl
+c/7x*x9x/3*9-*6-x-x/x+* fllrlrl
+c372.00 ff
+c/7x*x9x/3*9-*6-x-x/x+* ff
+c372.00 fffr
+c/7x*x9x/3*9-*6-x-x/x+* fffr
+c372.00 ffffflf
+c372.00 fllr
+c37x*x9x/3*9-*6-x-x/x+* ffffflf
+c/7x*x9x/3*9-*6-x-x/x+* fllr
+i /7x*x9x/3*9-*6-x-x/x+*
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="left" />
+</colgroup>
+<tbody>
+<tr><td>37x*x9x/3*9-*6-x-x/x+*</td></tr>
+</tbody>
+</table>
+
+
+
+
+
+<pre class="src src-ruby">operators = %<span style="color: #ffffff;">W</span>{+ - / *}
+<span style="color: #b0c4de;">$stack</span> = []
+ind[0][0].split(<span style="color: #A5C261;">//</span>).each <span style="color: #CC7833;">do</span> |ch|
+  <span style="color: #CC7833;">if</span> operators.include?(ch)
+    right = <span style="color: #b0c4de;">$stack</span>.pop <span style="color: #CC7833;">or</span> <span style="color: #A5C261;">"1"</span>
+    left = <span style="color: #b0c4de;">$stack</span>.pop <span style="color: #CC7833;">or</span> <span style="color: #A5C261;">"1"</span>
+    <span style="color: #b0c4de;">$stack</span>.push(<span style="color: #A5C261;">"(</span><span style="color: #b0c4de;">#{left}</span><span style="color: #A5C261;"> </span><span style="color: #b0c4de;">#{ch}</span><span style="color: #A5C261;"> </span><span style="color: #b0c4de;">#{right}</span><span style="color: #A5C261;">)"</span>)
+  <span style="color: #CC7833;">else</span>
+    <span style="color: #b0c4de;">$stack</span>.push(ch)
+  <span style="color: #CC7833;">end</span>
+<span style="color: #CC7833;">end</span>
+puts <span style="color: #b0c4de;">$stack</span>.pop
+</pre>
+
+
+
+
+<pre class="example">
+((7 * x) * (((((x * (((9 / x) * 3) - 9)) - 6) - x) / x) + x))
+</pre>
+
+
+
+
+
+<pre class="src src-gnuplot"><span style="color: #6D9CBE;">set</span> xrange [<span style="color: #6D9CBE;">1..10</span>]
+<span style="color: #CC7833;">plot</span> 100*<span style="color: #FFC66D;">sin</span>(x)
+<span style="color: #6D9CBE;">replot</span> $alg
+</pre>
+
+
+
+
+<p>
+<img src="data/best-ind-big-grid-sine.png"  alt="data/best-ind-big-grid-sine.png" />
+</p>
+
+
+
+<pre class="src src-ruby"><span style="color: #CC7833;">def</span> <span style="color: #FFC66D;">guy</span>(x)
+  ((7 * x) * (((((x * (((9 / x) * 3) - 9)) - 6) - x) / x) + x))
+<span style="color: #CC7833;">end</span>
+diff = 0
+puts <span style="color: #A5C261;">"| x | guy | target |"</span>
+puts <span style="color: #A5C261;">"|------------"</span>
+(1..10).each <span style="color: #CC7833;">do</span> |n|
+  puts <span style="color: #A5C261;">"| </span><span style="color: #b0c4de;">#{n}</span><span style="color: #A5C261;"> | </span><span style="color: #b0c4de;">#{guy(n)}</span><span style="color: #A5C261;"> | </span><span style="color: #b0c4de;">#{100 * Math.sin(n)}</span><span style="color: #A5C261;"> |"</span>
+  diff += ((100 * <span style="color: #ffffff;">Math</span>.sin(n)) - guy(n)).abs
+<span style="color: #CC7833;">end</span>
+puts <span style="color: #A5C261;">""</span>
+puts <span style="color: #A5C261;">"difference: </span><span style="color: #b0c4de;">#{diff}</span><span style="color: #A5C261;">"</span>
+</pre>
+
+
+
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="right" /><col align="right" /><col align="right" />
+</colgroup>
+<thead>
+<tr><th scope="col">x</th><th scope="col">guy</th><th scope="col">target</th></tr>
+</thead>
+<tbody>
+<tr><td>1</td><td>84</td><td>84.1470984807897</td></tr>
+<tr><td>2</td><td>14</td><td>90.9297426825682</td></tr>
+<tr><td>3</td><td>0</td><td>14.1120008059867</td></tr>
+<tr><td>4</td><td>-56</td><td>-75.6802495307928</td></tr>
+<tr><td>5</td><td>-140</td><td>-95.8924274663138</td></tr>
+<tr><td>6</td><td>-84</td><td>-27.9415498198926</td></tr>
+<tr><td>7</td><td>-49</td><td>65.6986598718789</td></tr>
+<tr><td>8</td><td>0</td><td>98.9358246623382</td></tr>
+<tr><td>9</td><td>63</td><td>41.2118485241757</td></tr>
+<tr><td>10</td><td>-70</td><td>-54.402111088937</td></tr>
+</tbody>
+</table>
+
+
+<p>
+difference: 462.055639135035
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-6.3" class="outline-3">
+<h3 id="sec-6.3">eeprom </h3>
+<div class="outline-text-3" id="text-6.3">
+
+<p>reading gives, error code (2, 1, 3) "Eeprom address out of range"
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-6.4" class="outline-3">
+<h3 id="sec-6.4">new error code </h3>
+<div class="outline-text-3" id="text-6.4">
 
 <p>after running multiple experiments with libixm, I've managed to
 uncover a new error code&hellip;
@@ -1125,9 +1829,9 @@ this should hopefully be fixed now&hellip;
 
 </div>
 
-<div id="outline-container-6.2" class="outline-3">
-<h3 id="sec-6.2">new segfaults&hellip; </h3>
-<div class="outline-text-3" id="text-6.2">
+<div id="outline-container-6.5" class="outline-3">
+<h3 id="sec-6.5">new segfaults&hellip; </h3>
+<div class="outline-text-3" id="text-6.5">
 
 <p>this is the pre-fault output
 </p>
@@ -1176,9 +1880,9 @@ more careful maintenance of individuals seems to have fixed this issue
 
 </div>
 
-<div id="outline-container-6.3" class="outline-3">
-<h3 id="sec-6.3">size overflow </h3>
-<div class="outline-text-3" id="text-6.3">
+<div id="outline-container-6.6" class="outline-3">
+<h3 id="sec-6.6">size overflow </h3>
+<div class="outline-text-3" id="text-6.6">
 
 <p>It looks like passing individuals by value rather than by reference is
 overflowing the chips.  begin to change to passing by reference.
@@ -1187,9 +1891,9 @@ overflowing the chips.  begin to change to passing by reference.
 
 </div>
 
-<div id="outline-container-6.4" class="outline-3">
-<h3 id="sec-6.4">hard goals </h3>
-<div class="outline-text-3" id="text-6.4">
+<div id="outline-container-6.7" class="outline-3">
+<h3 id="sec-6.7">hard goals </h3>
+<div class="outline-text-3" id="text-6.7">
 
 
 <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
@@ -1210,9 +1914,9 @@ overflowing the chips.  begin to change to passing by reference.
 
 </div>
 
-<div id="outline-container-6.5" class="outline-3">
-<h3 id="sec-6.5">possibility of over-clocking the ixm w/alarms </h3>
-<div class="outline-text-3" id="text-6.5">
+<div id="outline-container-6.8" class="outline-3">
+<h3 id="sec-6.8">possibility of over-clocking the ixm w/alarms </h3>
+<div class="outline-text-3" id="text-6.8">
 
 <p>this is currently handled by checking before every alarm is set and
 when trying to set an alarm in the past, it instead sets it for a
@@ -1227,9 +1931,9 @@ in the population)
 
 </div>
 
-<div id="outline-container-6.6" class="outline-3">
-<h3 id="sec-6.6"><span class="done DONE"> DONE</span> segfault (possibly crossover) </h3>
-<div class="outline-text-3" id="text-6.6">
+<div id="outline-container-6.9" class="outline-3">
+<h3 id="sec-6.9"><span class="done DONE"> DONE</span> segfault (possibly crossover) </h3>
+<div class="outline-text-3" id="text-6.9">
 
 
 <p>
@@ -1245,9 +1949,9 @@ checking for end-of-string characters seems to help.
 
 </div>
 
-<div id="outline-container-6.6.1" class="outline-4">
-<h4 id="sec-6.6.1">initial </h4>
-<div class="outline-text-4" id="text-6.6.1">
+<div id="outline-container-6.9.1" class="outline-4">
+<h4 id="sec-6.9.1">initial </h4>
+<div class="outline-text-4" id="text-6.9.1">
 
 <p>at commit 36b2f62205e6b1564987d819aee282319664543a
 </p>
@@ -1307,14 +2011,13 @@ $
 
 </div>
 
-<div id="outline-container-6.6.2" class="outline-4">
-<h4 id="sec-6.6.2">does it segfault w/crossover commented out? </h4>
-<div class="outline-text-4" id="text-6.6.2">
+<div id="outline-container-6.9.2" class="outline-4">
+<h4 id="sec-6.9.2">does it segfault w/crossover commented out? </h4>
+<div class="outline-text-4" id="text-6.9.2">
 
 <p>It seems that with crossover commented out, there is no possibility of
 segfault.
 </p>
-
 
 </div>
 </div>
