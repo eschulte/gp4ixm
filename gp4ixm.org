@@ -1172,15 +1172,18 @@ algebra suitable for gnuplot.
 mainly for clojure practice, lets re-write the above
 #+begin_src clojure :results output
   (def operators '(\+ \- \* \/))
-  (def stack '())
-  (map (fn [el]
-         (if (some #{el} operators)
-           (def stack (cons
-                       (apply str "( " (or (first stack) 1) " " el " " (or (second stack) 1) " )")
-                       (rest (rest stack))))
-           (def stack (cons el stack))))
-       (seq "37x*x9x/3*9-*6-x-x/x+*"))
-  (first stack)
+  (def string "37x*x9x/3*9-*6-x-x/x+*")
+  (defn to-alg [chars stack]
+    (if (> (.size chars) 0)
+      (let [el (first chars)]
+        (if (some #{el} operators)
+          (to-alg (rest chars)
+                  (cons
+                   (apply str "( " (or (first stack) 1) " " el " " (or (second stack) 1) " )")
+                   (rest (rest stack))))
+          (to-alg (rest chars) (cons el stack))))
+      (first stack)))
+  (to-alg (seq string) '())
 #+end_src
 
 results
