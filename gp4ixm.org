@@ -1069,6 +1069,24 @@ breeding and injection are all 0
 |       10 |       10 |        10 |          4 |  3.4 |     298 |  100.46644295302 |
 
 * Issues / Notes
+** TODO next steps [0/6]
+*** TODO fix resetting sharing rate w/R packet
+or at least confirm that it's working and what the correct syntax
+should be -- didn't work in class
+
+*** TODO confirm that score/evaluation is doubles all the way through
+still looks like we're getting integer scores out the back end
+
+*** TODO port the sine functionality to coevolution sketch
+
+*** TODO run large test suite w/coevolution
+
+*** TODO modest coevolution GP parameters
+at least an order of magnitude greater than individual evolution
+
+*** TODO modest coevolution mutation
+by single values rather than random large jumps
+
 ** working on sine
 c38x48+7* f
 
@@ -1149,6 +1167,23 @@ algebra suitable for gnuplot.
     end
   end
   puts $stack.pop
+#+end_src
+
+mainly for clojure practice, lets re-write the above
+#+begin_src clojure :results output
+  (def operators '(\+ \- \* \/))
+  (def string "37x*x9x/3*9-*6-x-x/x+*")
+  (defn to-alg [chars stack]
+    (if (> (.size chars) 0)
+      (let [el (first chars)]
+        (if (some #{el} operators)
+          (to-alg (rest chars)
+                  (cons
+                   (apply str "( " (or (first stack) 1) " " el " " (or (second stack) 1) " )")
+                   (rest (rest stack))))
+          (to-alg (rest chars) (cons el stack))))
+      (first stack)))
+  (to-alg (seq string) '())
 #+end_src
 
 results

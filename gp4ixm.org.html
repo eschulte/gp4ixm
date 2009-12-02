@@ -26,6 +26,11 @@
         /* org-block */
         color: #b3b3b3;
       }
+      .org-checkbox-statistics-todo {
+        /* org-checkbox-statistics-todo */
+        color: #ffc0cb;
+        font-weight: bold;
+      }
       .org-code {
         /* org-code */
         color: #b3b3b3;
@@ -71,6 +76,11 @@
       .org-table {
         /* org-table */
         color: #87cefa;
+      }
+      .org-todo {
+        /* org-todo */
+        color: #ffc0cb;
+        font-weight: bold;
       }
 
       a {
@@ -1158,6 +1168,24 @@ breeding and injection are all 0
 <span class="org-table">|       10 |       10 |        10 |          4 |  3.4 |     298 |  100.46644295302 |</span>
 
 <span class="org-level-1">* Issues / Notes</span>
+<span class="org-level-2">** </span><span class="org-todo">TODO</span><span class="org-level-2"> next steps </span><span class="org-checkbox-statistics-todo">[0/6]</span>
+<span class="org-level-3">*** </span><span class="org-todo">TODO</span><span class="org-level-3"> fix resetting sharing rate w/R packet</span>
+or at least confirm that it's working and what the correct syntax
+should be -- didn't work in class
+
+<span class="org-level-3">*** </span><span class="org-todo">TODO</span><span class="org-level-3"> confirm that score/evaluation is doubles all the way through</span>
+still looks like we're getting integer scores out the back end
+
+<span class="org-level-3">*** </span><span class="org-todo">TODO</span><span class="org-level-3"> port the sine functionality to coevolution sketch</span>
+
+<span class="org-level-3">*** </span><span class="org-todo">TODO</span><span class="org-level-3"> run large test suite w/coevolution</span>
+
+<span class="org-level-3">*** </span><span class="org-todo">TODO</span><span class="org-level-3"> modest coevolution GP parameters</span>
+at least an order of magnitude greater than individual evolution
+
+<span class="org-level-3">*** </span><span class="org-todo">TODO</span><span class="org-level-3"> modest coevolution mutation</span>
+by single values rather than random large jumps
+
 <span class="org-level-2">** working on sine</span>
 c38x48+7* f
 
@@ -1238,6 +1266,23 @@ algebra suitable for gnuplot.
     end
   end
   puts $stack.pop</span><span class="org-meta-line">
+#+end_src</span>
+
+mainly for clojure practice, lets re-write the above
+<span class="org-meta-line">#+begin_src clojure :results output
+</span><span class="org-block">  (def operators '(\+ \- \* \/))
+  (def string "37x*x9x/3*9-*6-x-x/x+*")
+  (defn to-alg [chars stack]
+    (if (&gt; (.size chars) 0)
+      (let [el (first chars)]
+        (if (some #{el} operators)
+          (to-alg (rest chars)
+                  (cons
+                   (apply str "( " (or (first stack) 1) " " el " " (or (second stack) 1) " )")
+                   (rest (rest stack))))
+          (to-alg (rest chars) (cons el stack))))
+      (first stack)))
+  (to-alg (seq string) '())</span><span class="org-meta-line">
 #+end_src</span>
 
 results
