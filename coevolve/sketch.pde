@@ -85,27 +85,28 @@ struct eval_individual {
  */
 struct RpnStack {
   int ind;
-  int stack[IND_SIZE];
-  int default_value;
+  double stack[IND_SIZE];
+  double default_value;
   void reset() { ind = 0; default_value = DEFAULT_VAL; }
   void push_value(int val) { stack[ind] = val; ++ind; return; }
-  int pop_value() {
+  double pop_value() {
     if(ind > 0) {
       --ind; return stack[ind];
     } else
       return default_value;
   }
-  int value() { return stack[(ind - 1)]; }
+  double value() { return stack[(ind - 1)]; }
   void apply(char op);
 };
 void RpnStack::apply(char op) {
-  int right = pop_value();
-  int left = pop_value();
-  int result;
+  double right = pop_value();
+  double left = pop_value();
+  double result;
   if     (op == '+')   result = (left + right);
   else if(op == '-')   result = left - right;
   else if(op == '*')   result = left * right;
   else if(op == '/')   if (right == 0) result = 0; else result = (left / right);
+  else if(op == 's')   { push_value(left); result = sin(right); }
   else             {   pprintf("L hork on operator %c\n", op); return; }
   push_value(result);
 }
@@ -114,7 +115,7 @@ RpnStack rpn_stack;
 /*
  * Evaluation
  */
-int evaluate(int x, char * representation) {
+double evaluate(int x, char * representation) {
   char ch;
   rpn_stack.reset();
   for(int i=0; i<IND_SIZE; ++i) {              // step through the calculation string
@@ -177,7 +178,7 @@ struct individual {
     return ok;
   }
 };
-void individual::mutate() {                    // mutate an individual (each place change 1/size)
+void individual::mutate() {                    // mutate an individual
   char possibilities[16] = BUILDING_BLOCKS;
   for(int i=0; i<size(); ++i)
     if((random(1000)/1000) <= (mutation_prob/size()))
@@ -344,7 +345,7 @@ struct eval_population {
     return best;
   }
   double best_fitness() {
-    int best = pop[0].fitness;
+    double best = pop[0].fitness;
     for(int i=0; i<EVAL_POP_SIZE; ++i) if (pop[i].fitness > best) best = pop[i].fitness;
     return best;
   }
@@ -384,9 +385,8 @@ eval_population eval_pop;
  * Scoring relies on the existence of the populations
  */
 double individual::score() {
-  // int values[CHECK_SIZE];
-  int fit = 0;
-  int difference;
+  double fit = 0;
+  double difference;
   eval_individual eval;
   for(int j=0; j<EVAL_POP_SIZE; ++j) {
     eval = eval_pop.pop[j];
@@ -404,9 +404,8 @@ double individual::score() {
   return fitness;
 }
 double eval_individual::score() {
-  // int values[CHECK_SIZE];
-  int fit = 0;
-  int difference;
+  double fit = 0;
+  double difference;
   individual fodder;
   for(int j=0; j<POP_SIZE; ++j) {
     fodder = pop.pop[j];
@@ -678,10 +677,19 @@ void populationReset(u8 * packet) {
 }
 
 void setup() {
+  // g xs55+55+**
   goal[0] = 'x';
-  goal[1] = 'x';
-  goal[2] = '*';
-  goal[3] = '\0';
+  goal[1] = 's';
+  goal[2] = '5';
+  goal[3] = '5';
+  goal[4] = '+';
+  goal[5] = '5';
+  goal[6] = '5';
+  goal[7] = '+';
+  goal[8] = '*';
+  goal[9] = '*';
+  goal[10] = '\0';
+
   collector_init();                            // initialize the collector
   Body.reflex('g', newGoal);                   // reset the goal function.
   Body.reflex('i', acceptIndividual);          // incorporate a neighbor's individual
