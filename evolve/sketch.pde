@@ -169,15 +169,15 @@ individual new_ind() {                         // randomly generate a new indivi
 individual crossover(individual * mother, individual * father) {
   individual child;
   int index = 0;
-  int mother_point = random((*mother).size());
-  int father_point = random((*father).size());
+  int mother_point = random(mother->size());
+  int father_point = random(father->size());
   for(int i=0; i<mother_point; ++i) {
-    child.representation[index] = (*mother).representation[i];
+    child.representation[index] = mother->representation[i];
     ++index;
   }
-  for(int i=father_point; i<(*father).size(); ++i) {
+  for(int i=father_point; i<father->size(); ++i) {
     if((index+1) >= (IND_SIZE - 1)) break;
-    child.representation[index] = (*father).representation[i];
+    child.representation[index] = father->representation[i];
     ++index;
   }
   child.representation[index] = '\0';
@@ -187,7 +187,7 @@ individual crossover(individual * mother, individual * father) {
 }
 
 void share(individual * candidate) {
-  pprintf("i %s\n", (*candidate).representation);
+  pprintf("i %s\n", candidate->representation);
 }
 
 /*
@@ -206,7 +206,7 @@ struct population {
   individual * best() {
     individual * best = &pop[0];
     for(int i=0; i<POP_SIZE; ++i)
-      if(pop[i].fitness < (*best).fitness)
+      if(pop[i].fitness < best->fitness)
         best = &pop[i];
     return best;
   }
@@ -253,7 +253,7 @@ population pop;
  * Alarms (Mutation and Breeding) eventually (Sharing and Data collection)
  */
 static void do_mutate(u32 when) {
-  individual new_guy = (*pop.tournament()).copy();
+  individual new_guy = pop.tournament()->copy();
   new_guy.mutate();
   pop.incorporate(new_guy);
   if(mutation_tick > 0) {                      // don't reschedule if tick is 0
@@ -437,18 +437,10 @@ void setup() {
 
 void loop() {
   delay(1000); ++goal_seconds;
-  // pprintf("L \n");                             // print status information
-  // pprintf("L %d second on %s\n", goal_seconds, goal);
-  // pprintf("L best fitness is %d\n", pop.best_fitness());
-  // pprintf("L mean fitness is "); print(pop.mean_fitness()); pprintf("\n");
-  // pprintf("L best individual is %d long and is %s\n",
-  //         (* pop.best()).size(), (* pop.best()).representation);
-  // pprintf("L settings are m:%d b:%d i:%d s:%d t:%d p:%d\n",
-  //         mutation_tick, breeding_tick, injection_tick,
-  //         sharing_tick, tournament_size, mutation_prob);
+
   report_double(pop.best_fitness());
-  report_double(pop.mean_fitness());
-  report_string((*pop.best()).representation);
+  report_string(pop.best()->representation);
+
   if (buttonDown()) pop.reset();
 }
 
