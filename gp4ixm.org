@@ -1069,18 +1069,15 @@ breeding and injection are all 0
 |       10 |       10 |        10 |          4 |  3.4 |     298 |  100.46644295302 |
 
 * Issues / Notes
-** TODO next steps [1/7]
+** TODO next steps [3/7]
 *** DONE fix resetting sharing rate w/R packet
 or at least confirm that it's working and what the correct syntax
 should be -- didn't work in class
 
 it wasn't broken, I had just used the wrong syntax
 
-*** TODO make 100*sin(x) the default startup goal.
-
-
-
-*** TODO confirm that score/evaluation is doubles all the way through
+*** DONE make 100*sin(x) the default startup goal.
+*** DONE confirm that score/evaluation is doubles all the way through
 still looks like we're getting integer scores out the back end
 
 *** TODO port the sine functionality to coevolution sketch
