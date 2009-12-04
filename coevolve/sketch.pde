@@ -8,6 +8,7 @@
  * 
  */
 #include "collector.h"
+#include <math.h>
 
 #define POP_SIZE 100
 #define EVAL_POP_SIZE 20
@@ -29,10 +30,10 @@ int tournament_size = 4;                       // number of individuals selected
 int mutation_prob   = 4;                       // PROB/SIZE = chance_mut of each spot
 
 // GA parameters for evolution of eval-arrays
-int eval_mutation_tick   = 500;                // ms per mutation
-int eval_breeding_tick   = 500;                // ms per breeding
-int eval_injection_tick  = 500;                // ms per breeding
-int eval_sharing_tick    = 1000;               // ms per sharing
+int eval_mutation_tick   = 5000;               // ms per mutation
+int eval_breeding_tick   = 5000;               // ms per breeding
+int eval_injection_tick  = 5000;               // ms per breeding
+int eval_sharing_tick    = 10000;              // ms per sharing
 int eval_tournament_size = 4;                  // number of individuals selected per tournament
 int eval_mutation_prob   = 1;                  // PROB/SIZE = chance_mut of each spot
 
@@ -63,9 +64,9 @@ struct eval_individual {
       old = representation[i];
       if((random(1000)/1000) <= (mutation_prob/CHECK_SIZE)) {
         if ((random(1000)/1000) < 0.5)
-          representation[i] = representation[i] + random(representation[i]);
+          representation[i] = representation[i] + 1;
         else
-          representation[i] = representation[i] - random(representation[i]);
+          representation[i] = representation[i] - 1;
       }
       if ((representation[i] > CHECK_RANGE) || (representation[i] < -CHECK_RANGE))
         representation[i] = old;
@@ -715,8 +716,6 @@ void loop() {
   pprintf("L \n");
   pprintf("L \n");
   pprintf("L \n");
-  
-  save_double()
   
   // if (buttonDown()) pop.reset();
 }
