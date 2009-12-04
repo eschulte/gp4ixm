@@ -19,7 +19,7 @@ char goal[MAX_GOAL_SIZE];
 int mutation_tick   = 100;                      // ms per mutation
 int breeding_tick   = 100;                      // ms per breeding
 int injection_tick  = 100;                      // ms per breeding
-int sharing_tick    = 250;                     // ms per sharing
+int sharing_tick    = 2000;                     // ms per sharing
 int tournament_size = 4;
 int mutation_prob   = 4;                       // PROB/SIZE = chance_mut of each spot
 
@@ -124,10 +124,8 @@ struct individual {
   }
 };
 double individual::score() {
-  // int values[CHECK_SIZE];
   fitness = 0.0;
   double difference;
-  // for(int i=0; i<CHECK_SIZE; i++) values[i] = random(10);
   for(int i=0; i<CHECK_SIZE; ++i) {
     difference = (evaluate(i, goal) - evaluate(i, representation));
     if (difference < 0)
@@ -135,9 +133,12 @@ double individual::score() {
     else
       fitness = fitness + difference;
   }
+  // pprintf("scored ");
+  // facePrint(ALL_FACES, fitness);
+  // pprintf("\n");
   return fitness;
 }
-void individual::mutate() {                    // mutate an individual (each place change 1/size)
+void individual::mutate() {                    // mutate an individual
   char possibilities[16] = BUILDING_BLOCKS;
   for(int i=0; i<size(); ++i)
     if(random(size()) == mutation_prob)
@@ -160,7 +161,7 @@ individual new_ind() {                         // randomly generate a new indivi
     index = i;
   }
   ind.representation[index+1] = '\0';
-  ind.score();                                 // evaluate the fitness of the new individual
+  ind.score();                                 // evaluate fitness
   if(not ind.check()) pprintf("L from new_ind\n");
   return ind;
 }
@@ -210,7 +211,7 @@ struct population {
     return best;
   }
   double best_fitness() {
-    int best = pop[0].fitness;
+    double best = pop[0].fitness;
     for(int i=0; i<POP_SIZE; ++i) if (pop[i].fitness < best) best = pop[i].fitness;
     return best;
   }
@@ -414,10 +415,19 @@ void populationReset(u8 * packet) {
 }
 
 void setup() {
+  // g xs55+55+**
   goal[0] = 'x';
-  goal[1] = 'x';
-  goal[2] = '*';
-  goal[3] = '\0';
+  goal[1] = 's';
+  goal[2] = '5';
+  goal[3] = '5';
+  goal[4] = '+';
+  goal[5] = '5';
+  goal[6] = '5';
+  goal[7] = '+';
+  goal[8] = '*';
+  goal[9] = '*';
+  goal[10] = '\0';
+
   collector_init();                            // initialize the collector
   Body.reflex('g', newGoal);                   // reset the goal function.
   Body.reflex('i', acceptIndividual);          // incorporate a neighbor's individual
@@ -437,6 +447,7 @@ void loop() {
   //         mutation_tick, breeding_tick, injection_tick,
   //         sharing_tick, tournament_size, mutation_prob);
   report_double(pop.best_fitness());
+  report_double(pop.mean_fitness());
   report_string((*pop.best()).representation);
   if (buttonDown()) pop.reset();
 }
