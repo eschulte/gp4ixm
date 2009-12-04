@@ -28,7 +28,7 @@ char goal[MAX_GOAL_SIZE];
 int mutation_tick   = 100;                     // ms per mutation
 int breeding_tick   = 100;                     // ms per breeding
 int injection_tick  = 100;                     // ms per breeding
-int sharing_tick    = 250;                     // ms per sharing
+int sharing_tick    = 500;                     // ms per sharing
 int tournament_size = 4;                       // number of individuals selected per tournament
 int mutation_prob   = 4;                       // PROB/SIZE = chance_mut of each spot
 
@@ -73,7 +73,6 @@ struct eval_individual {
       }
       if ((representation[i] > CHECK_RANGE) || (representation[i] < -CHECK_RANGE))
         representation[i] = random(-CHECK_RANGE, CHECK_RANGE);
-      pprintf("L mutate range %d\n", representation[i]);
     }
   }
   eval_individual copy() {
@@ -216,7 +215,6 @@ eval_individual new_eval_ind() {               // randomly generate a new indivi
   ind.representation[0] = random(-CHECK_RANGE, CHECK_RANGE);
   for(int i=0; i < random(CHECK_SIZE); ++i) {
     ind.representation[i] = random(-CHECK_RANGE, CHECK_RANGE);
-    pprintf("L check range %d\n", ind.representation[i]);
   }
   ind.score();                                 // evaluate the fitness
   return ind;
@@ -250,13 +248,9 @@ eval_individual eval_crossover(eval_individual * mother, eval_individual * fathe
       child.representation[i] = mother->representation[i];
     else
       child.representation[i] = father->representation[i];
-    pprintf("L crossover range %d\n", child.representation[i]);
-    if(child.representation[i] > CHECK_RANGE || child.representation[i] < -CHECK_RANGE) {
-      if(i < cross_point)
-        pprintf("L bad mother %d\n", mother->representation[i]);
-      else
-        pprintf("L bad father %d\n", father->representation[i]);
-    }
+    if(child.representation[i] > CHECK_RANGE ||
+       child.representation[i] < -CHECK_RANGE)
+      child.representation[i] = random(-CHECK_RANGE, CHECK_RANGE);
   }
   child.score();
   return child;
@@ -723,20 +717,19 @@ eval_individual * eval_best;
 void loop() {
   delay(1000); ++goal_seconds;
 
-  // pprintf("L rand is from %d to %d so %d\n",
-  //         -CHECK_RANGE, CHECK_RANGE, random(-CHECK_RANGE, CHECK_RANGE));
-
+  // report best individual
   report_double(pop.best_fitness());
-  report_double(pop.mean_fitness());
-  report_string((*pop.best()).representation);
-  report_string("----------------------------------------");
-  report_double(eval_pop.best_fitness());
-  report_double(eval_pop.mean_fitness());
-  pprintf("L ");
+  report_string(pop.best()->representation);
+  
+  // report best eval_individual
   eval_best = eval_pop.best();
+  pprintf("k");
+  facePrint(ALL_FACES, eval_best->fitness);
+  pprintf(" \n");
+  pprintf("k");
   for(int i=0; i<CHECK_SIZE; ++i)
     pprintf("%d ", eval_best->representation[i]);
-  pprintf("\n");
+  pprintf(" \n");
 
   if (buttonDown()) pop.reset();
 }

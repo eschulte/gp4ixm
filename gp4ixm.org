@@ -1069,7 +1069,7 @@ breeding and injection are all 0
 |       10 |       10 |        10 |          4 |  3.4 |     298 |  100.46644295302 |
 
 * Issues / Notes
-** TODO next steps [3/7]
+** TODO next steps [7/9]
 *** DONE fix resetting sharing rate w/R packet
 or at least confirm that it's working and what the correct syntax
 should be -- didn't work in class
@@ -1080,16 +1080,26 @@ it wasn't broken, I had just used the wrong syntax
 *** DONE confirm that score/evaluation is doubles all the way through
 still looks like we're getting integer scores out the back end
 
-*** TODO port the sine functionality to coevolution sketch
+*** DONE port the sine functionality to coevolution sketch
+*** DONE modest coevolution GP parameters
+at least an order of magnitude greater than individual evolution
 
+*** DONE modest coevolution mutation
+by single values rather than random large jumps
+*** DONE allow reset of eval_GP params with reset packet
+these could use capital letters rather than lower case
 
 *** TODO run large test suite w/coevolution
 
-*** TODO modest coevolution GP parameters
-at least an order of magnitude greater than individual evolution
+1) first this will require a copy of the experimenter
+2) then to select the eval_GP params to be tweaked
+3) finally to run and collect data
 
-*** TODO modest coevolution mutation
-by single values rather than random large jumps
+alright, the coevolve.rb script has been written, now to run it
+overnight at school
+
+*** TODO run large test suite w/evolve
+this has been done before, but now do a definitive one.
 
 ** working on sine
 c38x48+7* f
