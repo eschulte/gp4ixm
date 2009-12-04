@@ -699,25 +699,39 @@ void setup() {
   reset();
 }
 
+char eval_best_rep_str[CHECK_SIZE+1];
+eval_individual * eval_best;
 void loop() {
   delay(1000); ++goal_seconds;
-  pprintf("L goal %s\n", goal);
-  (*pop.best()).score();
-  pprintf("L mean ");
-  facePrint(ALL_FACES, pop.mean_fitness());
-  pprintf(" best ");
-  facePrint(ALL_FACES, pop.best_fitness());
-  pprintf(" %s \n", (*pop.best()).representation);
-  pprintf("L ------------------------------\n");
-  pprintf("L best %d ", eval_pop.best_fitness());
-  for(int i=0; i<CHECK_SIZE; ++i)
-    pprintf("%d ", (*eval_pop.tournament()).representation[i]);
-  pprintf("\n");
-  pprintf("L \n");
-  pprintf("L \n");
-  pprintf("L \n");
+  // pprintf("L goal %s\n", goal);
+  // (*pop.best()).score();
+  // pprintf("L mean ");
+  // facePrint(ALL_FACES, pop.mean_fitness());
+  // pprintf(" best ");
+  // facePrint(ALL_FACES, pop.best_fitness());
+  // pprintf(" %s \n", (*pop.best()).representation);
+  // pprintf("L ------------------------------\n");
+  // pprintf("L best %d ", eval_pop.best_fitness());
+  // for(int i=0; i<CHECK_SIZE; ++i)
+  //   pprintf("%d ", (*eval_pop.tournament()).representation[i]);
+  // pprintf("\n");
+  // pprintf("L \n");
+  // pprintf("L \n");
+  // pprintf("L \n");
   
-  // if (buttonDown()) pop.reset();
+  report_double(pop.best_fitness());
+  report_double(pop.mean_fitness());
+  report_string((*pop.best()).representation);
+  report_string("----------------------------------------");
+  report_double(eval_pop.best_fitness());
+  report_double(eval_pop.mean_fitness());
+  eval_best = eval_pop.best();
+  for(int i=0; i<CHECK_SIZE; ++i)
+    eval_best_rep_str[i] = eval_best->representation[i];
+  eval_best_rep_str[CHECK_SIZE] = '\0';
+  report_string(eval_best_rep_str);
+  
+  if (buttonDown()) pop.reset();
 }
 
 #define SFB_SKETCH_CREATOR_ID B36_3(e,m,s)
