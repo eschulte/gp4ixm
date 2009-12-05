@@ -597,17 +597,15 @@ void newGoal(u8 * packet) {
   }
   goal[goal_ind] = '\0';
   if (new_p) {                                    // check if the new goal is new
-    // ledToggle(BODY_RGB_RED_PIN);
+    QLED.on(BODY_RGB_RED_PIN, 500);
+    QLED.off(BODY_RGB_RED_PIN, 100);
     goal_seconds = 0;
     pop.rescore();
-    // delay(250);
     pprintf("g %s\n", goal);
     pprintf("L new goal is %s\n", goal);
-    // ledToggle(BODY_RGB_RED_PIN);
   } else {                                        // indicate seen this before
-    // ledToggle(BODY_RGB_GREEN_PIN);
-    // delay(250);
-    // ledToggle(BODY_RGB_GREEN_PIN);
+    QLED.on(BODY_RGB_RED_PIN, 500);
+    QLED.off(BODY_RGB_RED_PIN, 100);
   }
 }
 
@@ -627,9 +625,8 @@ void acceptIndividual(u8 * packet) {
   ind.representation[index] = '\0';
   ind.score();
   if(ind.fitness < pop.best_fitness()) {
-    // ledToggle(BODY_RGB_BLUE_PIN);
-    // delay(250);
-    // ledToggle(BODY_RGB_BLUE_PIN);
+    QLED.on(BODY_RGB_BLUE_PIN, 500);
+    QLED.off(BODY_RGB_BLUE_PIN, 100);
   }
   pop.incorporate(ind);
 }
@@ -650,9 +647,8 @@ void acceptEvalIndividual(u8 * packet) {
   }
   ind.score();
   if(ind.fitness > pop.best_fitness()) {
-    // ledToggle(BODY_RGB_RED_PIN);
-    // delay(250);
-    // ledToggle(BODY_RGB_RED_PIN);
+    QLED.on(BODY_RGB_RED_PIN, 500);
+    QLED.off(BODY_RGB_RED_PIN, 100);
   }
   eval_pop.incorporate(ind);
 }
@@ -759,15 +755,16 @@ void populationReset(u8 * packet) {
       default: pprintf("L hork on key: %c\n", key);
       }
     }
-    // ledToggle(BODY_RGB_BLUE_PIN);
-    // ledToggle(BODY_RGB_RED_PIN);
+    QLED.on(BODY_RGB_BLUE_PIN, 500);
+    QLED.on(BODY_RGB_RED_PIN, 500);
+    QLED.off(BODY_RGB_BLUE_PIN, 100);
+    QLED.off(BODY_RGB_RED_PIN, 100);
     reset();
-    // ledToggle(BODY_RGB_BLUE_PIN);
-    // ledToggle(BODY_RGB_RED_PIN);
   }
 }
 
 void setup() {
+  QLED.begin();
   // g xs55+55+**
   goal[0] = 'x';
   goal[1] = 's';
