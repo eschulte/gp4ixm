@@ -13,7 +13,7 @@
 #include <string.h>
 #include <math.h>
 
-#define COEVOLVE
+// #define COEVOLVE uncomment this to enable coevolution
 #define POP_SIZE 100
 #define EVAL_POP_SIZE 20
 #define IND_SIZE 24
@@ -760,6 +760,7 @@ void populationReset(u8 * packet) {
     QLED.off(BODY_RGB_BLUE_PIN, 100);
     QLED.off(BODY_RGB_RED_PIN, 100);
     reset();
+    pprintf("%#p\n", packet);
   }
 }
 
