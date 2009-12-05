@@ -13,6 +13,7 @@
 #include <string.h>
 #include <math.h>
 
+#define COEVOLVE
 #define POP_SIZE 100
 #define EVAL_POP_SIZE 20
 #define IND_SIZE 24
@@ -32,6 +33,7 @@ int sharing_tick    = 500;                     // ms per sharing
 int tournament_size = 4;                       // number of individuals selected per tournament
 int mutation_prob   = 4;                       // PROB/SIZE = chance_mut of each spot
 
+#ifdef COEVOLVE
 // GA parameters for evolution of eval-arrays
 int eval_mutation_tick   = 5000;               // ms per mutation
 int eval_breeding_tick   = 5000;               // ms per breeding
@@ -39,6 +41,7 @@ int eval_injection_tick  = 5000;               // ms per breeding
 int eval_sharing_tick    = 10000;              // ms per sharing
 int eval_tournament_size = 4;                  // number of individuals selected per tournament
 int eval_mutation_prob   = 1;                  // PROB/SIZE = chance_mut of each spot
+#endif
 
 // alarm variables
 int mutation_alarm_index  = -1;
@@ -50,6 +53,7 @@ int eval_breeding_alarm_index  = -1;
 int eval_injection_alarm_index = -1;
 int eval_sharing_alarm_index   = -1;
 
+#ifdef COEVOLVE
 struct eval_individual {
   int representation[CHECK_SIZE];
   double fitness;
@@ -83,6 +87,7 @@ struct eval_individual {
     return my_copy;
   };
 };
+#endif
 
 /*
  * Reverse Polish Notation Calculator
@@ -209,6 +214,8 @@ individual new_ind() {                         // randomly generate a new indivi
   if(not ind.check()) pprintf("L from new_ind\n");
   return ind;
 }
+
+#ifdef COEVOLVE
 eval_individual new_eval_ind() {               // randomly generate a new individual
   eval_individual ind;
   ind.fitness = 0;
@@ -219,6 +226,7 @@ eval_individual new_eval_ind() {               // randomly generate a new indivi
   ind.score();                                 // evaluate the fitness
   return ind;
 }
+#endif
 
 individual crossover(individual * mother, individual * father) {
   individual child;
@@ -240,6 +248,7 @@ individual crossover(individual * mother, individual * father) {
   return child;
 }
 
+#ifdef COEVOLVE
 eval_individual eval_crossover(eval_individual * mother, eval_individual * father) {
   eval_individual child;
   int cross_point = random(CHECK_SIZE);
@@ -255,16 +264,20 @@ eval_individual eval_crossover(eval_individual * mother, eval_individual * fathe
   child.score();
   return child;
 }
+#endif
 
 void share(individual * candidate) {
   pprintf("i %s\n", candidate->representation);
 }
+
+#ifdef COEVOLVE
 void eval_share(eval_individual * candidate) {
   pprintf("e ");
   for(int i=0; i<CHECK_SIZE; ++i)
     pprintf("%d", candidate->representation[i]);
   pprintf("\n");
 }
+#endif
 
 /*
  * Population
@@ -336,6 +349,7 @@ individual population::breed() {               // breed two members returning a 
 }
 population pop;
 
+#ifdef COEVOLVE
 struct eval_population {
   eval_individual pop[EVAL_POP_SIZE];
   void rescore();
@@ -389,10 +403,33 @@ eval_individual eval_population::breed() {    // breed two members returning a n
   return eval_crossover(tournament(), tournament());
 }
 eval_population eval_pop;
+#endif
 
 /*
  * Scoring relies on the existence of the populations
  */
+#ifndef COEVOLVE
+double individual::score() {
+  double fit = 0;
+  double difference;
+  int check_point = 0;
+  for(int j=0; j<EVAL_POP_SIZE; ++j) {
+    fit = 0;
+    for(int i=0; i<CHECK_SIZE; ++i) {
+      check_point = random(-CHECK_RANGE,CHECK_RANGE);
+      difference = (evaluate(check_point, goal) -
+                    evaluate(check_point, representation));
+      if (difference < 0)
+        difference = (0 - difference);
+      fit = fit + difference;
+    }
+    update_fitness(fit);
+  }
+  return fitness;
+}
+#endif
+
+#ifdef COEVOLVE
 double individual::score() {
   double fit = 0;
   double difference;
@@ -430,6 +467,7 @@ double eval_individual::score() {
   }
   return fitness;
 }
+#endif
 
 /*
  * Alarms (Mutation and Breeding) eventually (Sharing and Data collection)
@@ -446,6 +484,8 @@ static void do_mutate(u32 when) {
       Alarms.set(Alarms.currentAlarmNumber(), when+mutation_tick);
   }
 }
+
+#ifdef COEVOLVE
 static void do_eval_mutate(u32 when) {
   eval_individual new_guy = eval_pop.tournament()->copy();
   new_guy.mutate();
@@ -458,6 +498,8 @@ static void do_eval_mutate(u32 when) {
       Alarms.set(Alarms.currentAlarmNumber(), when+eval_mutation_tick);
   }
 }
+#endif
+
 static void do_breed(u32 when) {
   pop.incorporate(pop.breed());
   if(breeding_tick > 0) {                      // don't reschedule if tick is 0
@@ -468,6 +510,8 @@ static void do_breed(u32 when) {
       Alarms.set(Alarms.currentAlarmNumber(), when+breeding_tick);
   }
 }
+
+#ifdef COEVOLVE
 static void do_eval_breed(u32 when) {
   eval_pop.incorporate(eval_pop.breed());
   if(eval_breeding_tick > 0) {                 // don't reschedule if tick is 0
@@ -478,6 +522,8 @@ static void do_eval_breed(u32 when) {
       Alarms.set(Alarms.currentAlarmNumber(), when+eval_breeding_tick);
   }
 }
+#endif
+
 static void do_inject(u32 when) {
   pop.incorporate(new_ind());
   if(injection_tick > 0) {                     // don't reschedule if tick is 0
@@ -489,6 +535,8 @@ static void do_inject(u32 when) {
       Alarms.set(Alarms.currentAlarmNumber(), when+injection_tick);
   }
 }
+
+#ifdef COEVOLVE
 static void do_eval_inject(u32 when) {
   eval_pop.incorporate(new_eval_ind());
   if(eval_injection_tick > 0) {                // don't reschedule if tick is 0
@@ -500,6 +548,8 @@ static void do_eval_inject(u32 when) {
       Alarms.set(Alarms.currentAlarmNumber(), when+eval_injection_tick);
   }
 }
+#endif
+
 static void do_share(u32 when) {
   share(pop.tournament());
   if(sharing_tick > 0) {                      // don't reschedule if tick is 0
@@ -511,6 +561,8 @@ static void do_share(u32 when) {
       Alarms.set(Alarms.currentAlarmNumber(), when+sharing_tick);
   }
 }
+
+#ifdef COEVOLVE
 static void do_eval_share(u32 when) {
   eval_share(eval_pop.tournament());
   if(eval_sharing_tick > 0) {                 // don't reschedule if tick is 0
@@ -522,6 +574,8 @@ static void do_eval_share(u32 when) {
       Alarms.set(Alarms.currentAlarmNumber(), when+eval_sharing_tick);
   }
 }
+#endif
+
 
 /*
  * Reflexes
@@ -580,6 +634,7 @@ void acceptIndividual(u8 * packet) {
   pop.incorporate(ind);
 }
 
+#ifdef COEVOLVE
 void acceptEvalIndividual(u8 * packet) {
   eval_individual ind;
   int index = 0;
@@ -601,58 +656,77 @@ void acceptEvalIndividual(u8 * packet) {
   }
   eval_pop.incorporate(ind);
 }
+#endif
 
 void reset() {
   pop.reset();                                 // randomly generate a population
+#ifdef COEVOLVE
   eval_pop.reset();                            // randomly generate a new eval population
+#endif
   if(mutation_tick > 0) {
     if(mutation_alarm_index < 0) {             // maybe begin the mutation alarm
       mutation_alarm_index = Alarms.create(do_mutate);
     }
     Alarms.set(mutation_alarm_index,millis() + 1000);
   }
+
+#ifdef COEVOLVE
   if(eval_mutation_tick > 0) {
     if(eval_mutation_alarm_index < 0) {        // maybe begin the eval_mutation alarm
       eval_mutation_alarm_index = Alarms.create(do_eval_mutate);
     }
     Alarms.set(eval_mutation_alarm_index,millis() + 1000);
   }
+#endif
+
   if(breeding_tick > 0) {
     if(breeding_alarm_index < 0) {             // maybe begin the breeding alarm
       breeding_alarm_index = Alarms.create(do_breed);
     }
     Alarms.set(breeding_alarm_index,millis() + 1250);
   }
+
+#ifdef COEVOLVE
   if(eval_breeding_tick > 0) {
     if(eval_breeding_alarm_index < 0) {        // maybe begin the eval_breeding alarm
       eval_breeding_alarm_index = Alarms.create(do_eval_breed);
     }
     Alarms.set(eval_breeding_alarm_index,millis() + 1250);
   }
+#endif
+
   if(injection_tick > 0) {
     if(injection_alarm_index < 0) {             // maybe begin the injection alarm
       injection_alarm_index = Alarms.create(do_inject);
     }
     Alarms.set(injection_alarm_index,millis() + 1000);
   }
+
+#ifdef COEVOLVE
   if(eval_injection_tick > 0) {
     if(eval_injection_alarm_index < 0) {        // maybe begin the eval_injection alarm
       eval_injection_alarm_index = Alarms.create(do_eval_inject);
     }
     Alarms.set(eval_injection_alarm_index,millis() + 1000);
   }
+#endif
+
   if(sharing_tick > 0) {
     if(sharing_alarm_index < 0) {             // maybe begin the sharing alarm
       sharing_alarm_index = Alarms.create(do_share);
     }
     Alarms.set(sharing_alarm_index,millis() + 1000);
   }
+
+#ifdef COEVOLVE
   if(eval_sharing_tick > 0) {
     if(eval_sharing_alarm_index < 0) {        // maybe begin the eval_sharing alarm
       eval_sharing_alarm_index = Alarms.create(do_eval_share);
     }
     Alarms.set(eval_sharing_alarm_index,millis() + 1000);
   }
+#endif
+
 }
 
 // reset packets look like "r m:10 b:0 ..."
@@ -674,12 +748,14 @@ void populationReset(u8 * packet) {
       case 's': sharing_tick = val;    break;
       case 't': tournament_size = val; break;
       case 'p': mutation_prob = val;   break;
+#ifdef COEVOLVE
       case 'M': eval_mutation_tick = val;   break;
       case 'B': eval_breeding_tick = val;   break;
       case 'I': eval_injection_tick = val;  break;
       case 'S': eval_sharing_tick = val;    break;
       case 'T': eval_tournament_size = val; break;
       case 'P': eval_mutation_prob = val;   break;
+#endif
       default: pprintf("L hork on key: %c\n", key);
       }
     }
@@ -708,19 +784,24 @@ void setup() {
   collector_init();                            // initialize the collector
   Body.reflex('g', newGoal);                   // reset the goal function.
   Body.reflex('i', acceptIndividual);          // incorporate a neighbor's individual
+#ifdef COEVOLVE
   Body.reflex('e', acceptEvalIndividual);      // incorporate a neighbor's evaluation individual
+#endif
   Body.reflex('r', populationReset);           // reset the population (and settings)
   reset();
 }
 
+#ifdef COEVOLVE
 eval_individual * eval_best;
+#endif
 void loop() {
   delay(1000); ++goal_seconds;
 
   // report best individual
   report_double(pop.best_fitness());
   report_string(pop.best()->representation);
-  
+
+#ifdef COEVOLVE
   // report best eval_individual
   eval_best = eval_pop.best();
   pprintf("k");
@@ -730,6 +811,7 @@ void loop() {
   for(int i=0; i<CHECK_SIZE; ++i)
     pprintf("%d ", eval_best->representation[i]);
   pprintf(" \n");
+#endif
 
   if (buttonDown()) pop.reset();
 }
