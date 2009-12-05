@@ -30,8 +30,8 @@ ixm = LibIXM.new(:sfbprog_path =>   '/nfs/adaptive/eschulte/bin/sfbprog',
 # build up all reset strings
 r_strings = ["r"]
 [["S", [0, 5000]],
- ["M", [100, 1000, 10000]],
- ["B", [100, 1000, 10000]]].each do |key, values|
+ ["M", [100, 1000]],
+ ["B", [100, 1000]]].each do |key, values|
   new_strings = []
   r_strings = r_strings.each do |r|
     values.each do |val|
