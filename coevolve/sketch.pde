@@ -13,7 +13,7 @@
 #include <string.h>
 #include <math.h>
 
-// #define COEVOLVE uncomment this to enable coevolution
+#define COEVOLVE // uncomment this to enable coevolution
 #define POP_SIZE 100
 #define EVAL_POP_SIZE 20
 #define IND_SIZE 24

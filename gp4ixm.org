@@ -186,6 +186,19 @@ look at the speedup gained through using the big group (with
   :PROPERTIES:
   :CUSTOM_ID: experiments
   :END:
+** co-evo and noco-evo
+alright, I'm trying to
+1) run the noco-evo test suite
+2) recompile coevolution/sketch.pde with the =#define COEVOLUTION=
+   switch set
+3) run the co-evo test suite
+
+all with with the following shell command
+#+begin_src sh
+  ruby coexperimenter.rb /experiments/noco-evo && cd coevolve && make && sleep 300 && cd ../ && ruby coexperimenter.rb /experiments/co-evo
+#+end_src
+the audacity!
+
 ** fifth milestone
 #+srcname: fifth_milestone_results_setup
 #+begin_src ruby :results output raw :exports code
