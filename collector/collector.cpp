@@ -57,18 +57,12 @@ Collection collection;
 
 void clear_collection() {
   Collection col; collection = col;
-  collection.initialized = false;
 }
 void read_collection() {
   eepromRead(DATA_ADDR, (u8*) &collection, sizeof(collection));
-  collection.initialized = true;
 }
 void write_collection() {
-  if (collection.initialized) {
-    eepromWrite(DATA_ADDR, (u8*) &collection, sizeof(collection));
-  } else {
-    pprintf("L can't write an uninitiziled collection\n");
-  }
+  eepromWrite(DATA_ADDR, (u8*) &collection, sizeof(collection));
 }
 
 char reverseStep(char step) {
@@ -98,57 +92,40 @@ void Collector::report_postfix() {
 void noticeCollector(u8 * packet) {
   int count;
   char dir;
-  char ch;
   int in;
   int out;
-  if (packetScanf(packet, "c") != 1) {
+  if (packetScanf(packet, "c%d ", &count) != 3) {
     pprintf("L bad '%#p'\n",packet);
-  } else {
-    if (packetScanf(packet, "%d ", &count)) {         // update count
-      if (count > collector.count) {
-        collector.initialized = true;
-        collector.count = count;
-        collector.out_face = packetSource(packet);
-        int path_ind = 0;
-        char ch;
-        while(packetScanf(packet, "%c", &ch)) {       // extract the return path
-          collector.path[path_ind] = ch;
-          ++path_ind;
+    return;
+  }
+  if (count > collector.count) {
+    collector.initialized = true;
+    collector.count = count;
+    collector.out_face = packetSource(packet);
+    int path_ind = 0;
+    char ch;
+    while(packetScanf(packet, "%c", &ch)) {       // extract the return path
+      collector.path[path_ind] = ch;
+      ++path_ind;
+    }
+    collector.path[path_ind] = '\0';
+    for (u32 f = NORTH; f <= WEST; ++f) {         // send on to neighbors
+      if (collector.out_face != f) {
+        if (collector.out_face == 1)      in = 2; // swap around south and east
+        else if (collector.out_face == 2) in = 1;
+        else                              in = collector.out_face;
+        if (f == 1)                       out = 2;
+        else if (f == 2)                  out = 1;
+        else                              out = f;
+        switch ((4 + out - in) % 4) {              // find the dir l, r, or f
+        case 1: dir = 'l'; break;
+        case 2: dir = 'f'; break;
+        case 3: dir = 'r'; break;
+        default: pprintf(" L hork %d to %d is %d\n", in, out, ((4 + out - in) % 4)); return;
         }
-        collector.path[path_ind] = '\0';
-        for (u32 f = NORTH; f <= WEST; ++f) {         // send on to neighbors
-          if (collector.out_face != f) {
-            if (collector.out_face == 1)      in = 2; // swap around south and east
-            else if (collector.out_face == 2) in = 1;
-            else                              in = collector.out_face;
-            if (f == 1)                       out = 2;
-            else if (f == 2)                  out = 1;
-            else                              out = f;
-            switch ((4 + out - in) % 4) {              // find the dir l, r, or f
-            case 1: dir = 'l'; break;
-            case 2: dir = 'f'; break;
-            case 3: dir = 'r'; break;
-            default: pprintf(" L hork %d to %d is %d\n", in, out, ((4 + out - in) % 4)); return;
-            }
-            facePrintf(f, "c%d %s%c\n",
-                       count, collector.path, dir);    // append dir and send onward
-          }
-        }
+        facePrintf(f, "c%d %s%c\n",
+                   count, collector.path, dir);    // append dir and send onward
       }
-    } else if (packetScanf(packet, "%c ", &ch)) { // interact with collection
-      if (ch == 'w') {
-        pprintf("L writing collection\n");
-      } else if (ch == 'r') {
-        pprintf("L reading collection\n");
-      } else if (ch == 'R') {
-        pprintf("L reporting collection\n");
-      } else {
-        pprintf("L bad '%#p'\n",packet);
-        return;
-      }
-    } else {
-      pprintf("L bad '%#p'\n",packet);
-      return;
     }
   }
 }
@@ -157,7 +134,8 @@ void collector_init() {
   Collector collector;
   collector.initialized = false;
   Collection collection;
-  collection.initialized = false;
+  read_collection();
+  collection.initialized = true;
   Body.reflex('c', noticeCollector);
 }
 
@@ -192,5 +170,5 @@ void save_string(char * val) {
     collection.strings_index = collection.strings_index + 1;
   }
   collection.strings[collection.strings_index] = '\0';
-  collection.strings_index = collection.strings_index + 1;
+  collection.strings_index = collection.strings_index + 1; 
 }
