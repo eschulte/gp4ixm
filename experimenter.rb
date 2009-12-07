@@ -25,7 +25,7 @@ end
 puts "initializing ixm connection"
 ixm = LibIXM.new(:sfbprog_path =>   '/Users/eschulte/bin/sfbprog',
                  :sfbprog_args =>   '',
-                 :sfbprog_device => '/dev/ttyUSB0',
+                 :sfbprog_device => '/dev/tty.usbserial-FTE5HLY9',
                  :sfbprog_sketch => 'evolve/sketch.hex')
 
 # build up all reset strings
@@ -70,9 +70,28 @@ ixm.attach_reflex(/c/) do |packet|
   end
 end
 
+ixm.attach_reflex(/k/) do |packet|
+  begin
+    if packet.match(/^k([\d-]+\/+\.[\d]*\/*)/) # score -- k0.00 f
+      print "."; STDOUT.flush;
+      $current_file << "k #{Time.now - $start_time}\t#{$1}\n"
+      $current_file.flush
+      $finished = true if Float($1) == 0
+    elsif packet.match(/k([\d\*\-\+\/x]+)/) # best -- c44/4x5x5-+* f
+      $current_best << "k #{Time.now - $start_time}\t#{$1}\n"
+      $current_best.flush
+    else
+      puts packet
+    end
+  rescue
+    puts "failure!!"
+    puts "\t'#{packet}'"
+  end
+end
+
 count = 444
 r_strings.each do |r_s|
-  ["xxx**xxxx***+", "7xxx**+"].each_with_index do |goal, i|
+  ["xs55+55+**"].each_with_index do |goal, i|
     5.times do |c|
       print "\n\t#{r_s} run #{c} on #{goal}\n\t"; STDOUT.flush
       $current_file =
@@ -94,7 +113,7 @@ r_strings.each do |r_s|
       ixm << r_s
       # let it run for a while
       sleep_counter = 0
-      while((not $finished) and (sleep_counter < 300))
+      while((not $finished) and (sleep_counter < 600))
         sleep 1
         sleep_counter += 1
       end
