@@ -68,6 +68,25 @@ ixm.attach_reflex(/c/) do |packet|
   end
 end
 
+ixm.attach_reflex(/k/) do |packet|
+  begin
+    if packet.match(/^k([\d-]+\/+\.[\d]*\/*)/) # score -- k0.00 f
+      print "."; STDOUT.flush;
+      $current_file << "k #{Time.now - $start_time}\t#{$1}\n"
+      $current_file.flush
+      $finished = true if Float($1) == 0
+    elsif packet.match(/k([\d\*\-\+\/x]+)/) # best -- c44/4x5x5-+* f
+      $current_best << "k #{Time.now - $start_time}\t#{$1}\n"
+      $current_best.flush
+    else
+      puts packet
+    end
+  rescue
+    puts "failure!!"
+    puts "\t'#{packet}'"
+  end
+end
+
 count = 444
 r_strings.each do |r_s|
   ["xxx**xxxx***+", "7xxx**+"].each_with_index do |goal, i|

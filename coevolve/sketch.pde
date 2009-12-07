@@ -637,7 +637,7 @@ void acceptEvalIndividual(u8 * packet) {
   int index = 0;
   ind.fitness = -1;
   int point;
-  if (packetScanf(packet, "i ") != 2) {
+  if (packetScanf(packet, "e ") != 2) {
     pprintf("L bad individual: '%#p'\n",packet);
     return;
   }

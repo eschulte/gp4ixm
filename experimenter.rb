@@ -23,16 +23,16 @@ end
 
 # create the ixm object
 puts "initializing ixm connection"
-ixm = LibIXM.new(:sfbprog_path =>   '/nfs/adaptive/eschulte/bin/sfbprog',
+ixm = LibIXM.new(:sfbprog_path =>   '/Users/eschulte/bin/sfbprog',
                  :sfbprog_args =>   '',
                  :sfbprog_device => '/dev/ttyUSB0',
                  :sfbprog_sketch => 'evolve/sketch.hex')
 
 # build up all reset strings
 r_strings = ["r"]
-[["s", [0]],
- ["m", [10, 100]],
- ["b", [10, 100]],
+[["s", [500]],
+ ["m", [10]],
+ ["b", [10]],
  ["i", [0]]].each do |key, values|
   new_strings = []
   r_strings = r_strings.each do |r|
