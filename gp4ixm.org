@@ -1082,6 +1082,11 @@ breeding and injection are all 0
 |       10 |       10 |        10 |          4 |  3.4 |     298 |  100.46644295302 |
 
 * Issues / Notes
+** big grid two
+31 boards
+
+ran, results on the desktop
+
 ** TODO next steps [7/9]
 *** DONE fix resetting sharing rate w/R packet
 or at least confirm that it's working and what the correct syntax
