@@ -30,7 +30,7 @@ ixm = LibIXM.new(:sfbprog_path =>   '/Users/eschulte/bin/sfbprog',
 
 # build up all reset strings
 r_strings = ["r"]
-[["s", [500]],
+[["s", [100, 1000, 10000]],
  ["m", [10]],
  ["b", [10]],
  ["i", [0]]].each do |key, values|
@@ -72,8 +72,8 @@ end
 
 count = 444
 r_strings.each do |r_s|
-  ["xxx**xxxx***+", "7xxx**+"].each_with_index do |goal, i|
-    5.times do |c|
+  ["xxx**xxxx***+", "7xxx**+", "xs55+55+**"].each_with_index do |goal, i|
+    10.times do |c|
       print "\n\t#{r_s} run #{c} on #{goal}\n\t"; STDOUT.flush
       $current_file =
         File.open(File.join(results_dir,
@@ -94,7 +94,7 @@ r_strings.each do |r_s|
       ixm << r_s
       # let it run for a while
       sleep_counter = 0
-      while((not $finished) and (sleep_counter < 300))
+      while((not $finished) and (sleep_counter < 1200))
         sleep 1
         sleep_counter += 1
       end
