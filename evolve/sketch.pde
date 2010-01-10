@@ -14,6 +14,7 @@
 #define DEFAULT_VAL 0.0
 #define CHECK_SIZE 10
 #define MAX_GOAL_SIZE 64
+#define ALPHABET_SIZE 15
 
 char goal[MAX_GOAL_SIZE];
 int mutation_tick   = 100;                      // ms per mutation
@@ -21,7 +22,7 @@ int breeding_tick   = 100;                      // ms per breeding
 int injection_tick  = 100;                      // ms per breeding
 int sharing_tick    = 2000;                     // ms per sharing
 int tournament_size = 4;
-int mutation_prob   = 4;                       // PROB/SIZE = chance_mut of each spot
+int mutation_prob   = 4;                        // PROB/SIZE = chance_mut of each spot
 
 // alarm variables
 int mutation_alarm_index  = -1;
@@ -141,8 +142,8 @@ double individual::score() {
 void individual::mutate() {                    // mutate an individual
   char possibilities[16] = BUILDING_BLOCKS;
   for(int i=0; i<size(); ++i)
-    if(random(size()) == mutation_prob)
-      representation[i] = possibilities[random(15)];
+    if(random(size()) < mutation_prob)
+      representation[i] = possibilities[random(ALPHABET_SIZE)];
   score();
   if(not check()) pprintf("L from mutate\n");
 }
@@ -155,9 +156,9 @@ individual new_ind() {                         // randomly generate a new indivi
   int index = 0;
   ind.fitness = -1.0;
   char possibilities[16] = BUILDING_BLOCKS;
-  ind.representation[0] = possibilities[random(15)];
+  ind.representation[0] = possibilities[random(ALPHABET_SIZE)];
   for(int i=0; i < random(IND_SIZE); ++i) {
-    ind.representation[i] = possibilities[random(15)];
+    ind.representation[i] = possibilities[random(ALPHABET_SIZE)];
     index = i;
   }
   ind.representation[index+1] = '\0';
